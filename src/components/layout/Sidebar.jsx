@@ -1,13 +1,17 @@
-import { Link, useNavigate } from 'react-router-dom';
+import { Link, useLocation, useNavigate } from 'react-router-dom';
 import CtaButton from '../ui/CtaButton';
 import iconPlus from '../../assets/icons/icon-plus.svg';
 import iconHome from '../../assets/icons/icon-home.svg';
+import iconHomeMuted from '../../assets/icons/icon-home-muted.svg';
 import iconLibrary from '../../assets/icons/icon-library.svg';
+import iconLibraryActive from '../../assets/icons/icon-library-active.svg';
 import iconLogout from '../../assets/icons/icon-logout.svg';
 import styles from './Sidebar.module.css';
 
 function Sidebar() {
   const navigate = useNavigate();
+  const location = useLocation();
+  const libraryActive = location.pathname.startsWith('/library');
 
   return (
     <aside className={styles.sidebar}>
@@ -25,22 +29,25 @@ function Sidebar() {
 
       <nav className={styles.nav} aria-label="주요 메뉴">
         <Link
-          className={`${styles.item} ${styles.active}`}
+          className={`${styles.item} ${!libraryActive ? styles.active : ''}`}
           to="/home"
-          aria-current="page"
+          aria-current={!libraryActive ? 'page' : undefined}
         >
-          <img className={styles.homeIcon} src={iconHome} alt="" />
+          <img
+            className={styles.homeIcon}
+            src={libraryActive ? iconHomeMuted : iconHome}
+            alt=""
+          />
           <span>홈</span>
         </Link>
-        <button
-          className={styles.item}
-          type="button"
-          disabled
-          title="서재 화면이 준비되면 연결됩니다"
+        <Link
+          className={`${styles.item} ${libraryActive ? styles.active : ''}`}
+          to="/library"
+          aria-current={libraryActive ? 'page' : undefined}
         >
-          <img src={iconLibrary} alt="" />
+          <img src={libraryActive ? iconLibraryActive : iconLibrary} alt="" />
           <span>서재</span>
-        </button>
+        </Link>
       </nav>
 
       <Link className={`${styles.item} ${styles.logout}`} to="/">
