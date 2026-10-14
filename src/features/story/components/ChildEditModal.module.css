@@ -1,0 +1,214 @@
+.row {
+  display: flex;
+  align-items: flex-start;
+  padding-left: 6px;
+}
+
+.label {
+  flex: none;
+  width: 84px;
+  margin: 0;
+  color: var(--color-text);
+  font-size: 22px;
+  font-weight: 500;
+  line-height: normal;
+}
+
+.ageRow {
+  align-items: center;
+  margin-top: 28px;
+}
+
+.traitsRow {
+  margin-top: 37px;
+}
+
+.likesRow {
+  margin-top: 38px;
+}
+
+.chipLabel {
+  display: flex;
+  align-items: center;
+  height: 41px;
+}
+
+.likesLabel {
+  width: 149px;
+}
+
+.ageBox {
+  position: relative;
+  width: 155px;
+  height: 48px;
+}
+
+.ageSelect {
+  width: 100%;
+  height: 100%;
+  padding: 0 34px 0 16px;
+  color: var(--color-text);
+  background: var(--color-surface);
+  border: 1.05px solid var(--color-border-soft);
+  border-radius: 14px;
+  font-family: var(--font-body);
+  font-size: 20px;
+  font-weight: 300;
+  cursor: pointer;
+  appearance: none;
+}
+
+.ageSelect:focus,
+.customInput:focus,
+.addInput:focus {
+  border-color: var(--color-secondary-green);
+}
+
+.clearButton {
+  position: absolute;
+  top: 17px;
+  right: 11px;
+  display: block;
+  width: 14px;
+  height: 14px;
+  padding: 0;
+  background: transparent;
+  border: 0;
+  cursor: pointer;
+}
+
+.customBox .clearButton {
+  right: 14px;
+}
+
+.traitsColumn {
+  width: 379px;
+}
+
+.chips {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 10px 13px;
+}
+
+.customBox {
+  position: relative;
+  height: 78px;
+  margin-top: 11px;
+}
+
+.customInput {
+  width: 100%;
+  height: 100%;
+  padding: 13px 40px 0 18px;
+  color: var(--color-text);
+  background: var(--color-surface);
+  border: 1.05px solid var(--color-border-soft);
+  border-radius: 14px;
+  font-family: var(--font-body);
+  font-size: 18px;
+  font-weight: 300;
+  line-height: normal;
+  resize: none;
+}
+
+.customInput::placeholder {
+  color: var(--color-text);
+  opacity: 1;
+}
+
+.likesColumn {
+  width: 314px;
+}
+
+.likeChips {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 10px 12px;
+  min-height: 41px;
+  margin: 0;
+  padding: 0;
+  list-style: none;
+}
+
+.likeChip {
+  display: inline-flex;
+  align-items: center;
+  gap: 10px;
+  height: 41px;
+  padding: 0 16.6px 0 16px;
+  color: var(--color-secondary-green);
+  border: 1.05px solid var(--color-secondary-green);
+  border-radius: 22.5px;
+  font-size: 17px;
+  font-weight: 400;
+  line-height: normal;
+  white-space: nowrap;
+}
+
+.removeButton {
+  display: block;
+  width: 9px;
+  height: 9px;
+  padding: 0;
+  background: transparent;
+  border: 0;
+  cursor: pointer;
+}
+
+.addRow {
+  display: flex;
+  align-items: center;
+  gap: 7px;
+  margin: 11px 0 0 9px;
+}
+
+.addInput {
+  flex: 1;
+  min-width: 0;
+  height: 48px;
+  padding: 0 16px;
+  color: var(--color-text);
+  background: var(--color-surface);
+  border: 1.05px solid var(--color-border-soft);
+  border-radius: 14px;
+  font-family: var(--font-body);
+  font-size: 17px;
+}
+
+.addButton {
+  position: relative;
+  top: -2px;
+  display: block;
+  flex: none;
+  width: 26px;
+  height: 26px;
+  padding: 0;
+  background: transparent;
+  border: 0;
+  cursor: pointer;
+}
+
+@media (max-width: 600px) {
+  .row {
+    flex-direction: column;
+    gap: 12px;
+    padding-left: 0;
+  }
+
+  .chipLabel,
+  .likesLabel,
+  .label {
+    width: auto;
+    height: auto;
+  }
+
+  .traitsColumn,
+  .likesColumn {
+    width: 100%;
+  }
+
+  .addRow {
+    margin-left: 0;
+  }
+}

@@ -1,0 +1,127 @@
+.page {
+  min-width: 320px;
+  min-height: 100vh;
+  background: var(--color-page);
+}
+
+.shell {
+  min-height: 100vh;
+}
+
+.main {
+  min-height: 100vh;
+  padding: 58.6px 82px 60px 363px;
+}
+
+.topbar {
+  display: flex;
+  align-items: center;
+  justify-content: flex-end;
+  gap: 39.6px;
+  height: 58.8px;
+  margin-right: -6.4px;
+}
+
+.bellButton {
+  display: block;
+  padding: 0;
+  background: transparent;
+  border: 0;
+  cursor: not-allowed;
+}
+
+.avatar {
+  position: relative;
+  flex: 0 0 58.8px;
+  width: 58.8px;
+  height: 58.8px;
+}
+
+.avatar img {
+  position: absolute;
+}
+
+.avatarCircle {
+  inset: 0;
+}
+
+.avatarPerson {
+  top: 12.8px;
+  left: 9.45px;
+}
+
+.content {
+  margin-top: 110.6px;
+}
+
+.greeting {
+  position: relative;
+  display: flex;
+  flex-direction: column;
+  min-height: 289px;
+  padding: 55px 43px 36px 115px;
+  background: var(--color-surface);
+  border-radius: 24px;
+  box-shadow: 0 0 8.2px rgb(0 0 0 / 10%);
+}
+
+.greetingText {
+  margin: 0;
+  color: var(--color-text);
+  font-family: var(--font-title);
+  font-size: 30px;
+  font-weight: 400;
+  line-height: 48px;
+  letter-spacing: -0.9px;
+}
+
+.createButton {
+  align-self: flex-end;
+  width: 219px;
+  margin-top: auto;
+}
+
+.cards {
+  display: grid;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  gap: 39px;
+  margin-top: 63px;
+}
+
+.card {
+  height: 212px;
+  background: var(--color-surface);
+  border-radius: 24px;
+  box-shadow: 0 0 8.2px rgb(0 0 0 / 10%);
+}
+
+@media (max-width: 900px) {
+  .main {
+    padding: 24px 16px 40px;
+  }
+
+  .content {
+    margin-top: 32px;
+  }
+
+  .greeting {
+    padding: 32px 24px;
+  }
+
+  .greetingText {
+    font-size: clamp(22px, 5.4vw, 30px);
+    line-height: 1.6;
+  }
+
+  .createButton {
+    align-self: stretch;
+    width: auto;
+    margin-top: 32px;
+  }
+
+  .cards {
+    grid-template-columns: 1fr;
+    gap: 24px;
+    margin-top: 32px;
+  }
+}

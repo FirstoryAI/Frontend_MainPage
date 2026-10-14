@@ -1,4 +1,5 @@
 import { useState } from 'react';
+import { useNavigate } from 'react-router-dom';
 import Header from '../../components/layout/Header';
 import checkboxChecked from '../../assets/icons/checkbox-checked.svg';
 import checkboxUnchecked from '../../assets/icons/checkbox-unchecked.svg';
@@ -24,7 +25,7 @@ function CheckboxGraphic({ checked }) {
 
 function GuardianConsentPage() {
   const [agreements, setAgreements] = useState(initialAgreements);
-  const [completionMessage, setCompletionMessage] = useState('');
+  const navigate = useNavigate();
 
   const allAccepted = Object.values(agreements).every(Boolean);
   const requiredAccepted =
@@ -47,9 +48,7 @@ function GuardianConsentPage() {
   const handleSubmit = (event) => {
     event.preventDefault();
     if (requiredAccepted) {
-      setCompletionMessage(
-        '필수 동의가 완료되었습니다. 다음 온보딩 화면 연결이 필요합니다.',
-      );
+      navigate('/home', { state: { onboarding: true } });
     }
   };
 
@@ -110,9 +109,6 @@ function GuardianConsentPage() {
             >
               시작하기
             </button>
-            <p className={styles.status} aria-live="polite">
-              {completionMessage}
-            </p>
           </form>
         </section>
       </main>

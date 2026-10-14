@@ -1,0 +1,172 @@
+.step {
+  width: min(895px, 100%);
+  margin: 0 auto;
+  padding-top: 72px;
+}
+
+.intro {
+  --bubble-gap: -7.65px;
+  --bubble-top: 20px;
+  --bubble-text-left: 77.05px;
+
+  margin-left: -10.5px;
+}
+
+.strongBorder {
+  --field-border: var(--color-field-border-strong);
+}
+
+.topRow {
+  display: grid;
+  grid-template-columns: 262px auto;
+  column-gap: 109px;
+  align-items: start;
+  margin-top: 29px;
+}
+
+.topRow > div > p {
+  margin-bottom: 14px;
+}
+
+.birth {
+  display: flex;
+  gap: 12px;
+}
+
+.selectBox {
+  position: relative;
+  height: 50px;
+}
+
+.year {
+  width: 142px;
+}
+
+.month {
+  width: 108px;
+}
+
+.select {
+  width: 100%;
+  height: 100%;
+  padding: 0 34px 0 17px;
+  color: var(--color-field-text);
+  background: var(--color-surface);
+  border: 1px solid var(--color-field-border-strong);
+  border-radius: 12px;
+  font-family: var(--font-body);
+  font-size: 17px;
+  line-height: 1.5;
+  cursor: pointer;
+  appearance: none;
+}
+
+.select:focus {
+  border-color: var(--color-brand);
+}
+
+.placeholder {
+  color: var(--color-field-placeholder);
+}
+
+.chevron {
+  position: absolute;
+  top: 50%;
+  right: 17px;
+  transform: translateY(-50%);
+  pointer-events: none;
+}
+
+.genders {
+  display: flex;
+  align-items: center;
+  gap: 13px;
+  height: 50px;
+}
+
+.traitsField {
+  margin-top: 40px;
+}
+
+.traitsHeading {
+  display: flex;
+  align-items: flex-start;
+  gap: 21px;
+  margin-bottom: 17px;
+}
+
+.traitsHeading .inline {
+  margin: 0;
+}
+
+.hint {
+  color: var(--color-helper);
+  font-size: 15px;
+  line-height: 1.5;
+}
+
+/* Figma에서 이 칩 줄은 입력 칸(895px)보다 넓게 한 줄로 놓여 있어요. 좁은 화면에서는 줄바꿈해요. */
+.traits {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 20px;
+  width: 990px;
+}
+
+@media (max-width: 1300px) {
+  .traits {
+    width: 100%;
+  }
+}
+
+.customTrait {
+  margin-top: 15px;
+}
+
+.likesField {
+  margin-top: 44px;
+}
+
+.likesField > label {
+  margin-bottom: 17px;
+}
+
+.helper {
+  display: flex;
+  align-items: center;
+  gap: 5px;
+  margin: 9px 0 0 1px;
+  color: var(--color-helper);
+  font-size: 15px;
+  line-height: 1.5;
+}
+
+@media (max-width: 900px) {
+  .step {
+    padding: 24px 16px 0;
+  }
+
+  .intro {
+    margin-left: 0;
+  }
+
+  .topRow {
+    grid-template-columns: 1fr;
+    row-gap: 28px;
+    margin-top: 32px;
+  }
+
+  .genders {
+    flex-wrap: wrap;
+    height: auto;
+  }
+
+  .traitsField,
+  .likesField {
+    margin-top: 32px;
+  }
+
+  .traits {
+    gap: 12px;
+  }
+}

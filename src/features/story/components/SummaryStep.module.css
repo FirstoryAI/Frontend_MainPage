@@ -1,0 +1,180 @@
+.step {
+  position: relative;
+  left: 2px;
+  width: min(1100px, 100%);
+  margin: 0 auto;
+  padding-top: 93.52px;
+}
+
+.intro {
+  --bubble-gap: 234.9px;
+  --bubble-top: 0px;
+}
+
+.cards {
+  display: grid;
+  grid-template-columns: 373px minmax(0, 694px);
+  column-gap: 33px;
+  align-items: start;
+  margin-top: 81.53px;
+}
+
+.column {
+  display: grid;
+  row-gap: 18px;
+}
+
+.card {
+  min-width: 0;
+  padding: 18px 25px 20px 30px;
+  background: var(--color-surface);
+  border-radius: 24px;
+  box-shadow: 0 0 8.2px rgb(0 0 0 / 10%);
+}
+
+.childCard {
+  min-height: 242px;
+  padding-right: 21px;
+  padding-left: 30px;
+}
+
+.column .card:first-child {
+  min-height: 128px;
+}
+
+.column .card:last-child {
+  min-height: 156px;
+}
+
+.cardHeader {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  height: 30px;
+}
+
+.cardTitle {
+  margin: 0;
+  color: var(--color-text);
+  font-size: 20px;
+  font-weight: 600;
+  line-height: 1.5;
+}
+
+.editButton {
+  flex: none;
+  width: 79px;
+  height: 29px;
+  padding: 0;
+  color: var(--color-secondary-green);
+  background: transparent;
+  border: 1.5px solid var(--color-secondary-green);
+  border-radius: 15px;
+  font-family: var(--font-body);
+  font-size: 16px;
+  font-weight: 500;
+  line-height: 1;
+  cursor: pointer;
+}
+
+.editButton:disabled {
+  cursor: not-allowed;
+}
+
+.text {
+  margin: 35px 0 0 1px;
+  color: var(--color-text);
+  font-size: 17px;
+  font-weight: 300;
+  line-height: 25px;
+  white-space: pre-line;
+  overflow-wrap: anywhere;
+}
+
+.facts {
+  display: grid;
+  row-gap: 18px;
+  margin: 33.5px 0 0 4px;
+}
+
+.fact {
+  display: flex;
+  align-items: center;
+  min-height: 29px;
+}
+
+/* 값이 시작하는 자리: 나이·성향은 라벨에서 66px, 좋아하는 것은 106px (Figma 기준) */
+.fact dt {
+  flex: none;
+  min-width: 66px;
+  color: var(--color-text);
+  font-size: 18px;
+  font-weight: 400;
+  line-height: normal;
+}
+
+.fact dd {
+  min-width: 0;
+  margin: 0;
+}
+
+.wideLabel dt {
+  min-width: 106px;
+}
+
+.fact .age {
+  margin-left: 2px;
+  color: var(--color-text);
+  font-size: 17px;
+  font-weight: 300;
+}
+
+.empty {
+  color: var(--color-text);
+  font-size: 16px;
+  font-weight: 300;
+}
+
+.tags {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 8px 10px;
+  margin: 0;
+  padding: 0;
+  list-style: none;
+}
+
+.tag {
+  display: inline-flex;
+  align-items: center;
+  height: 29px;
+  padding: 0 12.3px;
+  color: var(--color-text);
+  border: 0.7px solid var(--color-border-soft);
+  border-radius: 15px;
+  font-size: 16px;
+  font-weight: 300;
+  line-height: normal;
+  white-space: nowrap;
+}
+
+@media (max-width: 1160px) {
+  .step {
+    left: 0;
+    padding: 48px 16px 0;
+  }
+
+  .intro {
+    --bubble-gap: 0px;
+  }
+
+  .cards {
+    grid-template-columns: minmax(0, 1fr);
+    row-gap: 18px;
+    margin-top: 32px;
+  }
+
+  .childCard {
+    min-height: 0;
+  }
+}

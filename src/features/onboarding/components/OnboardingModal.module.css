@@ -1,0 +1,144 @@
+.overlay {
+  position: fixed;
+  inset: 0;
+  z-index: 100;
+  display: grid;
+  place-items: center;
+  padding: 22px 16px 0;
+  overflow-y: auto;
+  background: var(--color-overlay);
+}
+
+.modal {
+  position: relative;
+  display: flex;
+  flex-direction: column;
+  width: min(785px, 100%);
+  min-height: 518px;
+  padding: 134px 64px 48px 68px;
+  background: var(--color-surface);
+  border-radius: 24px;
+  box-shadow: 0 0 8.2px rgb(0 0 0 / 10%);
+}
+
+.closeButton {
+  position: absolute;
+  top: 41px;
+  right: 40px;
+  display: block;
+  width: 45px;
+  height: 45px;
+  padding: 0;
+  background: transparent;
+  border: 0;
+  border-radius: 50%;
+  cursor: pointer;
+}
+
+.title {
+  display: flex;
+  align-items: flex-start;
+  height: 60px;
+  margin: 0;
+  color: var(--color-text);
+  font-family: var(--font-title);
+  font-size: 35px;
+  font-weight: 400;
+  line-height: 1.5;
+}
+
+.brand {
+  font-family: var(--font-brand);
+  font-size: 40px;
+}
+
+.titleText {
+  margin-top: 11px;
+}
+
+.steps {
+  display: grid;
+  gap: 16px;
+  margin: 35px 0 0 -2px;
+  padding: 0;
+  list-style: none;
+}
+
+.step {
+  display: flex;
+  align-items: center;
+  gap: 14px;
+  min-height: 30px;
+  color: var(--color-text);
+  font-size: 20px;
+  font-weight: 400;
+  line-height: 1.5;
+}
+
+.badge {
+  position: relative;
+  display: grid;
+  flex: 0 0 30px;
+  width: 30px;
+  height: 30px;
+  place-items: center;
+  color: var(--color-brand);
+  font-family: var(--font-title);
+  font-size: 18px;
+  line-height: 1.5;
+}
+
+.badge img {
+  position: absolute;
+  inset: 0;
+  width: 30px;
+  height: 30px;
+}
+
+.badge span {
+  position: relative;
+  padding-top: 3px;
+}
+
+.startButton {
+  align-self: flex-end;
+  width: 173px;
+  margin-top: 21px;
+}
+
+@media (max-width: 820px) {
+  .modal {
+    padding: 80px 24px 32px;
+  }
+
+  .closeButton {
+    top: 20px;
+    right: 20px;
+  }
+
+  .title {
+    flex-wrap: wrap;
+    height: auto;
+    min-height: 60px;
+    font-size: clamp(24px, 6vw, 35px);
+  }
+
+  .brand {
+    font-size: clamp(28px, 7vw, 40px);
+  }
+
+  .steps {
+    margin-left: 0;
+  }
+
+  .step {
+    align-items: flex-start;
+    font-size: 17px;
+  }
+
+  .startButton {
+    align-self: stretch;
+    width: auto;
+    margin-top: 28px;
+  }
+}
