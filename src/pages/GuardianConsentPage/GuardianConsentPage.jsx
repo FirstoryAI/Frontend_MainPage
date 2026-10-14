@@ -5,9 +5,9 @@ import checkboxUnchecked from '../../assets/icons/checkbox-unchecked.svg';
 import styles from './GuardianConsentPage.module.css';
 
 const initialAgreements = {
-  guardian: true,
-  terms: true,
-  privacy: true,
+  guardian: false,
+  terms: false,
+  privacy: false,
   notification: false,
 };
 
