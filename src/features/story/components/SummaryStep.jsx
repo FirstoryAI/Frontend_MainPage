@@ -44,7 +44,6 @@ function SummaryStep({ child, situation, goal, onEditChild, onEditSituation, onE
     <div className={styles.step}>
       <MascotBubble
         className={styles.intro}
-        withMascot={false}
         title="이 내용으로 동화를 만들까요?"
         description="FIRSTORY AI가 이해한 내용이에요. 다르면 고쳐 주세요."
       />
