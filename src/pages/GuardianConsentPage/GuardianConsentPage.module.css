@@ -159,17 +159,6 @@
   opacity: 0.45;
 }
 
-.status {
-  position: absolute;
-  width: 1px;
-  height: 1px;
-  margin: -1px;
-  overflow: hidden;
-  clip: rect(0 0 0 0);
-  clip-path: inset(50%);
-  white-space: nowrap;
-}
-
 @media (min-width: 821px) and (max-height: 850px) {
   .card {
     top: 24px;

@@ -1,0 +1,57 @@
+.step {
+  width: min(895px, 100%);
+  margin: 0 auto;
+  padding-top: 74px;
+}
+
+.intro {
+  --bubble-gap: 5.35px;
+  --bubble-top: 9px;
+
+  margin-left: -24px;
+}
+
+.field {
+  margin-top: 62px;
+}
+
+.categoryField {
+  margin-top: 31px;
+}
+
+.categoryField > p {
+  margin-bottom: 19px;
+}
+
+.chips {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 20px;
+}
+
+.textarea {
+  height: 87px;
+}
+
+@media (max-width: 900px) {
+  .step {
+    padding: 24px 16px 0;
+  }
+
+  .intro {
+    margin-left: 0;
+  }
+
+  .field,
+  .categoryField {
+    margin-top: 36px;
+  }
+
+  .chips {
+    gap: 12px;
+  }
+
+  .textarea {
+    height: 120px;
+  }
+}

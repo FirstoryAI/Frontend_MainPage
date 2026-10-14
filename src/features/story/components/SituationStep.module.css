@@ -1,0 +1,121 @@
+.step {
+  width: min(1005.3px, 100%);
+  margin: 0 auto;
+  padding-top: 91px;
+}
+
+.intro {
+  --bubble-gap: 7.9px;
+  --bubble-top: 3px;
+
+  margin-left: 19.65px;
+}
+
+.cards {
+  display: grid;
+  grid-template-columns: repeat(3, 317.05px);
+  gap: 27.2px;
+  margin-top: 80.47px;
+}
+
+.card {
+  position: relative;
+  display: block;
+  width: 317.05px;
+  height: 150.45px;
+  background: var(--color-surface);
+  border: 2.55px solid var(--color-card-border);
+  border-radius: 20.4px;
+  cursor: pointer;
+}
+
+.card:has(:focus-visible) {
+  outline: 3px solid rgb(255 138 91 / 55%);
+  outline-offset: 3px;
+}
+
+.input {
+  position: absolute;
+  width: 1px;
+  height: 1px;
+  margin: -1px;
+  overflow: hidden;
+  clip: rect(0 0 0 0);
+  clip-path: inset(50%);
+  white-space: nowrap;
+}
+
+.title,
+.description {
+  position: absolute;
+  left: 30.6px;
+  color: var(--color-text);
+  line-height: 1.5;
+  white-space: nowrap;
+}
+
+.title {
+  font-size: 20.4px;
+  font-weight: 600;
+}
+
+.description {
+  left: 29.75px;
+  color: var(--color-card-description);
+  font-size: 15.3px;
+  font-weight: 400;
+}
+
+.singleline .title {
+  top: 30.6px;
+}
+
+.singleline .description {
+  top: 84.15px;
+}
+
+.multiline .title {
+  top: 28.05px;
+}
+
+.multiline .description {
+  top: 74.8px;
+}
+
+.selected {
+  border-color: var(--color-brand-light);
+  box-shadow: 0 0 6.949px rgb(0 0 0 / 10%);
+}
+
+.selected .title {
+  color: var(--color-brand);
+}
+
+.selected .description {
+  color: var(--color-brand-light);
+}
+
+@media (max-width: 1100px) {
+  .step {
+    padding-top: 48px;
+  }
+
+  .intro {
+    margin-left: 0;
+  }
+
+  .cards {
+    grid-template-columns: minmax(0, 1fr);
+    margin-top: 32px;
+  }
+
+  .card {
+    width: 100%;
+  }
+}
+
+@media (max-width: 900px) {
+  .step {
+    padding: 28px 16px 0;
+  }
+}

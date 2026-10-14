@@ -1,0 +1,208 @@
+.step {
+  display: flex;
+  flex: 1;
+  flex-direction: column;
+  align-items: center;
+}
+
+.stepper {
+  position: relative;
+  width: min(591px, calc(100% - 32px));
+  margin-top: 143px;
+  padding-top: 117px;
+}
+
+.runner {
+  position: absolute;
+  top: 0;
+  width: 103px;
+  height: 110px;
+  transform: translateX(-50%);
+  transition: left 0.6s ease;
+}
+
+.stages {
+  display: flex;
+  margin: 0;
+  padding: 0;
+  list-style: none;
+}
+
+.stage {
+  display: flex;
+  flex: 1;
+  align-items: flex-start;
+  color: var(--color-step-pending-label);
+}
+
+.stage:last-child {
+  flex: none;
+}
+
+.reached {
+  color: var(--color-text);
+}
+
+.node {
+  display: flex;
+  flex: none;
+  flex-direction: column;
+  align-items: center;
+  width: 36px;
+}
+
+.icon {
+  position: relative;
+  display: block;
+  width: 36px;
+  height: 36px;
+}
+
+.icon img {
+  position: absolute;
+  inset: 0;
+}
+
+.icon .glyph {
+  inset: auto;
+  top: 50%;
+  left: 50%;
+  transform: translate(-50%, -50%);
+}
+
+.label {
+  margin-top: 11px;
+  font-size: 18px;
+  font-weight: 400;
+  letter-spacing: -0.54px;
+  line-height: normal;
+  white-space: nowrap;
+}
+
+/* 아이콘 사이를 채우는 줄. 데스크톱에서는 양쪽 19px씩 띄워 204px가 돼요. */
+.line {
+  flex: 1;
+  height: 4px;
+  margin: 16px 19px 0;
+  background: rgb(166 166 166 / 77%);
+  border-radius: 32px;
+  transition: background-color 0.4s ease;
+}
+
+.lineDone {
+  background: rgb(85 201 154 / 77%);
+}
+
+.lineDoneSoft {
+  background: rgb(124 213 175 / 77%);
+}
+
+.title {
+  margin: 68px 0 0;
+  color: var(--color-text);
+  font-family: var(--font-title);
+  font-size: 35px;
+  font-weight: 400;
+  letter-spacing: -1.05px;
+  line-height: 48px;
+  text-align: center;
+}
+
+.notice {
+  margin: 0;
+  color: var(--color-secondary);
+  font-size: 18px;
+  letter-spacing: -0.54px;
+  line-height: normal;
+  text-align: center;
+}
+
+.card {
+  display: flex;
+  align-items: center;
+  width: min(969px, calc(100% - 32px));
+  height: 72px;
+  margin-top: 69px;
+  padding: 0 30.5px 0 31px;
+  background: var(--color-surface);
+  border-radius: 24px;
+  box-shadow: 0 0 8.2px rgb(0 0 0 / 10%);
+}
+
+.cardText {
+  margin: 0;
+  color: var(--color-text);
+  font-size: 18px;
+  font-weight: 500;
+  line-height: 1.5;
+}
+
+.phone {
+  margin: 0 0 0 18.5px;
+  color: var(--color-phone);
+  font-size: 15px;
+  line-height: 1.5;
+}
+
+.changeButton {
+  margin-left: auto;
+  padding: 0;
+  color: var(--color-secondary-green);
+  background: transparent;
+  border: 0;
+  font-family: var(--font-body);
+  font-size: 16px;
+  font-weight: 600;
+  line-height: 1.5;
+  cursor: not-allowed;
+}
+
+.footer {
+  margin-top: auto;
+  padding: 40px 0 79px;
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .runner,
+  .line {
+    transition: none;
+  }
+}
+
+@media (max-width: 900px) {
+  .stepper {
+    margin-top: 56px;
+  }
+
+  .title {
+    margin-top: 48px;
+    font-size: clamp(26px, 7vw, 35px);
+  }
+
+  .notice {
+    padding: 0 16px;
+  }
+
+  .card {
+    flex-wrap: wrap;
+    gap: 4px 12px;
+    height: auto;
+    margin-top: 40px;
+    padding: 16px 20px;
+  }
+
+  .phone {
+    margin-left: 0;
+  }
+
+  .changeButton {
+    margin-left: auto;
+  }
+}
+
+@media (max-width: 480px) {
+  .line {
+    margin-right: 8px;
+    margin-left: 8px;
+  }
+}
