@@ -1,0 +1,52 @@
+@font-face {
+  font-family: 'Darumadrop One';
+  src: url('../assets/fonts/DarumadropOne-Regular.ttf') format('truetype');
+  font-style: normal;
+  font-weight: 400;
+  font-display: swap;
+}
+
+@font-face {
+  font-family: 'Pretendard';
+  src: url('../assets/fonts/Pretendard-Regular.woff2') format('woff2');
+  font-style: normal;
+  font-weight: 400;
+  font-display: swap;
+}
+
+@font-face {
+  font-family: 'Pretendard';
+  src: url('../assets/fonts/Pretendard-Medium.woff2') format('woff2');
+  font-style: normal;
+  font-weight: 500;
+  font-display: swap;
+}
+
+@font-face {
+  font-family: 'Pretendard';
+  src: url('../assets/fonts/Pretendard-SemiBold.woff2') format('woff2');
+  font-style: normal;
+  font-weight: 600;
+  font-display: swap;
+}
+
+:root {
+  --font-brand: 'Darumadrop One', sans-serif;
+  --font-body: 'Pretendard', sans-serif;
+  --color-brand: #ff8a5b;
+  --color-page: #fff9f4;
+  --color-surface: #fff;
+  --color-text: #575757;
+  --color-heading: #444;
+  --color-secondary: #818181;
+  --color-text-muted: #919191;
+  --color-text-muted-strong: #707070;
+  --color-placeholder: #b3b3b3;
+  --color-link: #ff635b;
+  --color-kakao: #ffe300;
+  --color-kakao-text: #381f1e;
+  --header-height: 109px;
+  --header-height-mobile: 76px;
+  --z-content: 1;
+  --z-header: 10;
+}

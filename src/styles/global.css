@@ -1,0 +1,21 @@
+body {
+  min-width: 320px;
+  min-height: 100vh;
+  color: var(--color-text);
+  background: var(--color-page);
+  font-family: var(--font-body);
+  font-weight: 400;
+  line-height: 1.5;
+  text-rendering: optimizeLegibility;
+  -webkit-font-smoothing: antialiased;
+}
+
+:focus-visible {
+  outline: 3px solid rgb(255 138 91 / 55%);
+  outline-offset: 3px;
+}
+
+::selection {
+  color: var(--color-kakao-text);
+  background: #ffd8c8;
+}

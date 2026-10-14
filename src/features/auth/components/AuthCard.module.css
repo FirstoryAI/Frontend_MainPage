@@ -1,0 +1,183 @@
+.card {
+  position: absolute;
+  top: 151px;
+  left: calc(50% + 47px);
+  z-index: var(--z-content);
+  width: 540px;
+  height: 541px;
+  padding: 43px 57px;
+  overflow: hidden;
+  background: var(--color-surface);
+  border-radius: 24px;
+  box-shadow: 0 0 8.2px rgb(0 0 0 / 10%);
+}
+
+.logo {
+  margin: 0;
+  color: var(--color-brand);
+  font-family: var(--font-brand);
+  font-size: 37.959px;
+  font-weight: 400;
+  line-height: 0.90025;
+  letter-spacing: -1.1388px;
+  transform: translateY(8px);
+}
+
+.description {
+  margin: 28px 0 0;
+  color: var(--color-text);
+  font-size: 22px;
+  font-weight: 400;
+  line-height: 1.5;
+}
+
+.actions {
+  display: grid;
+  gap: 28px;
+  width: 379px;
+  margin: 48px auto 0;
+}
+
+.actionButton {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  width: 100%;
+  height: 63px;
+  padding: 0 24px;
+  border: 0;
+  border-radius: 14px;
+  font-family: var(--font-body);
+  font-size: 18px;
+  font-weight: 600;
+  line-height: normal;
+  letter-spacing: -0.54px;
+  cursor: not-allowed;
+  opacity: 1;
+  text-decoration: none;
+}
+
+.kakaoButton {
+  gap: 12px;
+  color: var(--color-kakao-text);
+  background: var(--color-kakao);
+  box-shadow: inset 0 0 4.2px 2px rgb(255 255 255 / 25%);
+}
+
+.kakaoButton img {
+  flex: 0 0 auto;
+  object-fit: cover;
+}
+
+.emailButton {
+  color: var(--color-text);
+  background: var(--color-surface);
+  box-shadow: 0 0 5.9px rgb(0 0 0 / 15%);
+  cursor: pointer;
+}
+
+.emailButton:hover {
+  box-shadow: 0 0 7px rgb(0 0 0 / 20%);
+}
+
+.loginButton {
+  position: absolute;
+  top: 423px;
+  left: 0;
+  right: 0;
+  width: max-content;
+  margin: auto;
+  padding: 2px 0;
+  color: var(--color-text);
+  background: transparent;
+  border: 0;
+  font-family: var(--font-body);
+  font-size: 16px;
+  font-weight: 500;
+  line-height: normal;
+  letter-spacing: -0.48px;
+  text-decoration: underline;
+  text-underline-position: from-font;
+  cursor: not-allowed;
+  opacity: 1;
+}
+
+.agreement {
+  position: absolute;
+  left: 0;
+  right: 0;
+  bottom: 35px;
+  margin: 0;
+  color: var(--color-text-muted);
+  font-size: 14px;
+  font-weight: 400;
+  letter-spacing: 0.01em;
+  line-height: 1.5;
+  text-align: center;
+  white-space: nowrap;
+}
+
+@media (min-width: 761px) {
+  .description {
+    position: absolute;
+    top: 120px;
+    left: 57px;
+    margin: 0;
+  }
+
+  .actions {
+    position: absolute;
+    top: 227px;
+    left: 80px;
+    margin: 0;
+  }
+
+  .loginButton {
+    top: 422px;
+    left: 226px;
+    right: auto;
+    margin: 0;
+  }
+}
+
+@media (max-width: 1180px) {
+  .card {
+    left: auto;
+    right: clamp(32px, 6vw, 72px);
+  }
+}
+
+@media (max-width: 760px) {
+  .card {
+    position: relative;
+    top: auto;
+    left: auto;
+    right: auto;
+    width: min(540px, calc(100% - 32px));
+    height: 500px;
+    margin: 32px auto;
+    padding: 36px clamp(24px, 8vw, 57px);
+  }
+
+  .description {
+    margin-top: 24px;
+    font-size: clamp(18px, 5vw, 22px);
+  }
+
+  .actions {
+    width: 100%;
+    margin-top: 38px;
+    gap: 20px;
+  }
+
+  .loginButton {
+    top: 399px;
+  }
+
+  .agreement {
+    bottom: 28px;
+    padding: 0 20px;
+    font-size: 12px;
+    white-space: normal;
+  }
+}
