@@ -50,3 +50,9 @@
   --z-content: 1;
   --z-header: 10;
 }
+
+@media (min-width: 761px) and (max-height: 850px) {
+  :root {
+    --header-height: 88px;
+  }
+}
