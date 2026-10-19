@@ -1,4 +1,5 @@
 import { useEffect, useState } from 'react';
+import { useLocation } from 'react-router-dom';
 import CtaButton from '../../components/ui/CtaButton';
 import StoryHeader from '../../features/story/components/StoryHeader';
 import BackButton from '../../features/story/components/BackButton';
@@ -27,7 +28,11 @@ const initialChild = {
 const initialTopic = { message: '', undecided: false };
 
 function StoryCreatePage() {
-  const [step, setStep] = useState(STEP.SITUATION);
+  const location = useLocation();
+  const isRemake = Boolean(location.state?.remake);
+  const [step, setStep] = useState(() =>
+    isRemake ? STEP.GENERATING : STEP.SITUATION,
+  );
   // 지나온 단계 기록. 뒤로가기를 누르면 직전에 있던 단계로 돌아가요.
   const [history, setHistory] = useState([]);
   const [situation, setSituation] = useState('');
