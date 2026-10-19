@@ -6,6 +6,7 @@ import GuardianConsentPage from '../pages/GuardianConsentPage/GuardianConsentPag
 import DashboardPage from '../pages/DashboardPage/DashboardPage';
 import LibraryPage from '../pages/LibraryPage/LibraryPage';
 import StoryCreatePage from '../pages/StoryCreatePage/StoryCreatePage';
+import StoryRemakePage from '../pages/StoryRemakePage/StoryRemakePage';
 import NotFoundPage from '../pages/NotFoundPage/NotFoundPage';
 
 export const router = createBrowserRouter([
@@ -18,6 +19,7 @@ export const router = createBrowserRouter([
       { path: '/home', element: <DashboardPage /> },
       { path: '/library', element: <LibraryPage /> },
       { path: '/story/new', element: <StoryCreatePage /> },
+      { path: '/story/:storyId/remake', element: <StoryRemakePage /> },
       { path: '*', element: <NotFoundPage /> },
     ],
   },

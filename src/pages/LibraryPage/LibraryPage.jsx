@@ -125,7 +125,7 @@ function LibraryPage() {
                     <button
                       className={styles.retryButton}
                       type="button"
-                      onClick={() => navigate('/story/new')}
+                      onClick={() => navigate(`/story/${story.id}/remake`)}
                     >
                       다시 만들기
                     </button>
