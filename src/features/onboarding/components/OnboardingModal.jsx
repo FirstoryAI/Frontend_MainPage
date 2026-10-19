@@ -11,8 +11,7 @@ const steps = [
   '아이와 함께 읽으며 이야기를 나눠요',
 ];
 
-// 이 모달은 `첫 동화 만들기` 버튼으로만 닫혀요. X 버튼, 배경 클릭, Esc는 아무 동작도 하지 않아요.
-function OnboardingModal({ onStart }) {
+function OnboardingModal({ onStart, onClose }) {
   const startButtonRef = useRef(null);
 
   useEffect(() => {
@@ -27,7 +26,12 @@ function OnboardingModal({ onStart }) {
         aria-modal="true"
         aria-labelledby="onboarding-title"
       >
-        <button className={styles.closeButton} type="button" aria-label="닫기">
+        <button
+          className={styles.closeButton}
+          type="button"
+          aria-label="닫기"
+          onClick={onClose}
+        >
           <img src={iconClose} alt="" />
         </button>
 

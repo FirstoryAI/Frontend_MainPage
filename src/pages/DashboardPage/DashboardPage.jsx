@@ -76,7 +76,9 @@ function DashboardPage() {
         </div>
       </div>
 
-      {onboardingOpen && <OnboardingModal onStart={startFirstStory} />}
+      {onboardingOpen && (
+        <OnboardingModal onStart={startFirstStory} onClose={closeOnboarding} />
+      )}
     </div>
   );
 }
