@@ -1,3 +1,4 @@
+import { useEffect, useRef } from 'react';
 import { useNavigate } from 'react-router-dom';
 import CtaButton from '../../../components/ui/CtaButton';
 import { useGenerationStage } from '../hooks/useGenerationStage';
@@ -39,10 +40,18 @@ function lineClass(index, stage) {
   return `${styles.line} ${index === stages.length - 2 ? styles.lineDoneSoft : styles.lineDone}`;
 }
 
-function GeneratingStep({ stage: controlledStage }) {
+function GeneratingStep({ stage: controlledStage, onComplete }) {
   const navigate = useNavigate();
+  const completed = useRef(false);
   const timedStage = useGenerationStage();
   const stage = controlledStage ?? timedStage;
+
+  useEffect(() => {
+    if (stage === stages.length - 1 && !completed.current) {
+      completed.current = true;
+      onComplete?.();
+    }
+  }, [onComplete, stage]);
 
   return (
     <div className={styles.step}>
