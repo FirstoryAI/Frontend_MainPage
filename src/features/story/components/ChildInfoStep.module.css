@@ -5,11 +5,17 @@
 }
 
 .intro {
-  --bubble-gap: -7.65px;
+  --bubble-gap: -2.65px;
   --bubble-top: 20px;
   --bubble-text-left: 77.05px;
 
-  margin-left: -10.5px;
+  margin-left: -19.5px;
+}
+
+.intro > img {
+  width: 152px;
+  height: 135px;
+  margin-top: 9px;
 }
 
 .strongBorder {
@@ -148,6 +154,10 @@
 
   .intro {
     margin-left: 0;
+  }
+
+  .intro > img {
+    margin-top: 0;
   }
 
   .topRow {
