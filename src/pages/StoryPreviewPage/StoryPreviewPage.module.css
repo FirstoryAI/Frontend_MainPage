@@ -1,0 +1,320 @@
+.page {
+  position: relative;
+  width: 100%;
+  min-width: 320px;
+  height: 100vh;
+  min-height: 500px;
+  overflow: hidden;
+  background: var(--color-page);
+}
+
+.canvas {
+  position: absolute;
+  top: 0;
+  left: 50%;
+  width: 1440px;
+  height: 960px;
+  overflow: hidden;
+  background: var(--color-page);
+  transform: translateX(-50%) scale(var(--scene-scale, 1));
+  transform-origin: top center;
+}
+
+.header {
+  position: absolute;
+  inset: 0 0 auto;
+  height: 109px;
+  padding: 29px 46px 0;
+  background: #fff;
+  box-shadow: 0 2px 10.4px rgb(0 0 0 / 5%);
+}
+
+.logo {
+  display: inline-block;
+  color: var(--color-brand);
+  font-family: var(--font-brand);
+  font-size: 37.959px;
+  line-height: 0.9;
+  letter-spacing: -1.1388px;
+  text-decoration: none;
+  transform: translateY(1px);
+}
+
+.close {
+  position: absolute;
+  top: 43px;
+  right: 61px;
+  width: 27px;
+  height: 27px;
+  padding: 0;
+  background: transparent;
+  border: 0;
+  cursor: pointer;
+}
+
+.heading {
+  position: absolute;
+  top: 151px;
+  left: 46px;
+  margin: 0;
+  color: var(--color-text);
+  font-size: 22px;
+  font-weight: 600;
+  line-height: 1.5;
+}
+
+.pageList {
+  position: absolute;
+  top: 209px;
+  left: 23px;
+  display: flex;
+  flex-direction: column;
+  width: 171px;
+  height: 760px;
+  overflow-y: auto;
+  scrollbar-width: none;
+}
+
+.pageList::-webkit-scrollbar { display: none; }
+
+.thumbnail {
+  position: relative;
+  display: flex;
+  flex: 0 0 128px;
+  flex-direction: column;
+  align-items: center;
+  width: 171px;
+  height: 128px;
+  padding: 0;
+  color: var(--color-text);
+  background: transparent;
+  border: 0;
+  cursor: pointer;
+}
+
+.thumbnail::before {
+  position: absolute;
+  inset: -8px 0 auto;
+  height: 103px;
+  border-radius: 5px;
+  content: '';
+}
+
+.thumbnail img {
+  position: relative;
+  z-index: 1;
+  width: 150px;
+  height: 85px;
+  margin-top: 0;
+  object-fit: cover;
+  border-radius: 5px;
+  box-shadow: 0 1px 4px rgb(0 0 0 / 20%);
+}
+
+.thumbnail span {
+  position: relative;
+  z-index: 1;
+  margin-top: 9px;
+  font-family: var(--font-title);
+  font-size: 16px;
+  line-height: 1.2;
+}
+
+.selectedThumbnail::before { background: #ffe8af; }
+.thumbnail:nth-child(5),
+.thumbnail:nth-child(6) { margin-top: 2px; }
+
+.book,
+.storyInfo {
+  position: absolute;
+  top: 158px;
+  height: 653px;
+  background: #fff;
+  border-radius: 24px;
+  box-shadow: 0 0 8px rgb(0 0 0 / 10%);
+}
+
+.book {
+  left: 220px;
+  width: 922px;
+  padding: 26px 27px 27px;
+}
+
+.illustration {
+  position: relative;
+  width: 868px;
+  height: 491px;
+  overflow: hidden;
+  border-radius: 8px;
+}
+
+.illustration > img {
+  display: block;
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+  object-position: center bottom;
+  border-radius: inherit;
+}
+
+.pageCopy {
+  position: absolute;
+  top: 18px;
+  left: 479px;
+  width: 340px;
+  color: #4a4a4a;
+  font-family: var(--font-title);
+  font-size: 13px;
+  line-height: 1.34;
+  white-space: pre-line;
+}
+
+.pageCopy p { margin: 0 0 3px; }
+
+.pagination {
+  display: grid;
+  grid-template-columns: 86px 48px 86px;
+  align-items: center;
+  justify-content: center;
+  gap: 38px;
+  margin-top: 44px;
+}
+
+.pagination button {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: 5px;
+  width: 86px;
+  height: 45px;
+  padding: 0;
+  color: var(--color-text);
+  background: #fff;
+  border: 0;
+  border-radius: 9px;
+  box-shadow: 0 0 5.9px rgb(0 0 0 / 15%);
+  font-family: var(--font-body);
+  font-size: 14px;
+  font-weight: 600;
+  cursor: pointer;
+}
+
+.pagination button:disabled { opacity: 0.4; cursor: default; }
+.pagination button img { display: block; flex: 0 0 auto; }
+.pagination button:first-child img { transform: scaleX(-1); }
+
+.pagination strong {
+  color: #717070;
+  font-size: 18px;
+  font-weight: 600;
+  white-space: nowrap;
+}
+
+.pagination strong span { color: var(--color-brand); }
+
+.storyInfo {
+  left: 1166px;
+  display: flex;
+  flex-direction: column;
+  gap: 43px;
+  width: 237px;
+  padding: 39px 27px 34px;
+}
+
+.remakeNote {
+  position: absolute;
+  bottom: 26px;
+  left: 34px;
+  margin: 0;
+  color: #818181;
+  font-size: 14px;
+  line-height: 1.5;
+  white-space: nowrap;
+}
+
+.storyInfo section h2 {
+  margin: 0 0 20px;
+  color: var(--color-text);
+  font-size: 18px;
+  font-weight: 600;
+  line-height: 1.5;
+}
+
+.storyInfo section p {
+  margin: 0;
+  color: var(--color-text);
+  font-size: 14px;
+  font-weight: 300;
+  line-height: 1.5;
+  overflow-wrap: anywhere;
+  white-space: pre-line;
+}
+
+.actions {
+  position: absolute;
+  top: 846px;
+  left: 742px;
+  display: grid;
+  grid-template-columns: 316px 316px;
+  gap: 29px;
+  width: 661px;
+}
+
+.remakeAction { position: relative; }
+
+.actions button {
+  width: 316px;
+  height: 58px;
+  color: var(--color-text);
+  background: #fff;
+  border: 0;
+  border-radius: 14px;
+  box-shadow: 0 0 2px rgb(0 0 0 / 25%);
+  font-family: var(--font-body);
+  font-size: 18px;
+  font-weight: 600;
+  cursor: pointer;
+}
+
+.actions button:disabled { opacity: 0.55; cursor: default; }
+
+.actions .confirm {
+  color: #fff;
+  background: var(--color-brand);
+  box-shadow: inset 0 0 4.2px rgb(255 255 255 / 25%);
+}
+
+@media (max-width: 760px) {
+  .page { width: 100vw; height: auto; min-height: 100vh; overflow-x: hidden; overflow-y: visible; }
+  .canvas { position: relative; top: auto; left: auto; width: 100vw; min-width: 0; height: auto; min-height: 100vh; overflow: visible; transform: none; }
+  .header { position: relative; height: 76px; padding: 20px 20px 0; }
+  .logo { font-size: 32px; }
+  .close { top: 24px; right: 20px; width: 24px; height: 24px; }
+  .heading { position: relative; top: auto; left: auto; margin: 22px 20px 14px; font-size: 20px; }
+  .pageList { position: relative; top: auto; left: auto; flex-direction: row; gap: 10px; width: auto; height: auto; padding: 0 20px 14px; overflow-x: auto; overflow-y: hidden; }
+  .thumbnail { flex-basis: 100px; width: 100px; height: 73px; }
+  .thumbnail::before { height: 60px; }
+  .thumbnail img { width: 88px; height: 50px; }
+  .thumbnail span { margin-top: 2px; font-size: 12px; }
+  .book { position: relative; top: auto; left: auto; width: auto; min-width: 0; max-width: calc(100vw - 32px); height: auto; margin: 0 16px; padding: 12px; border-radius: 18px; }
+  .illustration { width: 100%; height: auto; aspect-ratio: 868 / 491; }
+  .pageCopy { top: 3%; right: 3%; left: auto; width: 45%; font-size: clamp(7px, 2.5vw, 12px); }
+  .pagination { grid-template-columns: 78px auto 78px; gap: 12px; margin: 15px auto 2px; }
+  .pagination button { width: 78px; height: 40px; font-size: 12px; }
+  .pagination strong { font-size: 15px; }
+  .storyInfo { position: relative; top: auto; left: auto; display: grid; gap: 18px; width: auto; max-width: calc(100vw - 32px); height: auto; margin: 14px 16px; padding: 20px; border-radius: 18px; }
+  .storyInfo section h2 { margin-bottom: 6px; font-size: 16px; }
+  .storyInfo section p { font-size: 14px; }
+  .actions { position: relative; top: auto; left: auto; grid-template-columns: minmax(0, 1fr); gap: 10px; width: auto; min-width: 0; margin: 14px 16px 24px; }
+  .remakeAction { min-width: 0; }
+  .remakeAction { order: 2; }
+  .actions .confirm { order: 1; }
+  .actions button { width: 100%; min-width: 0; height: 52px; border-radius: 12px; font-size: 15px; }
+  .remakeNote { position: static; margin: 4px 0 0; font-size: 12px; text-align: center; white-space: normal; }
+}
+
+@media (max-width: 380px) {
+  .actions { grid-template-columns: 1fr; gap: 8px; }
+  .remakeAction { order: 2; }
+  .actions .confirm { order: 1; }
+}

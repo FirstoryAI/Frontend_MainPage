@@ -1,5 +1,5 @@
 import { useEffect, useState } from 'react';
-import { useLocation } from 'react-router-dom';
+import { useLocation, useNavigate } from 'react-router-dom';
 import CtaButton from '../../components/ui/CtaButton';
 import StoryHeader from '../../features/story/components/StoryHeader';
 import BackButton from '../../features/story/components/BackButton';
@@ -29,6 +29,7 @@ const initialTopic = { message: '', undecided: false };
 
 function StoryCreatePage() {
   const location = useLocation();
+  const navigate = useNavigate();
   const isRemake = Boolean(location.state?.remake);
   const [step, setStep] = useState(() =>
     isRemake ? STEP.GENERATING : STEP.SITUATION,
@@ -154,7 +155,21 @@ function StoryCreatePage() {
             onEditGoal={() => setEditing('goal')}
           />
         )}
-        {step === STEP.GENERATING && <GeneratingStep />}
+        {step === STEP.GENERATING && (
+          <GeneratingStep
+            onComplete={() =>
+              navigate('/story/preview', {
+                state: {
+                  story: location.state?.story ?? {
+                    description: detail.event.trim() || '친구와 블록을 만들며 생긴 이야기예요.',
+                    parentGuide: summaryGoal,
+                  },
+                  canRemake: !isRemake,
+                },
+              })
+            }
+          />
+        )}
       </main>
 
       {showFooter && (
