@@ -1,5 +1,6 @@
 import MascotBubble from './MascotBubble';
 import { calcAge, parseLikes } from '../utils';
+import summaryMascot from '../../../assets/images/story-summary-mascot.png';
 import styles from './SummaryStep.module.css';
 
 function EditButton({ label, onClick }) {
@@ -43,6 +44,8 @@ function SummaryStep({ child, situation, goal, onEditChild, onEditSituation, onE
   return (
     <div className={styles.step}>
       <MascotBubble
+        mascotImage={summaryMascot}
+        mascotFrameClassName={styles.summaryMascotFrame}
         className={styles.intro}
         title="이 내용으로 동화를 만들까요?"
         description="FIRSTORY AI가 이해한 내용이에요. 다르면 고쳐 주세요."
