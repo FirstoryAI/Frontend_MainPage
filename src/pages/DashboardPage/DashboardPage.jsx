@@ -1,4 +1,4 @@
-import { useCallback, useState } from 'react';
+import { useCallback, useRef, useState } from 'react';
 import { useLocation, useNavigate } from 'react-router-dom';
 import Sidebar from '../../components/layout/Sidebar';
 import OnboardingModal from '../../features/onboarding/components/OnboardingModal';
@@ -22,6 +22,7 @@ const scenarios = [
 function DashboardPage() {
   const location = useLocation();
   const navigate = useNavigate();
+  const cardDrag = useRef({ pointerId: null, startX: 0, startScrollLeft: 0, moved: false });
   const [onboardingOpen, setOnboardingOpen] = useState(
     Boolean(location.state?.onboarding),
   );
@@ -36,6 +37,48 @@ function DashboardPage() {
   const startFirstStory = () => {
     closeOnboarding();
     startStory();
+  };
+
+  const handleCardPointerDown = (event) => {
+    if (event.pointerType !== 'mouse' || event.button !== 0) return;
+
+    const viewport = event.currentTarget;
+    cardDrag.current = {
+      pointerId: event.pointerId,
+      startX: event.clientX,
+      startScrollLeft: viewport.scrollLeft,
+      moved: false,
+    };
+    viewport.setPointerCapture(event.pointerId);
+  };
+
+  const handleCardPointerMove = (event) => {
+    const drag = cardDrag.current;
+    if (drag.pointerId !== event.pointerId) return;
+
+    const distance = event.clientX - drag.startX;
+    if (Math.abs(distance) > 4) {
+      drag.moved = true;
+      event.currentTarget.classList.add(styles.dragging);
+    }
+    if (drag.moved) {
+      event.preventDefault();
+      event.currentTarget.scrollLeft = drag.startScrollLeft - distance;
+    }
+  };
+
+  const handleCardPointerUp = (event) => {
+    const drag = cardDrag.current;
+    if (drag.pointerId !== event.pointerId) return;
+
+    cardDrag.current.pointerId = null;
+    event.currentTarget.classList.remove(styles.dragging);
+    if (event.currentTarget.hasPointerCapture(event.pointerId)) {
+      event.currentTarget.releasePointerCapture(event.pointerId);
+    }
+    window.setTimeout(() => {
+      cardDrag.current.moved = false;
+    }, 0);
   };
 
   return (
@@ -84,20 +127,24 @@ function DashboardPage() {
                 </button>
               </div>
 
-              <div className={styles.cardViewport}>
+              <div
+                className={styles.cardViewport}
+                onPointerDown={handleCardPointerDown}
+                onPointerMove={handleCardPointerMove}
+                onPointerUp={handleCardPointerUp}
+                onPointerCancel={handleCardPointerUp}
+              >
                 <div className={styles.cards}>
                   {scenarios.map((scenario) => (
-                    <button
+                    <article
                       className={`${styles.card} ${styles[scenario.color]}`}
                       key={scenario.category}
-                      type="button"
-                      onClick={startStory}
                     >
                       <span className={styles.category}>{scenario.category}</span>
                       <span className={styles.cardTitle}>{scenario.title}</span>
                       <span className={styles.cardDescription}>{scenario.description}</span>
                       <img className={styles.cardImage} src={scenario.image} alt="" />
-                    </button>
+                    </article>
                   ))}
                 </div>
               </div>
