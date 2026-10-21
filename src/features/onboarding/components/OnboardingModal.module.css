@@ -21,6 +21,15 @@
   box-shadow: 0 0 8.2px rgb(0 0 0 / 10%);
 }
 
+.mascot {
+  position: absolute;
+  top: 42px;
+  left: 67px;
+  width: 84px;
+  height: 90px;
+  object-fit: contain;
+}
+
 .closeButton {
   position: absolute;
   top: 41px;
@@ -108,7 +117,14 @@
 
 @media (max-width: 820px) {
   .modal {
-    padding: 80px 24px 32px;
+    padding: 124px 24px 32px;
+  }
+
+  .mascot {
+    top: 28px;
+    left: 24px;
+    width: 70px;
+    height: 75px;
   }
 
   .closeButton {

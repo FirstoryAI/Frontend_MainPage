@@ -2,6 +2,7 @@ import { useEffect, useRef } from 'react';
 import CtaButton from '../../../components/ui/CtaButton';
 import badgeCircle from '../../../assets/icons/badge-circle.svg';
 import iconClose from '../../../assets/icons/icon-close.svg';
+import mascot from '../../../assets/images/home/onboarding-mascot.png';
 import styles from './OnboardingModal.module.css';
 
 const steps = [
@@ -26,6 +27,12 @@ function OnboardingModal({ onStart, onClose }) {
         aria-modal="true"
         aria-labelledby="onboarding-title"
       >
+        <img
+          className={styles.mascot}
+          src={mascot}
+          alt=""
+          aria-hidden="true"
+        />
         <button
           className={styles.closeButton}
           type="button"
