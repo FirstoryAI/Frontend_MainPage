@@ -6,12 +6,27 @@
   padding-top: 65px;
 }
 
-/* 이야기 화면과 같은 캐릭터·말풍선 배치 (캐릭터 x 255px, 말풍선 x 407px) */
 .intro {
-  --bubble-gap: 3.73px;
+  --bubble-gap: 5.9px;
   --bubble-top: 28.52px;
 
-  margin-left: 83.2px;
+  margin-left: 93px;
+}
+
+.summaryMascotFrame {
+  width: 136px;
+  height: 133px;
+  margin-top: 22px;
+  overflow: hidden;
+}
+
+.summaryMascotFrame > img {
+  position: absolute;
+  top: -173.02%;
+  left: -17.05%;
+  width: 465.12%;
+  max-width: none;
+  height: 317.46%;
 }
 
 .cards {

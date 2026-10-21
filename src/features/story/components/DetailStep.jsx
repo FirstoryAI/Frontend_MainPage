@@ -2,6 +2,7 @@ import MascotBubble from './MascotBubble';
 import Chip from './Chip';
 import { categories } from '../constants';
 import { getCategoryContent } from '../categoryContent';
+import detailMascot from '../../../assets/images/story-detail-mascot.png';
 import form from './FormControls.module.css';
 import styles from './DetailStep.module.css';
 
@@ -12,6 +13,7 @@ function DetailStep({ detail, onChange }) {
   return (
     <div className={styles.step}>
       <MascotBubble
+        mascotImage={detailMascot}
         className={styles.intro}
         title="어떤 일이 있었는지 알려 주세요."
         description="짧게 적어도 괜찮아요. AI 인터뷰에서 더 여쭤볼게요."

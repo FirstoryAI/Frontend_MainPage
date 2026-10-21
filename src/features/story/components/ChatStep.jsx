@@ -1,6 +1,6 @@
 import { useEffect, useMemo, useRef, useState } from 'react';
 import { buildInitialMessages, getCategoryContent } from '../categoryContent';
-import avatar from '../../../assets/icons/chat-avatar.svg';
+import avatar from '../../../assets/images/chat-avatar.png';
 import sendCircle from '../../../assets/icons/send-circle.svg';
 import sendArrow from '../../../assets/icons/send-arrow.svg';
 import styles from './ChatStep.module.css';
@@ -66,7 +66,9 @@ function ChatStep({ category, onFinish }) {
             key={message.id}
           >
             {message.from === 'ai' && (
-              <img className={styles.avatar} src={avatar} alt="" />
+              <span className={styles.avatarFrame}>
+                <img className={styles.avatar} src={avatar} alt="" />
+              </span>
             )}
             <p
               className={`${styles.bubble} ${

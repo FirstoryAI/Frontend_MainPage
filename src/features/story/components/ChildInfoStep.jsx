@@ -1,6 +1,7 @@
 import MascotBubble from './MascotBubble';
 import Chip from './Chip';
 import { birthMonths, birthYears, genders, traits } from '../constants';
+import childMascot from '../../../assets/images/story-child-mascot.png';
 import iconChevron from '../../../assets/icons/icon-chevron-down.svg';
 import iconInfo from '../../../assets/icons/icon-info.svg';
 import form from './FormControls.module.css';
@@ -37,6 +38,7 @@ function ChildInfoStep({ child, onChange }) {
   return (
     <div className={styles.step}>
       <MascotBubble
+        mascotImage={childMascot}
         className={styles.intro}
         title="아이에 대해 알려 주세요."
         description="좋아하는 것은 주인공 동물과 그림 소재로 쓰여요. 이름과 사진은 받지 않아요."
