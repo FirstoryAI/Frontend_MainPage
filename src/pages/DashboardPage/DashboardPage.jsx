@@ -1,19 +1,28 @@
-import { useCallback, useState } from 'react';
+import { useCallback, useRef, useState } from 'react';
 import { useLocation, useNavigate } from 'react-router-dom';
 import Sidebar from '../../components/layout/Sidebar';
-import CtaButton from '../../components/ui/CtaButton';
 import OnboardingModal from '../../features/onboarding/components/OnboardingModal';
-import iconPlus from '../../assets/icons/icon-plus.svg';
 import iconBell from '../../assets/icons/icon-bell.svg';
-import avatarCircle from '../../assets/icons/avatar-circle.svg';
-import avatarPerson from '../../assets/icons/avatar-person.svg';
+import avatarProfile from '../../assets/icons/avatar-profile.svg';
+import iconPencil from '../../assets/icons/home-pencil.svg';
+import mascotReading from '../../assets/images/home/mascot-reading.png';
+import scenarioFriend from '../../assets/images/home/scenario-friend.png';
+import scenarioEmotion from '../../assets/images/home/scenario-emotion.png';
+import scenarioKindergarten from '../../assets/images/home/scenario-kindergarten.png';
+import scenarioHabit from '../../assets/images/home/mascot-corner.png';
 import styles from './DashboardPage.module.css';
 
-const childName = '토리';
+const scenarios = [
+  { category: '친구 관계', title: <>친구가 장난감을<br />빼앗았을 때</>, description: '아이에게 어떻게 말해줘야 할까요?', image: scenarioFriend, color: 'friend' },
+  { category: '감정 표현', title: <>속상해도 아무 말<br />하지 않을 때</>, description: '아이의 마음을 어떻게 물어볼까요?', image: scenarioEmotion, color: 'emotion' },
+  { category: '새로운 환경', title: <>유치원에 가기<br />싫다고 할 때</>, description: '어떤 말로 안심시켜 줄까요?', image: scenarioKindergarten, color: 'kindergarten' },
+  { category: '생활 습관', title: <>실수하고 자꾸<br />숨기려고 할 때</>, description: '어떤 말로 안심시켜 줄까요?', image: scenarioHabit, color: 'habit' },
+];
 
 function DashboardPage() {
   const location = useLocation();
   const navigate = useNavigate();
+  const cardDrag = useRef({ pointerId: null, startX: 0, startScrollLeft: 0, moved: false });
   const [onboardingOpen, setOnboardingOpen] = useState(
     Boolean(location.state?.onboarding),
   );
@@ -28,6 +37,48 @@ function DashboardPage() {
   const startFirstStory = () => {
     closeOnboarding();
     startStory();
+  };
+
+  const handleCardPointerDown = (event) => {
+    if (event.pointerType !== 'mouse' || event.button !== 0) return;
+
+    const viewport = event.currentTarget;
+    cardDrag.current = {
+      pointerId: event.pointerId,
+      startX: event.clientX,
+      startScrollLeft: viewport.scrollLeft,
+      moved: false,
+    };
+    viewport.setPointerCapture(event.pointerId);
+  };
+
+  const handleCardPointerMove = (event) => {
+    const drag = cardDrag.current;
+    if (drag.pointerId !== event.pointerId) return;
+
+    const distance = event.clientX - drag.startX;
+    if (Math.abs(distance) > 4) {
+      drag.moved = true;
+      event.currentTarget.classList.add(styles.dragging);
+    }
+    if (drag.moved) {
+      event.preventDefault();
+      event.currentTarget.scrollLeft = drag.startScrollLeft - distance;
+    }
+  };
+
+  const handleCardPointerUp = (event) => {
+    const drag = cardDrag.current;
+    if (drag.pointerId !== event.pointerId) return;
+
+    cardDrag.current.pointerId = null;
+    event.currentTarget.classList.remove(styles.dragging);
+    if (event.currentTarget.hasPointerCapture(event.pointerId)) {
+      event.currentTarget.releasePointerCapture(event.pointerId);
+    }
+    window.setTimeout(() => {
+      cardDrag.current.moved = false;
+    }, 0);
   };
 
   return (
@@ -46,32 +97,58 @@ function DashboardPage() {
             >
               <img src={iconBell} alt="" />
             </button>
-            <div className={styles.avatar} role="img" aria-label="내 프로필">
-              <img className={styles.avatarCircle} src={avatarCircle} alt="" />
-              <img className={styles.avatarPerson} src={avatarPerson} alt="" />
-            </div>
+            <img className={styles.avatar} src={avatarProfile} alt="내 프로필" />
           </div>
 
           <main className={styles.content}>
             <section className={styles.greeting} aria-labelledby="greeting-title">
-              <h1 id="greeting-title" className={styles.greetingText}>
-                안녕하세요 {childName} 부모님,
-                <br />
-                오늘 아이와 어떤 이야기를 나누고 싶나요?
-              </h1>
-              <CtaButton
-                className={styles.createButton}
-                icon={iconPlus}
-                onClick={startStory}
-              >
-                동화 만들기
-              </CtaButton>
+              <img className={styles.greetingMascot} src={mascotReading} alt="동화책을 읽는 Firstory 캐릭터" />
+              <div className={styles.greetingCopy}>
+                <h1 id="greeting-title" className={styles.greetingText}>
+                  오늘, 아이와 어떤 이야기를 나누고 싶으세요?
+                </h1>
+                <p>아이에게 어떤 말을 건네야 할지 고민될 때, 우리 아이의 이야기를 담은 동화로 대화를 시작해 보세요.</p>
+              </div>
             </section>
 
-            <div className={styles.cards} aria-hidden="true">
-              <div className={styles.card} />
-              <div className={styles.card} />
-            </div>
+            <section className={styles.recommendations} aria-labelledby="recommendation-title">
+              <div className={styles.sectionHeading}>
+                <div>
+                  <h2 id="recommendation-title"><img src={iconPencil} alt="" /> 다른 부모들은 이런 순간들을 고민해요</h2>
+                  <p>우리 아이와 비슷한 상황을 찾아보고, 대화의 실마리를 발견해 보세요!</p>
+                </div>
+                <button
+                  className={styles.viewAll}
+                  type="button"
+                  disabled
+                  title="준비 중"
+                >
+                  전체 보기 <span aria-hidden="true">→</span>
+                </button>
+              </div>
+
+              <div
+                className={styles.cardViewport}
+                onPointerDown={handleCardPointerDown}
+                onPointerMove={handleCardPointerMove}
+                onPointerUp={handleCardPointerUp}
+                onPointerCancel={handleCardPointerUp}
+              >
+                <div className={styles.cards}>
+                  {scenarios.map((scenario) => (
+                    <article
+                      className={`${styles.card} ${styles[scenario.color]}`}
+                      key={scenario.category}
+                    >
+                      <span className={styles.category}>{scenario.category}</span>
+                      <span className={styles.cardTitle}>{scenario.title}</span>
+                      <span className={styles.cardDescription}>{scenario.description}</span>
+                      <img className={styles.cardImage} src={scenario.image} alt="" />
+                    </article>
+                  ))}
+                </div>
+              </div>
+            </section>
           </main>
         </div>
       </div>
