@@ -1,8 +1,12 @@
-import { useLayoutEffect, useState } from 'react';
+import { useEffect, useLayoutEffect, useState } from 'react';
 import { Link, useLocation, useNavigate } from 'react-router-dom';
 import pageArrowLeft from '../../assets/remake/page-arrow-left.svg';
 import pageArrowRight from '../../assets/remake/page-arrow-right.svg';
 import headerClose from '../../assets/remake/header-close.svg';
+import readerFrame from '../../assets/story-reader/frame.svg';
+import readerArrowLeft from '../../assets/story-reader/arrow-left.svg';
+import readerArrowRight from '../../assets/story-reader/arrow-right.svg';
+import readerClose from '../../assets/story-reader/close.svg';
 import styles from './StoryPreviewPage.module.css';
 
 import page01 from '../../assets/story-preview/story-page-01.png';
@@ -37,12 +41,31 @@ function StoryPreviewPage() {
   const canRemake = location.state?.canRemake ?? true;
   const [currentPage, setCurrentPage] = useState(4);
   const [scale, setScale] = useState(getPreviewScale);
+  const [isReaderOpen, setIsReaderOpen] = useState(false);
 
   useLayoutEffect(() => {
     const updateScale = () => setScale(getPreviewScale());
     window.addEventListener('resize', updateScale);
     return () => window.removeEventListener('resize', updateScale);
   }, []);
+
+  useEffect(() => {
+    if (!isReaderOpen) return undefined;
+
+    const handleReaderKeys = (event) => {
+      if (event.key === 'Escape') setIsReaderOpen(false);
+      if (event.key === 'ArrowLeft') setCurrentPage((pageNumber) => Math.max(1, pageNumber - 1));
+      if (event.key === 'ArrowRight') setCurrentPage((pageNumber) => Math.min(pages.length, pageNumber + 1));
+    };
+
+    const previousOverflow = document.body.style.overflow;
+    document.body.style.overflow = 'hidden';
+    window.addEventListener('keydown', handleReaderKeys);
+    return () => {
+      document.body.style.overflow = previousOverflow;
+      window.removeEventListener('keydown', handleReaderKeys);
+    };
+  }, [isReaderOpen]);
 
   const page = pages[currentPage - 1];
   const showPage = (nextPage) => {
@@ -82,7 +105,19 @@ function StoryPreviewPage() {
         </nav>
 
         <main className={styles.book}>
-          <div className={styles.illustration}>
+          <div
+            className={styles.illustration}
+            role="button"
+            tabIndex={0}
+            aria-label={`${currentPage}쪽 동화 크게 보기`}
+            onClick={() => setIsReaderOpen(true)}
+            onKeyDown={(event) => {
+              if (event.key === 'Enter' || event.key === ' ') {
+                event.preventDefault();
+                setIsReaderOpen(true);
+              }
+            }}
+          >
             <img src={page.image} alt={`${currentPage}쪽 동화 삽화`} />
             <div className={styles.pageCopy}>
               {page.text.map((line) => <p key={line}>{line}</p>)}
@@ -126,6 +161,63 @@ function StoryPreviewPage() {
           </button>
         </div>
       </div>
+      {isReaderOpen && (
+        <section className={styles.reader} aria-label="동화 읽기" aria-modal="true" role="dialog">
+          <div className={styles.readerCanvas}>
+            <header className={styles.readerHeader}>
+              <button
+                className={styles.readerClose}
+                type="button"
+                onClick={() => setIsReaderOpen(false)}
+                aria-label="미리보기로 돌아가기"
+              >
+                <img src={readerClose} alt="" />
+              </button>
+              <h1 className={styles.readerTitle}>{story.title || story.name || '공룡 아로의 새 친구'}</h1>
+              <div className={styles.readerProgress} aria-label={`${currentPage} / ${pages.length}쪽`}>
+                <span>{currentPage} / {pages.length}</span>
+                <div className={styles.readerProgressTrack}>
+                  <div
+                    className={styles.readerProgressFill}
+                    style={{ width: `${(currentPage / pages.length) * 100}%` }}
+                  />
+                </div>
+              </div>
+            </header>
+
+            <div className={styles.readerBook}>
+              <img className={styles.readerFrame} src={readerFrame} alt="" />
+              <div className={styles.readerPage}>
+                <div className={styles.readerPageContent}>
+                  <img src={page.image} alt={`${currentPage}쪽 동화 삽화`} />
+                  <div className={styles.readerCopy}>
+                    {page.text.map((line, index) => <p key={`${currentPage}-${index}`}>{line}</p>)}
+                  </div>
+                </div>
+              </div>
+            </div>
+
+            <button
+              className={`${styles.readerArrow} ${styles.readerArrowLeft}`}
+              type="button"
+              onClick={() => showPage(currentPage - 1)}
+              disabled={currentPage === 1}
+              aria-label="이전 쪽"
+            >
+              <img src={readerArrowLeft} alt="" />
+            </button>
+            <button
+              className={`${styles.readerArrow} ${styles.readerArrowRight}`}
+              type="button"
+              onClick={() => showPage(currentPage + 1)}
+              disabled={currentPage === pages.length}
+              aria-label="다음 쪽"
+            >
+              <img src={readerArrowRight} alt="" />
+            </button>
+          </div>
+        </section>
+      )}
     </div>
   );
 }
