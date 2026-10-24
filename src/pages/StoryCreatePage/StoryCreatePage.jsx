@@ -12,7 +12,9 @@ import SummaryStep from '../../features/story/components/SummaryStep';
 import ChildEditModal from '../../features/story/components/ChildEditModal';
 import TextEditModal from '../../features/story/components/TextEditModal';
 import GeneratingStep from '../../features/story/components/GeneratingStep';
+import StoryDraftModal from '../../features/story/components/StoryDraftModal';
 import { STEP, SUMMARY_FALLBACK_GOAL, progressByStep } from '../../features/story/constants';
+import { deleteStoryDraft, saveStoryDraft } from '../../features/story/drafts';
 import { loadChildProfile, saveChildProfile } from '../../features/profile/childProfile';
 import iconNotice from '../../assets/icons/icon-notice.svg';
 import styles from './StoryCreatePage.module.css';
@@ -32,22 +34,24 @@ function StoryCreatePage() {
   const location = useLocation();
   const navigate = useNavigate();
   const isRemake = Boolean(location.state?.remake);
+  const resumeDraft = location.state?.draft ?? null;
   const [step, setStep] = useState(() =>
-    isRemake ? STEP.GENERATING : STEP.SITUATION,
+    resumeDraft?.step ?? (isRemake ? STEP.GENERATING : STEP.SITUATION),
   );
   // 지나온 단계 기록. 뒤로가기를 누르면 직전에 있던 단계로 돌아가요.
-  const [history, setHistory] = useState([]);
-  const [situation, setSituation] = useState('');
-  const [detail, setDetail] = useState(initialDetail);
-  const [child, setChild] = useState(() => loadChildProfile({ includeSession: false }) ?? initialChild);
-  const [saveChild, setSaveChild] = useState(false);
-  const [topic, setTopic] = useState(initialTopic);
+  const [history, setHistory] = useState(() => resumeDraft?.history ?? []);
+  const [situation, setSituation] = useState(() => resumeDraft?.situation ?? '');
+  const [detail, setDetail] = useState(() => resumeDraft?.detail ?? initialDetail);
+  const [child, setChild] = useState(() => resumeDraft?.child ?? loadChildProfile({ includeSession: false }) ?? initialChild);
+  const [saveChild, setSaveChild] = useState(() => resumeDraft?.saveChild ?? false);
+  const [topic, setTopic] = useState(() => resumeDraft?.topic ?? initialTopic);
   // 채팅에서 보호자가 답한 내용. 채팅을 건너뛰면 비어 있어요.
-  const [chatGoal, setChatGoal] = useState('');
+  const [chatGoal, setChatGoal] = useState(() => resumeDraft?.chatGoal ?? '');
   // 마무리 화면에서 고친 '나누고 싶은 것'. 비어 있으면 위의 답변·직접 적은 글을 그대로 보여줘요.
-  const [editedGoal, setEditedGoal] = useState('');
+  const [editedGoal, setEditedGoal] = useState(() => resumeDraft?.editedGoal ?? '');
   // 마무리 화면에서 열려 있는 수정 모달: 'child' | 'situation' | 'goal' | null
   const [editing, setEditing] = useState(null);
+  const [exitPromptOpen, setExitPromptOpen] = useState(false);
 
   // 다른 단계로 넘어가면 항상 화면 맨 위부터 보여줘요. (좁은 화면에서 이전 스크롤이 남지 않게)
   useEffect(() => {
@@ -118,6 +122,22 @@ function StoryCreatePage() {
     closeEditing();
   };
 
+  const handleSaveDraft = () => {
+    saveStoryDraft({
+      id: resumeDraft?.id,
+      step,
+      history,
+      situation,
+      detail,
+      child,
+      saveChild,
+      topic,
+      chatGoal,
+      editedGoal,
+    });
+    navigate('/home');
+  };
+
   const derivedGoal = topic.undecided
     ? chatGoal || SUMMARY_FALLBACK_GOAL
     : topic.message.trim() || SUMMARY_FALLBACK_GOAL;
@@ -128,7 +148,7 @@ function StoryCreatePage() {
 
   return (
     <div className={styles.page}>
-      <StoryHeader progress={progress} />
+      <StoryHeader progress={progress} onExit={() => setExitPromptOpen(true)} />
 
       <main className={styles.main} inert={editing !== null}>
         {step > STEP.SITUATION && <BackButton onClick={goBack} />}
@@ -164,7 +184,8 @@ function StoryCreatePage() {
         )}
         {step === STEP.GENERATING && (
           <GeneratingStep
-            onComplete={() =>
+            onComplete={() => {
+              if (resumeDraft?.id) deleteStoryDraft(resumeDraft.id);
               navigate('/story/preview', {
                 state: {
                   story: location.state?.story ?? {
@@ -173,8 +194,8 @@ function StoryCreatePage() {
                   },
                   canRemake: !isRemake,
                 },
-              })
-            }
+              });
+            }}
           />
         )}
       </main>
@@ -233,6 +254,14 @@ function StoryCreatePage() {
           initialValue={summaryGoal}
           onSave={handleSaveGoal}
           onClose={closeEditing}
+        />
+      )}
+      {exitPromptOpen && (
+        <StoryDraftModal
+          mode="exit"
+          onClose={() => setExitPromptOpen(false)}
+          onSave={handleSaveDraft}
+          onDiscard={() => navigate('/home')}
         />
       )}
     </div>

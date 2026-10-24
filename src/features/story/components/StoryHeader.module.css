@@ -46,6 +46,10 @@
   display: block;
   width: 27px;
   height: 27px;
+  padding: 0;
+  background: transparent;
+  border: 0;
+  cursor: pointer;
 }
 
 @media (max-width: 900px) {

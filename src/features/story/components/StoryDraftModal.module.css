@@ -1,0 +1,231 @@
+.overlay {
+  position: fixed;
+  z-index: 100;
+  inset: 0;
+  display: grid;
+  place-items: center;
+  padding: 20px;
+  background: rgb(0 0 0 / 44%);
+  backdrop-filter: blur(3.6px);
+}
+
+.dialog {
+  position: relative;
+  width: min(552px, 100%);
+  padding: 102px 32px 53px;
+  border-radius: 30px;
+  background: var(--color-surface);
+  box-shadow: 0 0 8px rgb(0 0 0 / 10%);
+  text-align: center;
+}
+
+.exitDialog {
+  min-height: 312px;
+  transform: translateY(12px);
+}
+
+.close {
+  position: absolute;
+  top: 30px;
+  right: 27px;
+  width: 45px;
+  height: 45px;
+  padding: 0;
+  background: transparent;
+  border: 0;
+  cursor: pointer;
+}
+
+.close img {
+  display: block;
+}
+
+.title {
+  margin: 0;
+  color: var(--color-text);
+  font: 400 31px/1.4 var(--font-title);
+  letter-spacing: -0.5px;
+}
+
+.actions {
+  display: flex;
+  justify-content: center;
+  gap: 42px;
+  margin-top: 43px;
+}
+
+.primary,
+.secondary {
+  min-height: 67px;
+  padding: 0 27px;
+  border: 0;
+  border-radius: 16px;
+  font: 600 19px/1.5 var(--font-body);
+  cursor: pointer;
+}
+
+.actions .secondary {
+  width: 117px;
+  padding: 0;
+}
+
+.actions .primary {
+  width: 178px;
+  padding: 0;
+}
+
+.primary {
+  color: #fff;
+  background: var(--color-brand);
+  box-shadow: inset 0 0 5px rgb(255 255 255 / 25%);
+}
+
+.secondary {
+  color: var(--color-text);
+  background: #fff;
+  box-shadow: 0 0 3px rgb(0 0 0 / 24%);
+}
+
+.description {
+  margin: 8px 0 0;
+  color: var(--color-secondary);
+  font-size: 15px;
+}
+
+.choiceList,
+.draftList {
+  display: grid;
+  gap: 12px;
+  margin-top: 28px;
+  text-align: left;
+}
+
+.empty {
+  margin: 6px 0;
+  padding: 24px 12px;
+  color: var(--color-secondary);
+  border: 1px dashed var(--color-field-border);
+  border-radius: 14px;
+  font-size: 14px;
+  text-align: center;
+}
+
+.choice,
+.draftItem {
+  display: flex;
+  align-items: center;
+  gap: 16px;
+  width: 100%;
+  min-height: 82px;
+  padding: 15px 18px;
+  color: var(--color-text);
+  background: #fff;
+  border: 1px solid var(--color-field-border);
+  border-radius: 16px;
+  text-align: left;
+  cursor: pointer;
+}
+
+.choice:hover,
+.draftItem:hover {
+  border-color: var(--color-brand);
+  background: #fffaf7;
+}
+
+.choiceIcon,
+.draftIcon {
+  display: grid;
+  flex: 0 0 44px;
+  width: 44px;
+  height: 44px;
+  place-items: center;
+  color: var(--color-brand);
+  background: #fff0e9;
+  border-radius: 14px;
+  font-size: 22px;
+}
+
+.choice > span:nth-child(2),
+.draftCopy {
+  display: grid;
+  flex: 1;
+  gap: 5px;
+  min-width: 0;
+}
+
+.choice strong,
+.draftCopy strong {
+  overflow: hidden;
+  font-size: 17px;
+  font-weight: 600;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.choice small,
+.draftCopy small {
+  overflow: hidden;
+  color: var(--color-secondary);
+  font-size: 13px;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.chevron {
+  color: #aaa;
+  font-size: 28px;
+}
+
+.listDialog {
+  padding: 60px 32px 32px;
+}
+
+.back {
+  position: absolute;
+  top: 24px;
+  left: 27px;
+  padding: 4px;
+  color: var(--color-secondary);
+  background: transparent;
+  border: 0;
+  font: 500 16px var(--font-body);
+  cursor: pointer;
+}
+
+.listDialog .primary {
+  width: 100%;
+  margin-top: 20px;
+}
+
+@media (max-width: 600px) {
+  .dialog {
+    padding: 78px 20px 28px;
+    border-radius: 24px;
+  }
+
+  .title {
+    font-size: 23px;
+  }
+
+  .actions {
+    gap: 12px;
+    margin-top: 32px;
+  }
+
+  .primary,
+  .secondary {
+    min-height: 54px;
+    padding: 0 16px;
+    font-size: 16px;
+  }
+
+  .actions .secondary,
+  .actions .primary {
+    width: auto;
+    padding: 0 16px;
+  }
+
+  .listDialog {
+    padding-top: 60px;
+  }
+}

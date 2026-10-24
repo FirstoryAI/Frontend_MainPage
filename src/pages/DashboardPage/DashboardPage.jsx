@@ -1,7 +1,9 @@
-import { useCallback, useRef, useState } from 'react';
+import { useCallback, useEffect, useRef, useState } from 'react';
 import { useLocation, useNavigate } from 'react-router-dom';
 import Sidebar from '../../components/layout/Sidebar';
 import OnboardingModal from '../../features/onboarding/components/OnboardingModal';
+import StoryDraftModal from '../../features/story/components/StoryDraftModal';
+import { readStoryDrafts } from '../../features/story/drafts';
 import iconBell from '../../assets/icons/icon-bell.svg';
 import avatarProfile from '../../assets/icons/avatar-profile.svg';
 import iconPencil from '../../assets/icons/home-pencil.svg';
@@ -26,6 +28,15 @@ function DashboardPage() {
   const [onboardingOpen, setOnboardingOpen] = useState(
     Boolean(location.state?.onboarding),
   );
+  const [storyModal, setStoryModal] = useState(null);
+  const [drafts, setDrafts] = useState([]);
+
+  useEffect(() => {
+    if (!location.state?.chooseStory) return;
+    setDrafts(readStoryDrafts());
+    setStoryModal('choose');
+    navigate(location.pathname, { replace: true, state: null });
+  }, [location.pathname, location.state, navigate]);
 
   const closeOnboarding = useCallback(() => {
     setOnboardingOpen(false);
@@ -33,6 +44,8 @@ function DashboardPage() {
   }, [navigate, location.pathname]);
 
   const startStory = () => navigate('/story/new');
+
+  const startNewStory = () => navigate('/story/new', { state: { startFresh: true } });
 
   const startFirstStory = () => {
     closeOnboarding();
@@ -83,7 +96,7 @@ function DashboardPage() {
 
   return (
     <div className={styles.page}>
-      <div className={styles.shell} inert={onboardingOpen}>
+      <div className={styles.shell} inert={onboardingOpen || storyModal !== null}>
         <Sidebar />
 
         <div className={styles.main}>
@@ -162,6 +175,17 @@ function DashboardPage() {
 
       {onboardingOpen && (
         <OnboardingModal onStart={startFirstStory} onClose={closeOnboarding} />
+      )}
+      {storyModal && (
+        <StoryDraftModal
+          mode={storyModal}
+          drafts={drafts}
+          onClose={() => setStoryModal(null)}
+          onStartNew={startNewStory}
+          onOpenDraftList={() => setStoryModal('list')}
+          onBack={() => setStoryModal('choose')}
+          onOpenDraft={(draft) => navigate('/story/new', { state: { draft } })}
+        />
       )}
     </div>
   );
