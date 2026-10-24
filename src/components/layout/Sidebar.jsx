@@ -22,7 +22,7 @@ function Sidebar() {
       <CtaButton
         className={styles.createButton}
         icon={iconPlus}
-        onClick={() => navigate('/story/new')}
+        onClick={() => navigate('/home', { state: { chooseStory: true } })}
       >
         동화 만들기
       </CtaButton>
