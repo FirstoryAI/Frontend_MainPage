@@ -11,6 +11,8 @@ import bellIcon from '../../assets/mypage/icon-bell.svg';
 import termsIcon from '../../assets/mypage/icon-terms.svg';
 import subscriptionIcon from '../../assets/mypage/icon-subscription.svg';
 import ChildInfoModal from '../../features/profile/components/ChildInfoModal';
+import NotificationModal from '../../features/profile/components/NotificationModal';
+import TermsModal from '../../features/profile/components/TermsModal';
 import { loadChildProfile, saveChildProfile } from '../../features/profile/childProfile';
 import styles from './MyPage.module.css';
 
@@ -26,6 +28,8 @@ function MyPage() {
   const fileInput = useRef(null);
   const [profileImage, setProfileImage] = useState('');
   const [childInfoOpen, setChildInfoOpen] = useState(false);
+  const [notificationOpen, setNotificationOpen] = useState(false);
+  const [termsOpen, setTermsOpen] = useState(false);
   const [child, setChild] = useState(() => loadChildProfile());
 
   useEffect(() => {
@@ -109,6 +113,32 @@ function MyPage() {
                     <img className={styles.chevron} src={chevron} alt="" />
                   </span>
                 </button>
+              ) : item.label === '알림 설정' ? (
+                <button
+                  className={styles.menuAction}
+                  type="button"
+                  onClick={() => setNotificationOpen(true)}
+                  aria-haspopup="dialog"
+                >
+                  <img className={styles.menuIcon} src={item.icon} alt="" />
+                  <span>{item.label}</span>
+                  <span className={styles.chevronBox} aria-hidden="true">
+                    <img className={styles.chevron} src={chevron} alt="" />
+                  </span>
+                </button>
+              ) : item.label === '이용약관 · 개인정보 처리 방침' ? (
+                <button
+                  className={styles.menuAction}
+                  type="button"
+                  onClick={() => setTermsOpen(true)}
+                  aria-haspopup="dialog"
+                >
+                  <img className={styles.menuIcon} src={item.icon} alt="" />
+                  <span>{item.label}</span>
+                  <span className={styles.chevronBox} aria-hidden="true">
+                    <img className={styles.chevron} src={chevron} alt="" />
+                  </span>
+                </button>
               ) : (
                 <div className={styles.menuContents}>
                   <img className={styles.menuIcon} src={item.icon} alt="" />
@@ -137,6 +167,11 @@ function MyPage() {
       {childInfoOpen && (
         <ChildInfoModal child={child} onSave={handleSaveChild} onClose={() => setChildInfoOpen(false)} />
       )}
+      {termsOpen ? (
+        <TermsModal onClose={() => setTermsOpen(false)} />
+      ) : notificationOpen ? (
+        <NotificationModal onClose={() => setNotificationOpen(false)} />
+      ) : null}
     </div>
   );
 }

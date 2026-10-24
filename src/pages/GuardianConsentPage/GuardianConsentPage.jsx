@@ -4,6 +4,7 @@ import Header from '../../components/layout/Header';
 import checkboxChecked from '../../assets/icons/checkbox-checked.svg';
 import checkboxUnchecked from '../../assets/icons/checkbox-unchecked.svg';
 import styles from './GuardianConsentPage.module.css';
+import { loadNotificationSettings, saveNotificationSettings } from '../../features/profile/notificationSettings';
 
 const initialAgreements = {
   guardian: false,
@@ -48,6 +49,10 @@ function GuardianConsentPage() {
   const handleSubmit = (event) => {
     event.preventDefault();
     if (requiredAccepted) {
+      saveNotificationSettings({
+        ...loadNotificationSettings(),
+        kakao: agreements.notification,
+      });
       navigate('/home', { state: { onboarding: true } });
     }
   };
