@@ -133,9 +133,14 @@
   background: #ffeae7;
 }
 
-.completed {
+.read {
   color: #45b789;
   background: #def3eb;
+}
+
+.failed {
+  color: #a34439;
+  background: #fff0ed;
 }
 
 .cover {
@@ -188,6 +193,36 @@
   line-height: 1.304;
   letter-spacing: -0.4201px;
   cursor: pointer;
+}
+
+.message,
+.error {
+  grid-column: 1 / -1;
+  margin: 0;
+  padding: 18px 0;
+  color: var(--color-secondary);
+}
+
+.error {
+  color: #a34439;
+}
+
+.loadMore {
+  display: block;
+  min-height: 42px;
+  margin: 28px auto 0;
+  padding: 0 24px;
+  color: var(--color-text);
+  background: var(--color-surface);
+  border: 1px solid var(--color-field-border);
+  border-radius: 22px;
+  font: 500 15px var(--font-body);
+  cursor: pointer;
+}
+
+.loadMore:disabled {
+  cursor: wait;
+  opacity: 0.65;
 }
 
 @media (max-width: 1280px) {

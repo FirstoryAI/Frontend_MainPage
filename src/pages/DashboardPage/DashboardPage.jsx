@@ -4,6 +4,7 @@ import Sidebar from '../../components/layout/Sidebar';
 import OnboardingModal from '../../features/onboarding/components/OnboardingModal';
 import StoryDraftModal from '../../features/story/components/StoryDraftModal';
 import HomeScenarioModal from '../../features/home/components/HomeScenarioModal';
+import { hasSeenOnboarding, markOnboardingSeen } from '../../features/onboarding/onboardingSeen';
 import { readStoryDrafts } from '../../features/story/drafts';
 import iconBell from '../../assets/icons/icon-bell.svg';
 import avatarProfile from '../../assets/icons/avatar-profile.svg';
@@ -25,13 +26,17 @@ const scenarios = [
 function DashboardPage() {
   const location = useLocation();
   const navigate = useNavigate();
+  const onboardingKey = location.state?.onboardingKey;
   const cardDrag = useRef({ pointerId: null, startX: 0, startScrollLeft: 0, moved: false });
   const [onboardingOpen, setOnboardingOpen] = useState(
-    Boolean(location.state?.onboarding),
+    () => Boolean(location.state?.onboarding) && !hasSeenOnboarding(onboardingKey),
   );
   const [storyModal, setStoryModal] = useState(null);
   const [selectedScenario, setSelectedScenario] = useState(null);
   const [drafts, setDrafts] = useState([]);
+  useEffect(() => {
+    if (onboardingOpen) markOnboardingSeen(onboardingKey);
+  }, [onboardingKey, onboardingOpen]);
 
   useEffect(() => {
     if (!location.state?.chooseStory) return;
@@ -41,9 +46,10 @@ function DashboardPage() {
   }, [location.pathname, location.state, navigate]);
 
   const closeOnboarding = useCallback(() => {
+    markOnboardingSeen(onboardingKey);
     setOnboardingOpen(false);
     navigate(location.pathname, { replace: true, state: null });
-  }, [navigate, location.pathname]);
+  }, [navigate, location.pathname, onboardingKey]);
 
   const startStory = () => navigate('/story/new');
 
