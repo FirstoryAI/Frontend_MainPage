@@ -34,14 +34,12 @@ function AuthCard() {
         </Link>
       </div>
 
-      <button
+      <Link
         className={styles.loginButton}
-        type="button"
-        disabled
-        title="이메일 로그인 화면이 준비되면 연결됩니다"
+        to="/auth/email/login"
       >
         이메일로 로그인
-      </button>
+      </Link>
 
       <p className={styles.agreement}>
         시작하면 이용약관과 개인정보 처리방침에 동의하게 돼요

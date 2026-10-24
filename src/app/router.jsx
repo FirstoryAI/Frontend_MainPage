@@ -2,6 +2,7 @@ import { createBrowserRouter } from 'react-router-dom';
 import App from './App';
 import HomePage from '../pages/HomePage/HomePage';
 import EmailSignUpPage from '../pages/EmailSignUpPage/EmailSignUpPage';
+import EmailLoginPage from '../pages/EmailLoginPage/EmailLoginPage';
 import GuardianConsentPage from '../pages/GuardianConsentPage/GuardianConsentPage';
 import DashboardPage from '../pages/DashboardPage/DashboardPage';
 import LibraryPage from '../pages/LibraryPage/LibraryPage';
@@ -17,6 +18,7 @@ export const router = createBrowserRouter([
     children: [
       { path: '/', element: <HomePage /> },
       { path: '/auth/email/signup', element: <EmailSignUpPage /> },
+      { path: '/auth/email/login', element: <EmailLoginPage /> },
       { path: '/auth/consent', element: <GuardianConsentPage /> },
       { path: '/home', element: <DashboardPage /> },
       { path: '/mypage', element: <MyPage /> },

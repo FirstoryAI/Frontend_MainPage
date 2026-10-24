@@ -77,6 +77,13 @@
   margin-top: auto;
 }
 
+.logoutError {
+  margin: 0 0 4px;
+  color: #c83e35;
+  font-size: 12px;
+  line-height: 1.4;
+}
+
 .logout img {
   margin-left: 6px;
 }

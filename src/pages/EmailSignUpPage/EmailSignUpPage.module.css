@@ -14,7 +14,7 @@
   top: 111px;
   left: 50%;
   width: 540px;
-  height: 620px;
+  height: 880px;
   overflow: hidden;
   background: var(--color-surface);
   border-radius: 24px;
@@ -55,11 +55,19 @@
 }
 
 .emailLabel {
-  top: 177px;
+  top: 447px;
 }
 
 .passwordLabel {
-  top: 308px;
+  top: 568px;
+}
+
+.phoneLabel {
+  top: 175px;
+}
+
+.codeLabel {
+  top: 283px;
 }
 
 .input {
@@ -90,16 +98,95 @@
 }
 
 .emailInput {
-  top: 219px;
+  top: 489px;
 }
 
 .passwordInput {
-  top: 350px;
+  top: 610px;
+}
+
+.phoneInput,
+.codeInput {
+  width: 280px;
+  height: 56px;
+}
+
+.phoneInput {
+  top: 213px;
+}
+
+.codeInput {
+  top: 321px;
+}
+
+.inlineButton {
+  position: absolute;
+  left: 344px;
+  width: 147px;
+  height: 56px;
+  color: var(--color-brand);
+  background: #fff7f2;
+  border: 1px solid var(--color-brand-light);
+  border-radius: 12px;
+  font-family: var(--font-body);
+  font-size: 15px;
+  font-weight: 600;
+  cursor: pointer;
+}
+
+.inlineButton:disabled {
+  color: var(--color-secondary);
+  border-color: var(--color-card-border);
+  cursor: not-allowed;
+}
+
+.sendCodeButton {
+  top: 213px;
+}
+
+.verifyButton {
+  top: 321px;
+}
+
+.phoneHelp,
+.phoneStatus {
+  position: absolute;
+  left: 52px;
+  right: 52px;
+  margin: 0;
+  font-size: 14px;
+  line-height: 1.5;
+}
+
+.phoneHelp {
+  top: 382px;
+  color: var(--color-secondary);
+}
+
+.phoneStatus {
+  top: 408px;
+  min-height: 21px;
+  color: #c83e35;
+}
+
+.success {
+  color: #27875e;
+}
+
+.signupFeedback {
+  position: absolute;
+  top: 680px;
+  left: 52px;
+  right: 52px;
+  margin: 0;
+  color: #c83e35;
+  font-size: 14px;
+  line-height: 1.45;
 }
 
 .submitButton {
   position: absolute;
-  top: 457px;
+  top: 744px;
   left: 80px;
   width: 379px;
   height: 63px;
@@ -121,7 +208,7 @@
 
 .loginPrompt {
   position: absolute;
-  top: 558px;
+  top: 830px;
   left: 0;
   right: 0;
   margin: 0;
@@ -187,7 +274,49 @@
     width: auto;
   }
 
+  .phoneInput,
+  .codeInput {
+    right: 142px;
+    width: auto;
+  }
+
+  .inlineButton {
+    left: auto;
+    right: 24px;
+    width: 110px;
+  }
+
+  .phoneHelp,
+  .phoneStatus {
+    left: 24px;
+    right: 24px;
+  }
+
+  .signupFeedback {
+    left: 24px;
+    right: 24px;
+  }
+
   .title {
     font-size: clamp(28px, 8vw, 33px);
   }
 }
+.signupValidationMessage {
+  box-sizing: border-box;
+  z-index: 3;
+  display: grid;
+  gap: 2px;
+  margin: 0;
+  padding: 0 8px;
+  color: #c65345;
+  font-size: 15px;
+  font-weight: 500;
+  line-height: 1.6;
+  text-align: center;
+  justify-items: center;
+}
+
+.signupValidationMessage p {
+  margin: 0;
+}
+
