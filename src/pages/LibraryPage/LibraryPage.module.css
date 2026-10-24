@@ -25,14 +25,19 @@
   cursor: not-allowed;
 }
 
-.avatar {
+.avatarButton {
   position: relative;
   flex: 0 0 58.8px;
   width: 58.8px;
   height: 58.8px;
+  padding: 0;
+  background: transparent;
+  border: 0;
+  border-radius: 50%;
+  cursor: pointer;
 }
 
-.avatar img {
+.avatarButton img {
   position: absolute;
 }
 

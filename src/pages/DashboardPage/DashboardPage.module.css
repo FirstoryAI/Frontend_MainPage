@@ -43,6 +43,22 @@
   height: 58.8px;
 }
 
+.avatarButton {
+  display: block;
+  flex: 0 0 58.8px;
+  width: 58.8px;
+  height: 58.8px;
+  padding: 0;
+  background: transparent;
+  border: 0;
+  border-radius: 50%;
+  cursor: pointer;
+}
+
+.avatarButton:focus-visible {
+  outline-offset: 4px;
+}
+
 .content {
   margin-top: 80px;
   padding-left: 35px;
@@ -264,6 +280,12 @@
   }
 
   .avatar {
+    flex-basis: clamp(40px, 6.2vh, 58.8px);
+    width: clamp(40px, 6.2vh, 58.8px);
+    height: clamp(40px, 6.2vh, 58.8px);
+  }
+
+  .avatarButton {
     flex-basis: clamp(40px, 6.2vh, 58.8px);
     width: clamp(40px, 6.2vh, 58.8px);
     height: clamp(40px, 6.2vh, 58.8px);

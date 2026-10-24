@@ -1,0 +1,117 @@
+.backdrop {
+  position: fixed;
+  inset: var(--header-height) 0 0;
+  z-index: 20;
+  display: grid;
+  place-items: center;
+  background: rgb(0 0 0 / 44%);
+  backdrop-filter: blur(3.6px);
+}
+
+.dialog {
+  position: relative;
+  flex: none;
+  width: 560px;
+  height: 352px;
+  overflow: hidden;
+  background: #fff;
+  border-radius: 24px;
+  box-shadow: 0 0 12.3px rgb(0 0 0 / 10%);
+  transform: translateX(calc(31px * var(--dialog-scale, 1))) scale(var(--dialog-scale, 1));
+}
+
+.title {
+  position: absolute;
+  top: 26px;
+  left: 46px;
+  margin: 0;
+  color: var(--color-text);
+  font-family: var(--font-body);
+  font-size: 30px;
+  font-weight: 600;
+  line-height: 1.5;
+}
+
+.closeButton {
+  position: absolute;
+  top: 26px;
+  right: 29px;
+  display: block;
+  width: 45px;
+  height: 45px;
+  padding: 0;
+  background: transparent;
+  border: 0;
+  cursor: pointer;
+}
+
+.closeButton img,
+.toggle img {
+  display: block;
+}
+
+.description {
+  position: absolute;
+  top: 100px;
+  left: 61px;
+  margin: 0;
+  color: #8b8b8b;
+  font-size: 20px;
+  font-weight: 500;
+  line-height: 1.5;
+  white-space: nowrap;
+}
+
+.settings {
+  position: absolute;
+  top: 150px;
+  right: 43px;
+  left: 61px;
+  display: flex;
+  flex-direction: column;
+  gap: 23px;
+}
+
+.setting:nth-child(3) {
+  margin-top: 15px;
+}
+
+.setting {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  height: 34px;
+}
+
+.settingLabel,
+.emailLabel {
+  color: var(--color-text);
+  font-size: 22px;
+  font-weight: 600;
+  line-height: 1.5;
+  white-space: nowrap;
+}
+
+.toggle {
+  display: block;
+  flex: none;
+  width: 65px;
+  height: 34px;
+  padding: 0;
+  background: transparent;
+  border: 0;
+  border-radius: 17px;
+  cursor: pointer;
+}
+
+.toggle:focus-visible,
+.closeButton:focus-visible {
+  outline: 2px solid var(--color-brand);
+  outline-offset: 3px;
+}
+
+@media (max-width: 600px) {
+  .backdrop {
+    padding: 16px;
+  }
+}
