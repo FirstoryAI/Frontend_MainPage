@@ -81,7 +81,10 @@ function GuardianConsentPage() {
       });
       setSignupDraft(null);
       setSignupFeedback(null);
-      navigate('/home', { state: { onboarding: true }, replace: true });
+      navigate('/home', {
+        state: { onboarding: true, onboardingKey: signupDraft.email },
+        replace: true,
+      });
     } catch (requestError) {
       const fieldMessages = requestError.fields
         ?.map(({ message }) => message)

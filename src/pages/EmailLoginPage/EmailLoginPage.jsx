@@ -25,7 +25,10 @@ function EmailLoginPage() {
 
       navigate('/home', {
         replace: true,
-        state: { onboarding: !account?.onboardingSeen },
+        state: {
+          onboarding: !account?.onboardingSeen,
+          onboardingKey: formData.get('email'),
+        },
       });
     } catch (requestError) {
       setError(requestError.message || '로그인하지 못했어요.');
