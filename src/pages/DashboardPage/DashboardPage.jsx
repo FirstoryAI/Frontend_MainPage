@@ -3,6 +3,7 @@ import { useLocation, useNavigate } from 'react-router-dom';
 import Sidebar from '../../components/layout/Sidebar';
 import OnboardingModal from '../../features/onboarding/components/OnboardingModal';
 import StoryDraftModal from '../../features/story/components/StoryDraftModal';
+import HomeScenarioModal from '../../features/home/components/HomeScenarioModal';
 import { readStoryDrafts } from '../../features/story/drafts';
 import iconBell from '../../assets/icons/icon-bell.svg';
 import avatarProfile from '../../assets/icons/avatar-profile.svg';
@@ -15,10 +16,10 @@ import scenarioHabit from '../../assets/images/home/mascot-corner.png';
 import styles from './DashboardPage.module.css';
 
 const scenarios = [
-  { category: '친구 관계', title: <>친구가 장난감을<br />빼앗았을 때</>, description: '아이에게 어떻게 말해줘야 할까요?', image: scenarioFriend, color: 'friend' },
-  { category: '감정 표현', title: <>속상해도 아무 말<br />하지 않을 때</>, description: '아이의 마음을 어떻게 물어볼까요?', image: scenarioEmotion, color: 'emotion' },
-  { category: '새로운 환경', title: <>유치원에 가기<br />싫다고 할 때</>, description: '어떤 말로 안심시켜 줄까요?', image: scenarioKindergarten, color: 'kindergarten' },
-  { category: '생활 습관', title: <>실수하고 자꾸<br />숨기려고 할 때</>, description: '어떤 말로 안심시켜 줄까요?', image: scenarioHabit, color: 'habit' },
+  { id: 'friend', category: '친구 관계', accessibleTitle: '친구가 장난감을 빼앗았을 때', title: <>친구가 장난감을<br />빼앗았을 때</>, description: '아이에게 어떻게 말해줘야 할까요?', image: scenarioFriend, color: 'friend', accentColor: '#ff7c68' },
+  { id: 'emotion', category: '감정 표현', accessibleTitle: '속상해도 아무 말 하지 않을 때', title: <>속상해도 아무 말<br />하지 않을 때</>, description: '아이의 마음을 어떻게 물어볼까요?', image: scenarioEmotion, color: 'emotion', accentColor: '#65d0a5' },
+  { id: 'kindergarten', category: '새로운 환경', accessibleTitle: '유치원에 가기 싫다고 할 때', title: <>유치원에 가기<br />싫다고 할 때</>, description: '어떤 말로 안심시켜 줄까요?', image: scenarioKindergarten, color: 'kindergarten', accentColor: '#ffcf55' },
+  { id: 'habit', category: '생활 습관', accessibleTitle: '실수하고 자꾸 숨기려고 할 때', title: <>실수하고 자꾸<br />숨기려고 할 때</>, description: '어떤 말로 안심시켜 줄까요?', image: scenarioHabit, color: 'habit', accentColor: '#9e95ff' },
 ];
 
 function DashboardPage() {
@@ -29,6 +30,7 @@ function DashboardPage() {
     Boolean(location.state?.onboarding),
   );
   const [storyModal, setStoryModal] = useState(null);
+  const [selectedScenario, setSelectedScenario] = useState(null);
   const [drafts, setDrafts] = useState([]);
 
   useEffect(() => {
@@ -61,6 +63,7 @@ function DashboardPage() {
       startX: event.clientX,
       startScrollLeft: viewport.scrollLeft,
       moved: false,
+      pressedScenarioId: event.target.closest('[data-scenario-id]')?.dataset.scenarioId ?? null,
     };
     viewport.setPointerCapture(event.pointerId);
   };
@@ -94,9 +97,17 @@ function DashboardPage() {
     }, 0);
   };
 
+  const handleCardClick = (event) => {
+    const scenarioId = event.target.closest('[data-scenario-id]')?.dataset.scenarioId
+      ?? cardDrag.current.pressedScenarioId;
+    const scenario = scenarios.find((item) => item.id === scenarioId);
+    cardDrag.current.pressedScenarioId = null;
+    if (!cardDrag.current.moved && scenario) setSelectedScenario(scenario);
+  };
+
   return (
     <div className={styles.page}>
-      <div className={styles.shell} inert={onboardingOpen || storyModal !== null}>
+      <div className={styles.shell} inert={onboardingOpen || storyModal !== null || selectedScenario !== null}>
         <Sidebar />
 
         <div className={styles.main}>
@@ -153,18 +164,23 @@ function DashboardPage() {
                 onPointerMove={handleCardPointerMove}
                 onPointerUp={handleCardPointerUp}
                 onPointerCancel={handleCardPointerUp}
+                onClick={handleCardClick}
               >
                 <div className={styles.cards}>
                   {scenarios.map((scenario) => (
-                    <article
+                    <button
                       className={`${styles.card} ${styles[scenario.color]}`}
+                      type="button"
                       key={scenario.category}
+                      data-scenario-id={scenario.id}
+                      aria-haspopup="dialog"
+                      aria-label={`${scenario.category}: ${scenario.accessibleTitle}`}
                     >
                       <span className={styles.category}>{scenario.category}</span>
                       <span className={styles.cardTitle}>{scenario.title}</span>
                       <span className={styles.cardDescription}>{scenario.description}</span>
                       <img className={styles.cardImage} src={scenario.image} alt="" />
-                    </article>
+                    </button>
                   ))}
                 </div>
               </div>
@@ -175,6 +191,13 @@ function DashboardPage() {
 
       {onboardingOpen && (
         <OnboardingModal onStart={startFirstStory} onClose={closeOnboarding} />
+      )}
+      {selectedScenario && (
+        <HomeScenarioModal
+          scenario={selectedScenario}
+          onClose={() => setSelectedScenario(null)}
+          onStart={() => navigate('/story/new', { state: { scenarioId: selectedScenario.id } })}
+        />
       )}
       {storyModal && (
         <StoryDraftModal
