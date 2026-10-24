@@ -13,6 +13,7 @@ import subscriptionIcon from '../../assets/mypage/icon-subscription.svg';
 import ChildInfoModal from '../../features/profile/components/ChildInfoModal';
 import NotificationModal from '../../features/profile/components/NotificationModal';
 import TermsModal from '../../features/profile/components/TermsModal';
+import SubscriptionModal from '../../features/profile/components/SubscriptionModal';
 import { loadChildProfile, saveChildProfile } from '../../features/profile/childProfile';
 import styles from './MyPage.module.css';
 
@@ -30,6 +31,7 @@ function MyPage() {
   const [childInfoOpen, setChildInfoOpen] = useState(false);
   const [notificationOpen, setNotificationOpen] = useState(false);
   const [termsOpen, setTermsOpen] = useState(false);
+  const [subscriptionOpen, setSubscriptionOpen] = useState(false);
   const [child, setChild] = useState(() => loadChildProfile());
 
   useEffect(() => {
@@ -139,6 +141,19 @@ function MyPage() {
                     <img className={styles.chevron} src={chevron} alt="" />
                   </span>
                 </button>
+              ) : item.label === '구독 관리' ? (
+                <button
+                  className={styles.menuAction}
+                  type="button"
+                  onClick={() => setSubscriptionOpen(true)}
+                  aria-haspopup="dialog"
+                >
+                  <img className={styles.menuIcon} src={item.icon} alt="" />
+                  <span>{item.label}</span>
+                  <span className={styles.chevronBox} aria-hidden="true">
+                    <img className={styles.chevron} src={chevron} alt="" />
+                  </span>
+                </button>
               ) : (
                 <div className={styles.menuContents}>
                   <img className={styles.menuIcon} src={item.icon} alt="" />
@@ -169,6 +184,8 @@ function MyPage() {
       )}
       {termsOpen ? (
         <TermsModal onClose={() => setTermsOpen(false)} />
+      ) : subscriptionOpen ? (
+        <SubscriptionModal onClose={() => setSubscriptionOpen(false)} />
       ) : notificationOpen ? (
         <NotificationModal onClose={() => setNotificationOpen(false)} />
       ) : null}
