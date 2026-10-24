@@ -1,0 +1,281 @@
+.backdrop {
+  position: fixed;
+  inset: var(--header-height) 0 0;
+  z-index: 20;
+  display: grid;
+  place-items: center;
+  background: rgb(0 0 0 / 44%);
+  backdrop-filter: blur(3.6px);
+}
+
+.dialog {
+  position: relative;
+  flex: none;
+  width: 560px;
+  height: 694px;
+  overflow: hidden;
+  background: #fff;
+  border-radius: 36px;
+  box-shadow: 0 0 12.3px rgb(0 0 0 / 10%);
+  transform: translateX(calc(-19px * var(--dialog-scale, 1))) scale(var(--dialog-scale, 1));
+}
+
+.title {
+  position: absolute;
+  top: 46px;
+  left: 48px;
+  margin: 0;
+  color: var(--color-text);
+  font-family: var(--font-body);
+  font-size: 30px;
+  font-weight: 600;
+  line-height: 1.5;
+}
+
+.closeButton {
+  position: absolute;
+  top: 26px;
+  left: 486px;
+  display: block;
+  width: 45px;
+  height: 45px;
+  padding: 0;
+  background: transparent;
+  border: 0;
+  cursor: pointer;
+}
+
+.closeButton img {
+  display: block;
+}
+
+.label {
+  position: absolute;
+  left: 54px;
+  color: var(--color-text);
+  font-size: 22px;
+  font-weight: 500;
+  line-height: normal;
+  white-space: nowrap;
+}
+
+.ageLabel { top: 130px; }
+.traitLabel { top: 211px; }
+.favoritesLabel { top: 482px; }
+
+.ageField {
+  position: absolute;
+  top: 119px;
+  left: 138px;
+  width: 155px;
+  height: 48px;
+}
+
+.ageInput,
+.favoriteInput {
+  width: 100%;
+  height: 100%;
+  padding: 0 36px 0 16px;
+  color: var(--color-text);
+  background: #fff;
+  border: 1px solid var(--color-border-soft);
+  border-radius: 14px;
+  font-family: var(--font-body);
+  font-size: 20px;
+  font-weight: 300;
+  line-height: normal;
+}
+
+.clearAge,
+.clearCustomTrait {
+  position: absolute;
+  display: grid;
+  place-items: center;
+  padding: 0;
+  background: transparent;
+  border: 0;
+  cursor: pointer;
+}
+
+.clearAge {
+  top: 50%;
+  right: 8px;
+  transform: translateY(-50%);
+}
+
+.clearAge img,
+.clearCustomTrait img {
+  display: block;
+}
+
+.traitRows {
+  position: absolute;
+  top: 204px;
+  left: 138px;
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+}
+
+.traitRow {
+  display: flex;
+  gap: 13px;
+  height: 41px;
+  white-space: nowrap;
+}
+
+.traitChip {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  min-height: 41px;
+  padding: 0 22.8px;
+  color: var(--color-text);
+  background: #fff;
+  border: 1px solid var(--color-border-soft);
+  border-radius: 23.75px;
+  font-family: var(--font-body);
+  font-size: 17px;
+  font-weight: 400;
+  line-height: normal;
+  cursor: pointer;
+}
+
+.traitSelected {
+  color: var(--color-secondary-green);
+  border-color: var(--color-secondary-green);
+}
+
+.customTraitField {
+  position: absolute;
+  top: 358px;
+  left: 138px;
+  width: 379px;
+  height: 86px;
+}
+
+.customTraitInput {
+  display: block;
+  width: 100%;
+  height: 78px;
+  padding: 10px 38px 10px 18px;
+  color: var(--color-text);
+  background: #fff;
+  border: 1px solid var(--color-border-soft);
+  border-radius: 14px;
+  font-family: var(--font-body);
+  font-size: 18px;
+  font-weight: 300;
+  line-height: normal;
+  resize: none;
+}
+
+.customTraitInput::placeholder {
+  color: #777;
+  opacity: 1;
+}
+
+.clearCustomTrait {
+  top: 11px;
+  right: 8px;
+}
+
+.favoriteChips {
+  position: absolute;
+  top: 474px;
+  left: 203px;
+  display: flex;
+  gap: 13px;
+  height: 41px;
+}
+
+.favoriteChip {
+  display: inline-flex;
+  align-items: center;
+  gap: 10px;
+  height: 41px;
+  padding: 0 12px 0 16px;
+  color: var(--color-secondary-green);
+  border: 1px solid var(--color-secondary-green);
+  border-radius: 22.5px;
+  font-size: 17px;
+  line-height: normal;
+  white-space: nowrap;
+}
+
+.favoriteChip button {
+  display: grid;
+  place-items: center;
+  padding: 0;
+  background: transparent;
+  border: 0;
+  cursor: pointer;
+}
+
+.favoriteChip button img {
+  display: block;
+}
+
+.favoriteInputRow {
+  position: absolute;
+  top: 526px;
+  left: 212px;
+  display: flex;
+  align-items: center;
+  gap: 7px;
+  width: 305px;
+  height: 48px;
+}
+
+.favoriteInput {
+  width: 272px;
+  padding: 0 14px;
+  font-size: 17px;
+}
+
+.addFavorite {
+  display: block;
+  flex: none;
+  width: 26px;
+  height: 26px;
+  padding: 0;
+  background: transparent;
+  border: 0;
+  cursor: pointer;
+}
+
+.addFavorite img {
+  display: block;
+}
+
+.addFavorite {
+  transform: translateY(-2px);
+}
+
+.saveButton {
+  position: absolute;
+  top: 619px;
+  left: 412px;
+  width: 118.5px;
+  height: 43.5px;
+  padding: 0;
+  color: #fff;
+  background: var(--color-secondary-green);
+  border: 1.5px solid var(--color-secondary-green);
+  border-radius: 22.5px;
+  font-family: var(--font-body);
+  font-size: 20px;
+  font-weight: 500;
+  line-height: 1.5;
+  cursor: pointer;
+}
+
+@media (max-width: 600px) {
+  .backdrop {
+    padding: 16px;
+  }
+
+  .dialog {
+    width: 560px;
+  }
+}

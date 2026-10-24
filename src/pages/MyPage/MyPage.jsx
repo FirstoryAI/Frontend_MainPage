@@ -1,4 +1,4 @@
-import { useRef, useState } from 'react';
+import { useEffect, useRef, useState } from 'react';
 import { Link, useNavigate } from 'react-router-dom';
 import closeIcon from '../../assets/mypage/close.svg';
 import profileIllustration from '../../assets/mypage/profile-camera.svg';
@@ -10,6 +10,8 @@ import userIcon from '../../assets/mypage/icon-user.svg';
 import bellIcon from '../../assets/mypage/icon-bell.svg';
 import termsIcon from '../../assets/mypage/icon-terms.svg';
 import subscriptionIcon from '../../assets/mypage/icon-subscription.svg';
+import ChildInfoModal from '../../features/profile/components/ChildInfoModal';
+import { loadChildProfile, saveChildProfile } from '../../features/profile/childProfile';
 import styles from './MyPage.module.css';
 
 const menuItems = [
@@ -23,6 +25,24 @@ function MyPage() {
   const navigate = useNavigate();
   const fileInput = useRef(null);
   const [profileImage, setProfileImage] = useState('');
+  const [childInfoOpen, setChildInfoOpen] = useState(false);
+  const [child, setChild] = useState(() => loadChildProfile());
+
+  useEffect(() => {
+    const syncChildProfile = (event) => {
+      if (!event.key || event.key === 'firstory.childProfile') {
+        setChild(loadChildProfile());
+      }
+    };
+    window.addEventListener('storage', syncChildProfile);
+    return () => window.removeEventListener('storage', syncChildProfile);
+  }, []);
+
+  const handleSaveChild = (updatedChild) => {
+    saveChildProfile(updatedChild);
+    setChild(updatedChild);
+    setChildInfoOpen(false);
+  };
 
   const handleProfileImageChange = (event) => {
     const [file] = event.target.files ?? [];
@@ -76,11 +96,28 @@ function MyPage() {
         <ul className={styles.menu} aria-label="마이페이지 메뉴">
           {menuItems.map((item) => (
             <li className={styles.menuItem} key={item.label}>
-              <img className={styles.menuIcon} src={item.icon} alt="" />
-              <span>{item.label}</span>
-              <span className={styles.chevronBox} aria-hidden="true">
-                <img className={styles.chevron} src={chevron} alt="" />
-              </span>
+              {item.label === '아이 정보' ? (
+                <button
+                  className={styles.menuAction}
+                  type="button"
+                  onClick={() => setChildInfoOpen(true)}
+                  aria-haspopup="dialog"
+                >
+                  <img className={styles.menuIcon} src={item.icon} alt="" />
+                  <span>{item.label}</span>
+                  <span className={styles.chevronBox} aria-hidden="true">
+                    <img className={styles.chevron} src={chevron} alt="" />
+                  </span>
+                </button>
+              ) : (
+                <div className={styles.menuContents}>
+                  <img className={styles.menuIcon} src={item.icon} alt="" />
+                  <span>{item.label}</span>
+                  <span className={styles.chevronBox} aria-hidden="true">
+                    <img className={styles.chevron} src={chevron} alt="" />
+                  </span>
+                </div>
+              )}
             </li>
           ))}
         </ul>
@@ -96,6 +133,10 @@ function MyPage() {
           </li>
         </ul>
       </main>
+
+      {childInfoOpen && (
+        <ChildInfoModal child={child} onSave={handleSaveChild} onClose={() => setChildInfoOpen(false)} />
+      )}
     </div>
   );
 }

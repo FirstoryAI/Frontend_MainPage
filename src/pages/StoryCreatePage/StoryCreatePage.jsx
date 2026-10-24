@@ -13,6 +13,7 @@ import ChildEditModal from '../../features/story/components/ChildEditModal';
 import TextEditModal from '../../features/story/components/TextEditModal';
 import GeneratingStep from '../../features/story/components/GeneratingStep';
 import { STEP, SUMMARY_FALLBACK_GOAL, progressByStep } from '../../features/story/constants';
+import { loadChildProfile, saveChildProfile } from '../../features/profile/childProfile';
 import iconNotice from '../../assets/icons/icon-notice.svg';
 import styles from './StoryCreatePage.module.css';
 
@@ -38,7 +39,7 @@ function StoryCreatePage() {
   const [history, setHistory] = useState([]);
   const [situation, setSituation] = useState('');
   const [detail, setDetail] = useState(initialDetail);
-  const [child, setChild] = useState(initialChild);
+  const [child, setChild] = useState(() => loadChildProfile({ includeSession: false }) ?? initialChild);
   const [saveChild, setSaveChild] = useState(false);
   const [topic, setTopic] = useState(initialTopic);
   // 채팅에서 보호자가 답한 내용. 채팅을 건너뛰면 비어 있어요.
@@ -52,6 +53,12 @@ function StoryCreatePage() {
   useEffect(() => {
     window.scrollTo(0, 0);
   }, [step]);
+
+  useEffect(() => {
+    if (child.birthYear || child.birthMonth || child.gender || child.traits?.length || child.customTrait || child.likes) {
+      saveChildProfile(child, { persist: saveChild });
+    }
+  }, [child, saveChild]);
 
   const merge = (setter) => (changes) =>
     setter((current) => ({ ...current, ...changes }));
