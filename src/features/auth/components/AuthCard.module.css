@@ -98,8 +98,12 @@
   letter-spacing: -0.48px;
   text-decoration: underline;
   text-underline-position: from-font;
-  cursor: not-allowed;
+  cursor: pointer;
   opacity: 1;
+}
+
+.loginButton:hover {
+  color: var(--color-link);
 }
 
 .agreement {

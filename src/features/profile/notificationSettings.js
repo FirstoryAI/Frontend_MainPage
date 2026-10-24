@@ -1,6 +1,6 @@
 export const NOTIFICATION_SETTINGS_KEY = 'firstory.notificationSettings';
 
-const defaultSettings = { email: false, kakao: false, marketing: true };
+const defaultSettings = { email: false, kakao: false, sms: false, marketing: true };
 
 export function loadNotificationSettings() {
   try {

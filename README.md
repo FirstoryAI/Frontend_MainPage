@@ -12,7 +12,7 @@ npm run dev
 환경 변수는 `.env.example`을 복사해 `.env`에서 관리합니다.
 
 ```dotenv
-VITE_API_BASE_URL=
+API_PROXY_TARGET=https://backendmainpage-production.up.railway.app
 ```
 
 ## 명령어

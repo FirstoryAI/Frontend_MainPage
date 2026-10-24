@@ -1,10 +1,14 @@
 import { useState } from 'react';
-import { useNavigate } from 'react-router-dom';
+import { Navigate, useNavigate } from 'react-router-dom';
 import Header from '../../components/layout/Header';
 import checkboxChecked from '../../assets/icons/checkbox-checked.svg';
 import checkboxUnchecked from '../../assets/icons/checkbox-unchecked.svg';
+import { useSignupDraft } from '../../features/auth/SignupDraftContext';
 import styles from './GuardianConsentPage.module.css';
 import { loadNotificationSettings, saveNotificationSettings } from '../../features/profile/notificationSettings';
+import { signup } from '../../services/authApi';
+
+const TERMS_VERSION = '2026-10-01';
 
 const initialAgreements = {
   guardian: false,
@@ -17,7 +21,7 @@ const agreementItems = [
   { id: 'guardian', label: '(필수) 아이의 보호자(법정 대리인)예요' },
   { id: 'terms', label: '(필수) 서비스 이용약관' },
   { id: 'privacy', label: '(필수) 아이 정보를 포함한 개인정보 수집·이용' },
-  { id: 'notification', label: '(선택) 동화가 완성되면 카카오톡으로 알림 받기' },
+  { id: 'notification', label: '(선택) 동화가 완성되면 문자로 알림 받기' },
 ];
 
 function CheckboxGraphic({ checked }) {
@@ -26,7 +30,10 @@ function CheckboxGraphic({ checked }) {
 
 function GuardianConsentPage() {
   const [agreements, setAgreements] = useState(initialAgreements);
+  const [error, setError] = useState('');
+  const [isSubmitting, setIsSubmitting] = useState(false);
   const navigate = useNavigate();
+  const { signupDraft, setSignupDraft, setSignupFeedback } = useSignupDraft();
 
   const allAccepted = Object.values(agreements).every(Boolean);
   const requiredAccepted =
@@ -46,16 +53,76 @@ function GuardianConsentPage() {
     setAgreements((current) => ({ ...current, [id]: !current[id] }));
   };
 
-  const handleSubmit = (event) => {
+  const handleSubmit = async (event) => {
     event.preventDefault();
-    if (requiredAccepted) {
+
+    if (!requiredAccepted || !signupDraft || isSubmitting) return;
+
+    setIsSubmitting(true);
+    setError('');
+
+    try {
+      await signup({
+        email: signupDraft.email,
+        password: signupDraft.password,
+        phone: signupDraft.phone,
+        consents: {
+          GUARDIAN: agreements.guardian,
+          TERMS: agreements.terms,
+          PRIVACY: agreements.privacy,
+          SMS_NOTIFY: agreements.notification,
+        },
+        termsVersion: TERMS_VERSION,
+      });
+
       saveNotificationSettings({
         ...loadNotificationSettings(),
-        kakao: agreements.notification,
+        sms: agreements.notification,
       });
-      navigate('/home', { state: { onboarding: true } });
+      setSignupDraft(null);
+      setSignupFeedback(null);
+      navigate('/home', { state: { onboarding: true }, replace: true });
+    } catch (requestError) {
+      const fieldMessages = requestError.fields
+        ?.map(({ message }) => message)
+        .filter(Boolean)
+        .join(' ');
+
+      const signupFieldError = requestError.fields?.some(({ field }) =>
+        ['email', 'password', 'phone'].some(
+          (name) => field === name || field?.startsWith(`${name}.`) || field?.startsWith(`${name}[`),
+        ),
+      );
+      const credentialError =
+        [
+          'DUPLICATE_EMAIL',
+          'DUPLICATE_PHONE',
+          'INVALID_PASSWORD_FORMAT',
+          'INVALID_PHONE_FORMAT',
+          'PHONE_NOT_VERIFIED',
+        ].includes(requestError.code) ||
+        (requestError.code === 'VALIDATION_FAILED' && signupFieldError);
+
+      if (credentialError) {
+        if (requestError.code === 'PHONE_NOT_VERIFIED') {
+          setSignupDraft((draft) => ({ ...draft, phoneVerified: false }));
+        }
+        setSignupFeedback({
+          message: fieldMessages || requestError.message || '가입 정보를 다시 확인해 주세요.',
+        });
+        navigate('/auth/email/signup', { replace: true });
+        return;
+      }
+
+      setError(fieldMessages || requestError.message || '가입을 완료하지 못했어요.');
+    } finally {
+      setIsSubmitting(false);
     }
   };
+
+  if (!signupDraft) {
+    return <Navigate to="/auth/email/signup" replace />;
+  }
 
   return (
     <div className={styles.page}>
@@ -71,6 +138,11 @@ function GuardianConsentPage() {
           </p>
 
           <form onSubmit={handleSubmit}>
+            {error && (
+              <p className={styles.errorMessage} role="alert">
+                {error}
+              </p>
+            )}
             <div className={styles.consentList}>
               <label className={`${styles.row} ${styles.allRow}`}>
                 <input
@@ -110,9 +182,9 @@ function GuardianConsentPage() {
             <button
               className={styles.submitButton}
               type="submit"
-              disabled={!requiredAccepted}
+              disabled={!requiredAccepted || isSubmitting}
             >
-              시작하기
+              {isSubmitting ? '가입 중…' : '시작하기'}
             </button>
           </form>
         </section>

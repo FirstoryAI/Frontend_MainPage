@@ -1,3 +1,4 @@
+import { useState } from 'react';
 import { Link, useLocation, useNavigate } from 'react-router-dom';
 import CtaButton from '../ui/CtaButton';
 import iconPlus from '../../assets/icons/icon-plus.svg';
@@ -6,12 +7,29 @@ import iconHomeMuted from '../../assets/icons/icon-home-muted.svg';
 import iconLibrary from '../../assets/icons/icon-library.svg';
 import iconLibraryActive from '../../assets/icons/icon-library-active.svg';
 import iconLogout from '../../assets/icons/icon-logout.svg';
+import { logout } from '../../services/authApi';
 import styles from './Sidebar.module.css';
 
 function Sidebar() {
   const navigate = useNavigate();
   const location = useLocation();
+  const [isLoggingOut, setIsLoggingOut] = useState(false);
+  const [logoutError, setLogoutError] = useState('');
   const libraryActive = location.pathname.startsWith('/library');
+
+  const handleLogout = async () => {
+    setIsLoggingOut(true);
+    setLogoutError('');
+
+    try {
+      await logout();
+      navigate('/', { replace: true });
+    } catch (requestError) {
+      setLogoutError(requestError.message || '로그아웃하지 못했어요.');
+    } finally {
+      setIsLoggingOut(false);
+    }
+  };
 
   return (
     <aside className={styles.sidebar}>
@@ -50,10 +68,20 @@ function Sidebar() {
         </Link>
       </nav>
 
-      <Link className={`${styles.item} ${styles.logout}`} to="/">
+      {logoutError && (
+        <p className={styles.logoutError} role="alert">
+          {logoutError}
+        </p>
+      )}
+      <button
+        className={`${styles.item} ${styles.logout}`}
+        type="button"
+        onClick={handleLogout}
+        disabled={isLoggingOut}
+      >
         <img src={iconLogout} alt="" />
-        <span>로그아웃</span>
-      </Link>
+        <span>{isLoggingOut ? '로그아웃 중…' : '로그아웃'}</span>
+      </button>
     </aside>
   );
 }

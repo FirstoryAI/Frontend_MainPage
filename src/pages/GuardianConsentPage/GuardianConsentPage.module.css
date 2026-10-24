@@ -154,6 +154,18 @@
   cursor: pointer;
 }
 
+.errorMessage {
+  position: absolute;
+  top: 535px;
+  left: 95px;
+  right: 95px;
+  margin: 0;
+  color: #c83e35;
+  font-size: 15px;
+  line-height: 1.45;
+  text-align: center;
+}
+
 .submitButton:disabled {
   cursor: not-allowed;
   opacity: 0.45;
@@ -204,7 +216,8 @@
   .title,
   .description,
   .consentList,
-  .submitButton {
+  .submitButton,
+  .errorMessage {
     position: static;
   }
 
@@ -245,5 +258,10 @@
   .submitButton {
     width: 100%;
     margin-top: 52px;
+  }
+
+  .errorMessage {
+    margin-top: 32px;
+    text-align: left;
   }
 }
