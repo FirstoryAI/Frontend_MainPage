@@ -97,7 +97,14 @@ function DashboardPage() {
             >
               <img src={iconBell} alt="" />
             </button>
-            <img className={styles.avatar} src={avatarProfile} alt="내 프로필" />
+            <button
+              className={styles.avatarButton}
+              type="button"
+              onClick={() => navigate('/mypage')}
+              aria-label="마이페이지"
+            >
+              <img className={styles.avatar} src={avatarProfile} alt="" />
+            </button>
           </div>
 
           <main className={styles.content}>

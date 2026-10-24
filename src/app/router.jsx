@@ -9,6 +9,7 @@ import StoryCreatePage from '../pages/StoryCreatePage/StoryCreatePage';
 import StoryRemakePage from '../pages/StoryRemakePage/StoryRemakePage';
 import StoryPreviewPage from '../pages/StoryPreviewPage/StoryPreviewPage';
 import NotFoundPage from '../pages/NotFoundPage/NotFoundPage';
+import MyPage from '../pages/MyPage/MyPage';
 
 export const router = createBrowserRouter([
   {
@@ -18,6 +19,7 @@ export const router = createBrowserRouter([
       { path: '/auth/email/signup', element: <EmailSignUpPage /> },
       { path: '/auth/consent', element: <GuardianConsentPage /> },
       { path: '/home', element: <DashboardPage /> },
+      { path: '/mypage', element: <MyPage /> },
       { path: '/library', element: <LibraryPage /> },
       { path: '/story/new', element: <StoryCreatePage /> },
       { path: '/story/preview', element: <StoryPreviewPage /> },

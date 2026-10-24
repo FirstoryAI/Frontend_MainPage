@@ -80,10 +80,15 @@ function LibraryPage() {
           >
             <img src={iconBell} alt="" />
           </button>
-          <div className={styles.avatar} role="img" aria-label="내 프로필">
+          <button
+            className={styles.avatarButton}
+            type="button"
+            onClick={() => navigate('/mypage')}
+            aria-label="마이페이지"
+          >
             <img className={styles.avatarCircle} src={avatarCircle} alt="" />
             <img className={styles.avatarPerson} src={avatarPerson} alt="" />
-          </div>
+          </button>
         </div>
 
         <main className={styles.content}>
