@@ -1,69 +1,99 @@
-import { useMemo, useState } from 'react';
+import { useEffect, useState } from 'react';
 import { useNavigate } from 'react-router-dom';
 import Sidebar from '../../components/layout/Sidebar';
 import iconBell from '../../assets/icons/icon-bell.svg';
 import avatarCircle from '../../assets/icons/avatar-circle.svg';
 import avatarPerson from '../../assets/icons/avatar-person.svg';
 import bookCover from '../../assets/images/library-book-cover.png';
+import { getHome } from '../../services/homeApi';
+import { getStories } from '../../services/libraryApi';
 import styles from './LibraryPage.module.css';
 
 const filters = [
-  { value: 'all', label: '전체' },
-  { value: 'creating', label: '제작 중' },
-  { value: 'reviewing', label: '확인을 기다려요' },
-  { value: 'unread', label: '아직 읽지 않았어요' },
-  { value: 'completed', label: '함께 읽었어요' },
+  { value: 'ALL', label: '전체' },
+  { value: 'CREATING', label: '제작 중', countKey: 'creating' },
+  { value: 'REVIEWING', label: '확인을 기다려요', countKey: 'reviewing' },
+  { value: 'UNREAD', label: '아직 읽지 않았어요', countKey: 'unread' },
+  { value: 'READ', label: '함께 읽었어요', countKey: 'read' },
+  { value: 'FAILED', label: '만들지 못했어요', countKey: 'failed' },
 ];
 
-const stories = [
-  {
-    id: 1,
-    status: 'creating',
-    badge: '제작 중 · 그림 그리기',
-    title: '공룡 아로의 새 친구',
-    meta: '친구 관계 · 오늘',
-  },
-  {
-    id: 2,
-    status: 'reviewing',
-    badge: '확인을 기다려요',
-    title: '이삿짐 상자 속 별',
-    meta: '이사 · 10월 6일',
-  },
-  {
-    id: 3,
-    status: 'unread',
-    badge: '아직 읽지 않았어요',
-    title: '처음 가는 치과',
-    meta: '병원 · 9월 28일',
-  },
-  {
-    id: 4,
-    status: 'completed',
-    badge: '함께 읽었어요',
-    title: '동생이 생겼어요',
-    meta: '가족 · 9월 12일',
-  },
-  {
-    id: 5,
-    status: 'failed',
-    badge: '만들지 못했어요',
-    title: '유치원 첫날',
-    meta: '등원 · 9월 2일',
-  },
-];
+const statusLabels = {
+  DRAFT: '제작 중', CREATING: '제작 중', REVIEWING: '확인을 기다려요',
+  UNREAD: '아직 읽지 않았어요', READ: '함께 읽었어요', FAILED: '만들지 못했어요',
+};
+
+const statusClasses = {
+  DRAFT: 'creating', CREATING: 'creating', REVIEWING: 'reviewing',
+  UNREAD: 'unread', READ: 'read', FAILED: 'failed',
+};
+
+function formatStoryDate(value) {
+  if (!value) return '';
+  const date = new Date(value);
+  if (Number.isNaN(date.getTime())) return '';
+  return new Intl.DateTimeFormat('ko-KR', { month: 'long', day: 'numeric' }).format(date);
+}
 
 function LibraryPage() {
   const navigate = useNavigate();
-  const [activeFilter, setActiveFilter] = useState('all');
+  const [activeFilter, setActiveFilter] = useState('ALL');
+  const [stories, setStories] = useState([]);
+  const [counts, setCounts] = useState({});
+  const [page, setPage] = useState(0);
+  const [hasNext, setHasNext] = useState(false);
+  const [isLoading, setIsLoading] = useState(true);
+  const [isLoadingMore, setIsLoadingMore] = useState(false);
+  const [error, setError] = useState('');
 
-  const visibleStories = useMemo(
-    () =>
-      activeFilter === 'all'
-        ? stories
-        : stories.filter((story) => story.status === activeFilter),
-    [activeFilter],
-  );
+  useEffect(() => {
+    getHome().then((home) => {
+      if (home?.counts) setCounts((previous) => ({ ...previous, ...home.counts }));
+    }).catch(() => {
+      // The list is still usable when tab counts are unavailable.
+    });
+  }, []);
+
+  useEffect(() => {
+    let active = true;
+    setIsLoading(true);
+    setError('');
+
+    getStories({ filter: activeFilter, page: 0, size: 20 }).then((result) => {
+      if (!active) return;
+      setStories(result.items || []);
+      setPage(result.page ?? 0);
+      setHasNext(Boolean(result.hasNext));
+      if (activeFilter === 'ALL') {
+        setCounts((previous) => ({ ...previous, all: result.totalElements }));
+      }
+      setError('');
+      setIsLoading(false);
+    }).catch((requestError) => {
+      if (!active) return;
+      setStories([]);
+      setHasNext(false);
+      setError(requestError.message || '서재 목록을 불러오지 못했어요.');
+      setIsLoading(false);
+    });
+
+    return () => { active = false; };
+  }, [activeFilter]);
+
+  const handleLoadMore = async () => {
+    setIsLoadingMore(true);
+    setError('');
+    try {
+      const result = await getStories({ filter: activeFilter, page: page + 1, size: 20 });
+      setStories((current) => [...current, ...(result.items || [])]);
+      setPage(result.page ?? page + 1);
+      setHasNext(Boolean(result.hasNext));
+    } catch (requestError) {
+      setError(requestError.message || '동화를 더 불러오지 못했어요.');
+    } finally {
+      setIsLoadingMore(false);
+    }
+  };
 
   return (
     <div className={styles.page}>
@@ -98,47 +128,50 @@ function LibraryPage() {
             {filters.map((filter) => (
               <button
                 key={filter.value}
-                className={`${styles.filter} ${
-                  activeFilter === filter.value ? styles.filterActive : ''
-                }`}
+                className={`${styles.filter} ${activeFilter === filter.value ? styles.filterActive : ''}`}
                 type="button"
                 aria-pressed={activeFilter === filter.value}
                 onClick={() => setActiveFilter(filter.value)}
               >
-                {filter.label}
+                {filter.label}{counts[filter.countKey || 'all'] != null && ` ${counts[filter.countKey || 'all']}`}
               </button>
             ))}
           </div>
 
-          <section className={styles.storyGrid} aria-live="polite">
-            {visibleStories.map((story) => (
-              <article className={styles.storyCard} key={story.id}>
-                <span
-                  className={`${styles.badge} ${styles[story.status]}`}
-                >
-                  {story.badge}
-                </span>
-                <img
-                  className={styles.cover}
-                  src={bookCover}
-                  alt={`${story.title} 표지`}
-                />
-                <h2 className={styles.storyTitle}>{story.title}</h2>
-                <div className={styles.storyFooter}>
-                  <p className={styles.storyMeta}>{story.meta}</p>
-                  {story.status === 'failed' && (
-                    <button
-                      className={styles.retryButton}
-                      type="button"
-                      onClick={() => navigate(`/story/${story.id}/remake`)}
-                    >
-                      다시 만들기
-                    </button>
-                  )}
-                </div>
-              </article>
-            ))}
+          {error && <p className={styles.error} role="alert">{error}</p>}
+          <section className={styles.storyGrid} aria-live="polite" aria-busy={isLoading}>
+            {isLoading ? <p className={styles.message}>서재를 불러오는 중이에요.</p> : stories.map((story) => {
+              const status = String(story.status || '').toUpperCase();
+              const storyTitle = story.title || '제목을 준비하고 있어요';
+              const meta = [story.childDisplayName, formatStoryDate(story.updatedAt || story.createdAt)]
+                .filter(Boolean).join(' · ');
+              return (
+                <article className={styles.storyCard} key={story.id}>
+                  <span className={`${styles.badge} ${styles[statusClasses[status]] || ''}`}>
+                    {story.label || statusLabels[status] || '동화'}
+                  </span>
+                  <img className={styles.cover} src={story.coverUrl || bookCover} alt={story.title ? `${story.title} 표지` : '동화 표지'} />
+                  <h2 className={styles.storyTitle}>{storyTitle}</h2>
+                  <div className={styles.storyFooter}>
+                    <p className={styles.storyMeta}>{meta}</p>
+                    {status === 'FAILED' && (
+                      <button className={styles.retryButton} type="button" onClick={() => navigate(`/story/${story.id}/remake`)}>
+                        다시 만들기
+                      </button>
+                    )}
+                  </div>
+                </article>
+              );
+            })}
+            {!isLoading && !error && stories.length === 0 && (
+              <p className={styles.message}>이 조건에 해당하는 동화가 없어요.</p>
+            )}
           </section>
+          {hasNext && !isLoading && (
+            <button className={styles.loadMore} type="button" onClick={handleLoadMore} disabled={isLoadingMore}>
+              {isLoadingMore ? '불러오는 중…' : '더 보기'}
+            </button>
+          )}
         </main>
       </div>
     </div>

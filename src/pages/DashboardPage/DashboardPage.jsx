@@ -5,6 +5,7 @@ import OnboardingModal from '../../features/onboarding/components/OnboardingModa
 import StoryDraftModal from '../../features/story/components/StoryDraftModal';
 import HomeScenarioModal from '../../features/home/components/HomeScenarioModal';
 import { readStoryDrafts } from '../../features/story/drafts';
+import { getCurrentMember, getHome } from '../../services/homeApi';
 import iconBell from '../../assets/icons/icon-bell.svg';
 import avatarProfile from '../../assets/icons/avatar-profile.svg';
 import iconPencil from '../../assets/icons/home-pencil.svg';
@@ -32,6 +33,15 @@ function DashboardPage() {
   const [storyModal, setStoryModal] = useState(null);
   const [selectedScenario, setSelectedScenario] = useState(null);
   const [drafts, setDrafts] = useState([]);
+  useEffect(() => {
+    Promise.allSettled([getHome(), getCurrentMember()]).then(([homeResult]) => {
+      if (homeResult.status === 'fulfilled' && homeResult.value?.onboardingSeen === false) {
+        setOnboardingOpen(true);
+      }
+    }).catch(() => {
+      // Preserve the current home screen if the home endpoint is unavailable.
+    });
+  }, []);
 
   useEffect(() => {
     if (!location.state?.chooseStory) return;
