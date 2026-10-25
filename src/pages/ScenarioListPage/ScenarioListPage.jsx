@@ -78,24 +78,26 @@ function ScenarioListPage() {
               ))}
             </div>
 
-            <ul className={styles.grid} aria-live="polite">
-              {visibleScenarios.map((scenario, index) => (
-                <li key={`${scenario.id}-${index}`}>
-                  <button
-                    className={`${styles.card} ${styles[scenario.color]}`}
-                    type="button"
-                    aria-haspopup="dialog"
-                    aria-label={`${scenario.category}: ${scenario.accessibleTitle}`}
-                    onClick={() => setSelectedScenario(scenario)}
-                  >
-                    <span className={styles.category}>{scenario.category}</span>
-                    <span className={styles.cardTitle}>{scenario.title}</span>
-                    <span className={styles.cardDescription}>{scenario.description}</span>
-                    <img className={styles.cardImage} src={scenario.image} alt="" />
-                  </button>
-                </li>
-              ))}
-            </ul>
+            <div className={styles.gridArea}>
+              <ul className={styles.grid} aria-live="polite">
+                {visibleScenarios.map((scenario, index) => (
+                  <li key={`${scenario.id}-${index}`}>
+                    <button
+                      className={`${styles.card} ${styles[scenario.color]}`}
+                      type="button"
+                      aria-haspopup="dialog"
+                      aria-label={`${scenario.category}: ${scenario.accessibleTitle}`}
+                      onClick={() => setSelectedScenario(scenario)}
+                    >
+                      <span className={styles.category}>{scenario.category}</span>
+                      <span className={styles.cardTitle}>{scenario.title}</span>
+                      <span className={styles.cardDescription}>{scenario.description}</span>
+                      <img className={styles.cardImage} src={scenario.image} alt="" />
+                    </button>
+                  </li>
+                ))}
+              </ul>
+            </div>
           </main>
         </div>
       </div>
