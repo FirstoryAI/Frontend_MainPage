@@ -12,7 +12,8 @@
 .main {
   position: relative;
   min-height: 100vh;
-  padding: 101px 91px 72px 363px;
+  /* 오른쪽 여백(40px)은 카드 4개(약 951px)가 세로 스크롤바(약 15px)가 생겨도 한 줄에 들어가도록 여유를 둔 값이에요. */
+  padding: 101px 40px 72px 363px;
 }
 
 .topbar {

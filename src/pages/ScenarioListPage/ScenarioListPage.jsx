@@ -11,6 +11,10 @@ import styles from './ScenarioListPage.module.css';
 const ALL = '전체';
 const filters = [ALL, ...new Set(scenarios.map((scenario) => scenario.category))];
 
+// 디자인(995:1063)은 같은 카드 4개를 두 줄로 놓은 8개 구성이에요.
+// 시나리오가 실제로 더 생기기 전까지는 목록을 한 번 더 이어 붙여 8개로 보여줘요.
+const listedScenarios = [...scenarios, ...scenarios];
+
 function ScenarioListPage() {
   const navigate = useNavigate();
   const [activeFilter, setActiveFilter] = useState(ALL);
@@ -18,8 +22,8 @@ function ScenarioListPage() {
 
   const visibleScenarios =
     activeFilter === ALL
-      ? scenarios
-      : scenarios.filter((scenario) => scenario.category === activeFilter);
+      ? listedScenarios
+      : listedScenarios.filter((scenario) => scenario.category === activeFilter);
 
   return (
     <div className={styles.page}>
@@ -75,8 +79,8 @@ function ScenarioListPage() {
             </div>
 
             <ul className={styles.grid} aria-live="polite">
-              {visibleScenarios.map((scenario) => (
-                <li key={scenario.id}>
+              {visibleScenarios.map((scenario, index) => (
+                <li key={`${scenario.id}-${index}`}>
                   <button
                     className={`${styles.card} ${styles[scenario.color]}`}
                     type="button"
