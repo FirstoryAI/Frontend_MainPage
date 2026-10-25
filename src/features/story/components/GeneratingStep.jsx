@@ -1,7 +1,5 @@
-import { useEffect, useRef } from 'react';
 import { useNavigate } from 'react-router-dom';
 import CtaButton from '../../../components/ui/CtaButton';
-import { useGenerationStage } from '../hooks/useGenerationStage';
 import runner from '../../../assets/images/story-runner.png';
 import circleActive from '../../../assets/icons/step-circle-active.svg';
 import circlePending from '../../../assets/icons/step-circle-pending.svg';
@@ -22,10 +20,6 @@ const stages = [
 // 마스코트가 현재 단계 아이콘 바로 위에 오도록 하는 가로 중심 위치
 const runnerCenter = ['18px', '50%', 'calc(100% - 18px)'];
 
-// 동화 생성 API가 생기기 전까지, 마지막 단계(그림 그리기)를 이만큼(ms) 보여준 뒤 완료로 넘겨요.
-// 서버의 완료 신호가 연결되면 이 대기 시간 대신 그 신호로 onComplete를 부르면 돼요.
-const LAST_STAGE_HOLD = 4000;
-
 // 알림 받을 번호는 아직 가져올 곳이 없어 화면 예시 값을 보여줘요.
 const PHONE_PLACEHOLDER = '010-****-1234';
 
@@ -44,22 +38,9 @@ function lineClass(index, stage) {
   return `${styles.line} ${index === stages.length - 2 ? styles.lineDoneSoft : styles.lineDone}`;
 }
 
-function GeneratingStep({ stage: controlledStage, onComplete }) {
+// stage: 지금 단계(0~2). 진행 상태는 StoryGenerationProvider가 앱 전체에서 관리해요.
+function GeneratingStep({ stage }) {
   const navigate = useNavigate();
-  const onCompleteRef = useRef(onComplete);
-  const timedStage = useGenerationStage();
-  const stage = controlledStage ?? timedStage;
-
-  useEffect(() => {
-    onCompleteRef.current = onComplete;
-  });
-
-  useEffect(() => {
-    if (stage !== stages.length - 1) return undefined;
-
-    const timer = setTimeout(() => onCompleteRef.current?.(), LAST_STAGE_HOLD);
-    return () => clearTimeout(timer);
-  }, [stage]);
 
   return (
     <div className={styles.step}>
