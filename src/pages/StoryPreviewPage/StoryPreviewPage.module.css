@@ -22,6 +22,7 @@
 
 .header {
   position: absolute;
+  z-index: 4;
   inset: 0 0 auto;
   height: 109px;
   padding: 29px 46px 0;

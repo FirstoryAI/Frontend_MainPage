@@ -59,8 +59,35 @@
   text-decoration: none;
 }
 
+.headingRow {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 16px;
+  margin-top: 16px;
+}
+
+.close {
+  flex: none;
+  width: 27px;
+  height: 27px;
+  padding: 0;
+  background: transparent;
+  border: 0;
+  cursor: pointer;
+}
+
+.close img {
+  display: block;
+}
+
+.close:focus-visible {
+  outline: 3px solid var(--color-brand);
+  outline-offset: 4px;
+}
+
 .heading {
-  margin: 16px 0 0;
+  margin: 0;
   color: var(--color-heading);
   font-size: 33px;
   font-weight: 700;

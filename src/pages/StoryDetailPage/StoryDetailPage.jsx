@@ -4,6 +4,7 @@ import NotificationBell from '../../components/layout/NotificationBell';
 import avatarCircle from '../../assets/icons/avatar-circle.svg';
 import avatarPerson from '../../assets/icons/avatar-person.svg';
 import iconTrash from '../../assets/icons/icon-trash.svg';
+import iconClose from '../../assets/remake/header-close.svg';
 import bookCover from '../../assets/images/library-book-cover.png';
 import { STORY_TITLE_PLACEHOLDER } from '../../features/story/constants';
 import styles from './StoryDetailPage.module.css';
@@ -46,7 +47,12 @@ function StoryDetailPage() {
             <span aria-hidden="true">&gt;</span>
             <span aria-current="page">동화 상세</span>
           </nav>
-          <h1 className={styles.heading}>동화 한 눈에 보기</h1>
+          <div className={styles.headingRow}>
+            <h1 className={styles.heading}>동화 한 눈에 보기</h1>
+            <button className={styles.close} type="button" onClick={() => navigate('/library')} aria-label="서재로 돌아가기">
+              <img src={iconClose} alt="" />
+            </button>
+          </div>
 
           <div className={styles.detail}>
             <section className={styles.bookColumn} aria-label="동화 표지">

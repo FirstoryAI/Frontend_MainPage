@@ -1,5 +1,5 @@
 import { useEffect, useState } from 'react';
-import { Link, useLocation, useNavigate } from 'react-router-dom';
+import { Link, useLocation, useNavigate, useParams } from 'react-router-dom';
 import pageArrowLeft from '../../assets/remake/page-arrow-left.svg';
 import pageArrowRight from '../../assets/remake/page-arrow-right.svg';
 import headerClose from '../../assets/remake/header-close.svg';
@@ -11,15 +11,20 @@ import styles from './StoryPreviewPage.module.css';
 
 import { SCENE_DESCRIPTION, SCENE_GUIDE, storyPages as pages } from '../../features/story/storyPages';
 import { useSceneScale } from '../../features/story/hooks/useSceneScale';
+import RemakeDialog from '../../features/story/components/RemakeDialog';
 
-function StoryPreviewPage() {
+// initialRemakeOpen: '다시 만들기' 팝업을 연 채로 시작해요. (서재에서 만들지 못한 동화를 다시 만들 때)
+// 이때 팝업을 닫으면 미리보기 대신 서재로 돌아가요.
+function StoryPreviewPage({ initialRemakeOpen = false }) {
   const location = useLocation();
   const navigate = useNavigate();
+  const { storyId } = useParams();
   const story = location.state?.story ?? {};
   const canRemake = location.state?.canRemake ?? true;
-  const [currentPage, setCurrentPage] = useState(4);
+  const [currentPage, setCurrentPage] = useState(1);
   const scale = useSceneScale();
   const [isReaderOpen, setIsReaderOpen] = useState(false);
+  const [isRemakeOpen, setIsRemakeOpen] = useState(initialRemakeOpen);
 
   useEffect(() => {
     if (!isReaderOpen) return undefined;
@@ -39,6 +44,20 @@ function StoryPreviewPage() {
     };
   }, [isReaderOpen]);
 
+  const closeRemake = () => {
+    if (initialRemakeOpen) {
+      navigate('/library');
+      return;
+    }
+    setIsRemakeOpen(false);
+  };
+
+  const remake = ({ type, request }) => {
+    navigate('/story/new', {
+      state: { remake: { storyId: storyId ?? story.id, type, request }, story },
+    });
+  };
+
   const page = pages[currentPage - 1];
   const showPage = (nextPage) => {
     setCurrentPage(Math.min(pages.length, Math.max(1, nextPage)));
@@ -49,14 +68,14 @@ function StoryPreviewPage() {
       <div className={styles.canvas} style={{ '--scene-scale': scale }}>
         <header className={styles.header}>
           <Link className={styles.logo} to="/home" aria-label="FIRSTORY 홈">FIRSTORY</Link>
-          <button className={styles.close} type="button" onClick={() => navigate('/home')} aria-label="홈으로 돌아가기">
+          <button className={styles.close} type="button" onClick={() => navigate('/library')} aria-label="서재로 돌아가기">
             <img src={headerClose} alt="" />
           </button>
         </header>
 
         <h1 className={styles.heading}>미리보기</h1>
 
-        <nav className={styles.pageList} aria-label="동화 페이지">
+        <nav className={styles.pageList} aria-label="동화 페이지" inert={isRemakeOpen}>
           {pages.map((item, index) => {
             const number = index + 1;
             const selected = currentPage === number;
@@ -76,7 +95,7 @@ function StoryPreviewPage() {
           })}
         </nav>
 
-        <main className={styles.book}>
+        <main className={styles.book} inert={isRemakeOpen}>
           <div
             className={styles.illustration}
             role="button"
@@ -106,7 +125,7 @@ function StoryPreviewPage() {
           </div>
         </main>
 
-        <aside className={styles.storyInfo}>
+        <aside className={styles.storyInfo} inert={isRemakeOpen}>
           <section>
             <h2>동화 설명</h2>
             <p>{SCENE_DESCRIPTION}</p>
@@ -120,11 +139,11 @@ function StoryPreviewPage() {
           </p>
         </aside>
 
-        <div className={styles.actions}>
+        <div className={styles.actions} inert={isRemakeOpen}>
           <div className={styles.remakeAction}>
             <button
               type="button"
-              onClick={() => navigate('/story/new', { state: { remake: true, story } })}
+              onClick={() => setIsRemakeOpen(true)}
               disabled={!canRemake}
             >다시 만들기</button>
           </div>
@@ -132,6 +151,7 @@ function StoryPreviewPage() {
             이대로 확정
           </button>
         </div>
+        {isRemakeOpen && <RemakeDialog onClose={closeRemake} onRemake={remake} />}
       </div>
       {isReaderOpen && (
         <section className={styles.reader} aria-label="동화 읽기" aria-modal="true" role="dialog">

@@ -14,7 +14,7 @@ function StoryGuidePage() {
   const navigate = useNavigate();
   const story = location.state?.story;
   const scale = useSceneScale();
-  const [currentPage, setCurrentPage] = useState(4);
+  const [currentPage, setCurrentPage] = useState(1);
 
   const page = storyPages[currentPage - 1];
   const showPage = (nextPage) => {
