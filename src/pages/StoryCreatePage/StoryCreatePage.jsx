@@ -12,8 +12,14 @@ import SummaryStep from '../../features/story/components/SummaryStep';
 import ChildEditModal from '../../features/story/components/ChildEditModal';
 import TextEditModal from '../../features/story/components/TextEditModal';
 import GeneratingStep from '../../features/story/components/GeneratingStep';
+import CompleteStep from '../../features/story/components/CompleteStep';
 import StoryDraftModal from '../../features/story/components/StoryDraftModal';
-import { STEP, SUMMARY_FALLBACK_GOAL, progressByStep } from '../../features/story/constants';
+import {
+  STEP,
+  STORY_TITLE_PLACEHOLDER,
+  SUMMARY_FALLBACK_GOAL,
+  progressByStep,
+} from '../../features/story/constants';
 import { deleteStoryDraft, saveStoryDraft } from '../../features/story/drafts';
 import { loadChildProfile, saveChildProfile } from '../../features/profile/childProfile';
 import iconNotice from '../../assets/icons/icon-notice.svg';
@@ -143,15 +149,17 @@ function StoryCreatePage() {
     : topic.message.trim() || SUMMARY_FALLBACK_GOAL;
   const summaryGoal = editedGoal || derivedGoal;
 
-  const progress = step === STEP.GENERATING ? null : progressByStep[step];
-  const showFooter = step !== STEP.CHAT && step !== STEP.GENERATING;
+  // 만드는 중·제작 완료 화면은 진행 바와 아래 버튼 없이 로고만 있는 헤더를 써요.
+  const progress = step >= STEP.GENERATING ? null : progressByStep[step];
+  const showFooter = step !== STEP.CHAT && step < STEP.GENERATING;
+  const storyTitle = location.state?.story?.title ?? STORY_TITLE_PLACEHOLDER;
 
   return (
     <div className={styles.page}>
       <StoryHeader progress={progress} onExit={() => setExitPromptOpen(true)} />
 
       <main className={styles.main} inert={editing !== null}>
-        {step > STEP.SITUATION && step !== STEP.GENERATING && <BackButton onClick={goBack} />}
+        {step > STEP.SITUATION && step < STEP.GENERATING && <BackButton onClick={goBack} />}
 
         {step === STEP.SITUATION && (
           <SituationStep selected={situation} onSelect={setSituation} />
@@ -186,18 +194,11 @@ function StoryCreatePage() {
           <GeneratingStep
             onComplete={() => {
               if (resumeDraft?.id) deleteStoryDraft(resumeDraft.id);
-              navigate('/story/preview', {
-                state: {
-                  story: location.state?.story ?? {
-                    description: detail.event.trim() || '친구와 블록을 만들며 생긴 이야기예요.',
-                    parentGuide: summaryGoal,
-                  },
-                  canRemake: !isRemake,
-                },
-              });
+              setStep(STEP.COMPLETE);
             }}
           />
         )}
+        {step === STEP.COMPLETE && <CompleteStep title={storyTitle} />}
       </main>
 
       {showFooter && (

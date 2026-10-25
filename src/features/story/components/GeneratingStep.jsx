@@ -22,6 +22,10 @@ const stages = [
 // 마스코트가 현재 단계 아이콘 바로 위에 오도록 하는 가로 중심 위치
 const runnerCenter = ['18px', '50%', 'calc(100% - 18px)'];
 
+// 동화 생성 API가 생기기 전까지, 마지막 단계(그림 그리기)를 이만큼(ms) 보여준 뒤 완료로 넘겨요.
+// 서버의 완료 신호가 연결되면 이 대기 시간 대신 그 신호로 onComplete를 부르면 돼요.
+const LAST_STAGE_HOLD = 4000;
+
 // 알림 받을 번호는 아직 가져올 곳이 없어 화면 예시 값을 보여줘요.
 const PHONE_PLACEHOLDER = '010-****-1234';
 
@@ -42,16 +46,20 @@ function lineClass(index, stage) {
 
 function GeneratingStep({ stage: controlledStage, onComplete }) {
   const navigate = useNavigate();
-  const completed = useRef(false);
+  const onCompleteRef = useRef(onComplete);
   const timedStage = useGenerationStage();
   const stage = controlledStage ?? timedStage;
 
   useEffect(() => {
-    if (stage === stages.length - 1 && !completed.current) {
-      completed.current = true;
-      onComplete?.();
-    }
-  }, [onComplete, stage]);
+    onCompleteRef.current = onComplete;
+  });
+
+  useEffect(() => {
+    if (stage !== stages.length - 1) return undefined;
+
+    const timer = setTimeout(() => onCompleteRef.current?.(), LAST_STAGE_HOLD);
+    return () => clearTimeout(timer);
+  }, [stage]);
 
   return (
     <div className={styles.step}>
