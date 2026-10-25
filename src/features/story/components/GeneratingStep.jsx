@@ -1,3 +1,4 @@
+import { useEffect, useState } from 'react';
 import { useNavigate } from 'react-router-dom';
 import CtaButton from '../../../components/ui/CtaButton';
 import runner from '../../../assets/images/story-runner.png';
@@ -8,6 +9,7 @@ import glyphBook from '../../../assets/icons/step-book.svg';
 import glyphPencil from '../../../assets/icons/step-pencil.svg';
 import glyphBrush from '../../../assets/icons/step-brush.svg';
 import glyphCheck from '../../../assets/icons/step-check.svg';
+import { getCurrentMember } from '../../../services/homeApi';
 import iconHomeWhite from '../../../assets/icons/icon-home-white.svg';
 import styles from './GeneratingStep.module.css';
 
@@ -19,9 +21,6 @@ const stages = [
 
 // 마스코트가 현재 단계 아이콘 바로 위에 오도록 하는 가로 중심 위치
 const runnerCenter = ['18px', '50%', 'calc(100% - 18px)'];
-
-// 알림 받을 번호는 아직 가져올 곳이 없어 화면 예시 값을 보여줘요.
-const PHONE_PLACEHOLDER = '010-****-1234';
 
 function circleFor(index, stage) {
   if (index < stage) {
@@ -39,8 +38,23 @@ function lineClass(index, stage) {
 }
 
 // stage: 지금 단계(0~2). 진행 상태는 StoryGenerationProvider가 앱 전체에서 관리해요.
-function GeneratingStep({ stage }) {
+// failed: 동화를 만들지 못했을 때. error는 서버가 알려준 이유, onRetry는 같은 범위로 다시 시도해요.
+function GeneratingStep({ stage, failed = false, error = '', onRetry }) {
   const navigate = useNavigate();
+  const [phone, setPhone] = useState('');
+
+  // 알림 받을 번호는 가려진 형태(010-****-5678)로 내 정보에서 가져와요.
+  useEffect(() => {
+    let active = true;
+    getCurrentMember()
+      .then((member) => {
+        if (active) setPhone(member.phoneMasked ?? '');
+      })
+      .catch(() => {});
+    return () => {
+      active = false;
+    };
+  }, []);
 
   return (
     <div className={styles.step}>
@@ -81,26 +95,35 @@ function GeneratingStep({ stage }) {
       </div>
 
       <h1 className={styles.title} role="status">
-        {stages[stage].title}
+        {failed ? '동화를 만들지 못했어요' : stages[stage].title}
       </h1>
       <p className={styles.notice}>
-        보통 3~4분 정도 걸려요. 화면을 나가도 동화는 계속 만들어져요.
+        {failed
+          ? error || '잠시 뒤에 다시 시도해 주세요.'
+          : '보통 3~4분 정도 걸려요. 화면을 나가도 동화는 계속 만들어져요.'}
       </p>
 
-      <div className={styles.card}>
-        <p className={styles.cardText}>다 되면 카카오톡으로 알려드려요</p>
-        <p className={styles.phone}>{PHONE_PLACEHOLDER}</p>
-        <button
-          className={styles.changeButton}
-          type="button"
-          disabled
-          title="번호 변경 화면이 준비되면 연결됩니다"
-        >
-          번호 바꾸기
-        </button>
-      </div>
+      {!failed && (
+        <div className={styles.card}>
+          <p className={styles.cardText}>다 되면 카카오톡으로 알려드려요</p>
+          <p className={styles.phone}>{phone}</p>
+          <button
+            className={styles.changeButton}
+            type="button"
+            disabled
+            title="번호 변경 화면이 준비되면 연결됩니다"
+          >
+            번호 바꾸기
+          </button>
+        </div>
+      )}
 
       <div className={styles.footer}>
+        {failed && (
+          <CtaButton pill onClick={onRetry}>
+            다시 시도
+          </CtaButton>
+        )}
         <CtaButton
           pill
           iconOnly

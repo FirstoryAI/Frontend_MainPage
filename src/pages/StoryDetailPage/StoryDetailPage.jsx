@@ -1,3 +1,4 @@
+import { useCallback, useEffect, useState } from 'react';
 import { Link, useLocation, useNavigate, useParams } from 'react-router-dom';
 import Sidebar from '../../components/layout/Sidebar';
 import NotificationBell from '../../components/layout/NotificationBell';
@@ -6,12 +7,65 @@ import avatarPerson from '../../assets/icons/avatar-person.svg';
 import iconTrash from '../../assets/icons/icon-trash.svg';
 import iconClose from '../../assets/remake/header-close.svg';
 import bookCover from '../../assets/images/library-book-cover.png';
-import { STORY_TITLE_PLACEHOLDER } from '../../features/story/constants';
+import StoryReader from '../../features/story/components/StoryReader';
+import readerStyles from '../../features/story/components/StoryReader.module.css';
+import { deleteStory, getBook, getGuide, getStoryDetail } from '../../services/storiesApi';
+import {
+  completeReading,
+  resumeReading,
+  saveDialogue,
+  saveReadingProgress,
+  startReading,
+} from '../../services/readingApi';
 import styles from './StoryDetailPage.module.css';
 
-// 줄거리와 읽기 가이드는 동화 생성 결과가 연결되기 전까지 '토리와 빨간 블록' 예시 내용이에요.
-const SUMMARY =
-  '토리는 가장 좋아하는 빨간 블록으로 집을 짓다가, 친구가 블록을 가져가려 하자 마음이 복잡해져요. 혼자 놀고 싶은 마음도, 친구의 슬픈 표정이 마음에 걸리는 것도 모두 진짜라는 걸 알아가는 이야기예요.';
+// 읽기 가이드를 아직 못 받았을 때 대신 보여주는 기본 안내예요.
+const FALLBACK_BEFORE = [
+  '정답을 말해 주기보다 아이 말을 먼저 들어 주세요.',
+  '아이가 이야기하고 싶어 하지 않으면 그냥 읽고 넘어가도 괜찮아요.',
+];
+const FALLBACK_AFTER = {
+  bridgeQuestion: '“너도 친구랑 놀고 싶었는데 속상했던 적 있어?”',
+  ifUndecided: '아이의 이야기로 꼭 넘어가지 않아도 괜찮아요',
+};
+
+// 읽는 쪽 아래에 보여주는 대화 질문과 '다 읽었어요' 버튼이에요.
+function ReadingExtras({ reading, onDialogue, onFinish }) {
+  const { book, page, answers } = reading;
+  const prompt = book.prompts?.find((item) => item.afterPage === page);
+  const isLast = page === book.pages.length;
+
+  if (!prompt && !isLast) return null;
+
+  return (
+    <>
+      {prompt && (
+        <>
+          <span>{prompt.question}</span>
+          <button
+            className={answers[prompt.id] === 'TALKED' ? readerStyles.primary : ''}
+            type="button"
+            onClick={() => onDialogue(prompt.id, 'TALKED')}
+          >
+            이야기 나눴어요
+          </button>
+          <button
+            className={answers[prompt.id] === 'SKIPPED' ? readerStyles.primary : ''}
+            type="button"
+            onClick={() => onDialogue(prompt.id, 'SKIPPED')}
+          >
+            건너뛰기
+          </button>
+        </>
+      )}
+      {isLast && (
+        <button className={readerStyles.primary} type="button" onClick={onFinish}>
+          다 읽었어요
+        </button>
+      )}
+    </>
+  );
+}
 
 // 서재에서 '아직 읽지 않았어요'·'함께 읽었어요' 동화를 누르면 보이는 동화 상세 화면이에요.
 function StoryDetailPage() {
@@ -19,7 +73,84 @@ function StoryDetailPage() {
   const location = useLocation();
   const navigate = useNavigate();
   const story = location.state?.story;
-  const title = story?.title || STORY_TITLE_PLACEHOLDER;
+  const [detail, setDetail] = useState(null);
+  const [guide, setGuide] = useState(null);
+  const [loadError, setLoadError] = useState('');
+  const [notice, setNotice] = useState('');
+  const [busy, setBusy] = useState(false);
+  // 아이와 읽는 중이면 { session, book, page, answers }
+  const [reading, setReading] = useState(null);
+
+  const loadDetail = useCallback(
+    () =>
+      getStoryDetail(storyId)
+        .then(setDetail)
+        .catch((error) => setLoadError(error.message || '동화를 불러오지 못했어요.')),
+    [storyId],
+  );
+
+  useEffect(() => {
+    loadDetail();
+    // 대화 가이드는 확정한 동화만 받을 수 있어서, 못 받으면 기본 안내를 보여줘요.
+    getGuide(storyId).then(setGuide).catch(() => setGuide(null));
+  }, [loadDetail, storyId]);
+
+  const title = detail?.title ?? story?.title ?? '';
+  const summary = detail?.summary ?? '';
+  const coverUrl = detail?.coverUrl ?? story?.coverUrl;
+  const beforeLines = guide
+    ? [guide.beforeReading?.intent, ...(guide.beforeReading?.tips ?? [])].filter(Boolean)
+    : FALLBACK_BEFORE;
+  const after = guide?.afterReading ?? FALLBACK_AFTER;
+
+  const handleDelete = async () => {
+    if (!window.confirm('이 동화를 지울까요? 지우면 되돌릴 수 없어요.')) return;
+
+    setNotice('');
+    try {
+      await deleteStory(storyId);
+      navigate('/library');
+    } catch (error) {
+      setNotice(error.message || '동화를 지우지 못했어요.');
+    }
+  };
+
+  // 끝나지 않은 읽기가 있으면 마지막으로 읽던 쪽부터 이어서, 없으면 새로 시작해요.
+  const handleStartReading = async () => {
+    if (busy) return;
+
+    setBusy(true);
+    setNotice('');
+    try {
+      const [book, resumed] = await Promise.all([getBook(storyId), resumeReading(storyId)]);
+      const session = resumed ?? (await startReading(storyId));
+      setReading({ session, book, page: Math.max(1, session.lastPage), answers: {} });
+    } catch (error) {
+      setNotice(error.message || '읽기를 시작하지 못했어요.');
+    } finally {
+      setBusy(false);
+    }
+  };
+
+  const handlePage = (page) => {
+    setReading((current) => ({ ...current, page }));
+    saveReadingProgress(reading.session.sessionId, page).catch(() => {});
+  };
+
+  const handleDialogue = (promptId, action) => {
+    setReading((current) => ({ ...current, answers: { ...current.answers, [promptId]: action } }));
+    saveDialogue(reading.session.sessionId, promptId, action).catch(() => {});
+  };
+
+  const handleFinishReading = async () => {
+    try {
+      await completeReading(reading.session.sessionId);
+      setReading(null);
+      loadDetail();
+    } catch (error) {
+      setNotice(error.message || '읽기를 마치지 못했어요.');
+    }
+  };
 
   return (
     <div className={styles.page}>
@@ -54,11 +185,17 @@ function StoryDetailPage() {
             </button>
           </div>
 
+          {(loadError || notice) && (
+            <p className={styles.notice} role="alert">
+              {loadError || notice}
+            </p>
+          )}
+
           <div className={styles.detail}>
             <section className={styles.bookColumn} aria-label="동화 표지">
               <div className={styles.cover}>
-                {story?.coverUrl ? (
-                  <img className={styles.coverFull} src={story.coverUrl} alt={`${title} 표지`} />
+                {coverUrl ? (
+                  <img className={styles.coverFull} src={coverUrl} alt={`${title} 표지`} />
                 ) : (
                   <img className={styles.coverCrop} src={bookCover} alt={`${title} 표지`} />
                 )}
@@ -66,13 +203,18 @@ function StoryDetailPage() {
 
               <div className={styles.titleRow}>
                 <h2 className={styles.title}>{title}</h2>
-                <button className={styles.trash} type="button" disabled title="준비 중" aria-label="동화 삭제">
+                <button className={styles.trash} type="button" onClick={handleDelete} aria-label="동화 삭제">
                   <img src={iconTrash} alt="" />
                 </button>
               </div>
 
-              <button className={styles.readButton} type="button" disabled title="준비 중">
-                아이와 읽기 시작하기
+              <button
+                className={styles.readButton}
+                type="button"
+                onClick={handleStartReading}
+                disabled={!detail?.canRead || busy}
+              >
+                {busy ? '불러오는 중…' : '아이와 읽기 시작하기'}
               </button>
               <button
                 className={styles.guideButton}
@@ -86,25 +228,45 @@ function StoryDetailPage() {
             <div className={styles.cards}>
               <section className={`${styles.card} ${styles.summaryCard}`}>
                 <h2>동화 줄거리</h2>
-                <p>{SUMMARY}</p>
+                <p>{summary}</p>
               </section>
               <section className={styles.card}>
                 <h2>읽기 전에</h2>
                 <p>
-                  정답을 말해 주기보다 아이 말을 먼저 들어 주세요.
-                  <br />
-                  아이가 이야기하고 싶어 하지 않으면 그냥 읽고 넘어가도 괜찮아요.
+                  {beforeLines.map((line, index) => (
+                    <span key={line}>
+                      {index > 0 && <br />}
+                      {line}
+                    </span>
+                  ))}
                 </p>
               </section>
               <section className={`${styles.card} ${styles.afterCard}`}>
                 <h2>다 읽은 뒤에</h2>
-                <p className={styles.question}>“너도 친구랑 놀고 싶었는데 속상했던 적 있어?”</p>
-                <p>아이의 이야기로 꼭 넘어가지 않아도 괜찮아요</p>
+                <p className={styles.question}>{after.bridgeQuestion}</p>
+                <p>{after.ifUndecided}</p>
               </section>
             </div>
           </div>
         </main>
       </div>
+
+      {reading && (
+        <StoryReader
+          title={reading.book.title}
+          pages={reading.book.pages}
+          page={reading.page}
+          onPage={handlePage}
+          onClose={() => setReading(null)}
+          closeLabel="읽기 닫기"
+        >
+          <ReadingExtras
+            reading={reading}
+            onDialogue={handleDialogue}
+            onFinish={handleFinishReading}
+          />
+        </StoryReader>
+      )}
     </div>
   );
 }

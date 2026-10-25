@@ -3,6 +3,8 @@ import closeIcon from '../../../assets/notification/close.svg';
 import toggleOff from '../../../assets/notification/toggle-off.svg';
 import toggleOn from '../../../assets/notification/toggle-on.svg';
 import { loadNotificationSettings, saveNotificationSettings } from '../notificationSettings';
+import { getCurrentMember } from '../../../services/homeApi';
+import { setSmsNotify } from '../../../services/meApi';
 import styles from './NotificationModal.module.css';
 
 const settings = [
@@ -15,6 +17,18 @@ function NotificationModal({ onClose }) {
   const closeButton = useRef(null);
   const [dialogScale, setDialogScale] = useState(1);
   const [notifications, setNotifications] = useState(loadNotificationSettings);
+  const [error, setError] = useState('');
+
+  // 카카오톡 알림 여부는 서버에 저장된 동의(smsNotify)를 따라요. 이메일·마케팅은 이 브라우저에만 저장돼요.
+  useEffect(() => {
+    let active = true;
+    getCurrentMember()
+      .then((member) => active && setNotifications((current) => ({ ...current, kakao: member.smsNotify })))
+      .catch(() => {});
+    return () => {
+      active = false;
+    };
+  }, []);
 
   useEffect(() => {
     const previousFocus = document.activeElement;
@@ -45,11 +59,23 @@ function NotificationModal({ onClose }) {
     return () => window.removeEventListener('resize', updateScale);
   }, []);
 
-  const toggleSetting = (id) => {
+  const toggleSetting = async (id) => {
     const isTurningOn = !notifications[id];
     const updated = { ...notifications, [id]: isTurningOn };
     setNotifications(updated);
-    saveNotificationSettings(updated);
+    setError('');
+
+    if (id !== 'kakao') {
+      saveNotificationSettings(updated);
+      return;
+    }
+
+    try {
+      await setSmsNotify(isTurningOn);
+    } catch (requestError) {
+      setNotifications((current) => ({ ...current, kakao: !isTurningOn }));
+      setError(requestError.message || '알림 설정을 바꾸지 못했어요.');
+    }
   };
 
   return (
@@ -96,6 +122,11 @@ function NotificationModal({ onClose }) {
             </div>
           ))}
         </div>
+        {error && (
+          <p className={styles.error} role="alert">
+            {error}
+          </p>
+        )}
       </section>
     </div>
   );

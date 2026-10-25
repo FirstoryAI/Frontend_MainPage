@@ -63,6 +63,3 @@ export const progressByStep = [160, 291, 460, 600, 740, 862].map(
 );
 
 export const SUMMARY_FALLBACK_GOAL = 'FIRSTORY AI와 함께 이야기를 정리해 볼게요.';
-
-// 동화 제목은 생성 결과가 연결되기 전까지 보여줄 임시 제목이에요. (제작 완료 화면의 표지 이미지와 같은 이야기)
-export const STORY_TITLE_PLACEHOLDER = '토리와 빨간 블록';

@@ -115,3 +115,12 @@
     padding: 16px;
   }
 }
+
+.error {
+  position: absolute;
+  top: 318px;
+  left: 61px;
+  margin: 0;
+  color: #a34439;
+  font-size: 14px;
+}

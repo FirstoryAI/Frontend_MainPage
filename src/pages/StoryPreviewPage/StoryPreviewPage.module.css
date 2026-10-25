@@ -121,6 +121,44 @@
   line-height: 1.2;
 }
 
+.thumbnail .noImage {
+  position: relative;
+  z-index: 1;
+  width: 150px;
+  height: 85px;
+  background: #e4dcd9;
+  border-radius: 5px;
+}
+
+.status {
+  position: absolute;
+  top: 300px;
+  left: 0;
+  width: 100%;
+  margin: 0;
+  color: var(--color-secondary);
+  font-size: 20px;
+  text-align: center;
+}
+
+.noImageText {
+  display: grid;
+  width: 100%;
+  height: 100%;
+  margin: 0;
+  place-items: center;
+  color: var(--color-secondary);
+  background: #f3eae7;
+  font-size: 18px;
+}
+
+.actionError {
+  grid-column: 1 / -1;
+  margin: 0;
+  color: #a34439;
+  font-size: 15px;
+}
+
 .selectedThumbnail::before { background: #ffe8af; }
 .thumbnail:nth-child(5),
 .thumbnail:nth-child(6) { margin-top: 2px; }
@@ -291,189 +329,13 @@
   box-shadow: inset 0 0 4.2px rgb(255 255 255 / 25%);
 }
 
-.reader {
-  position: fixed;
-  z-index: 100;
-  inset: 0;
-  display: grid;
-  place-items: center;
-  overflow: hidden;
-  background: var(--color-page);
-}
-
-.readerCanvas {
-  position: relative;
-  width: min(100vw, 150vh);
-  aspect-ratio: 3 / 2;
-  overflow: hidden;
-  background: var(--color-page);
-  container-type: inline-size;
-}
-
-.readerHeader {
-  position: absolute;
-  z-index: 2;
-  inset: 0 0 auto;
-  height: 11.35%;
-  background: #fff;
-  box-shadow: 0 2px 10.4px rgb(0 0 0 / 5%);
-}
-
-.readerClose {
-  position: absolute;
-  top: 38%;
-  left: 4.03%;
-  display: grid;
-  width: 1.875cqw;
-  height: 1.875cqw;
-  place-items: center;
-  padding: 0;
-  border: 0;
-  background: transparent;
-  cursor: pointer;
-}
-
-.readerClose img {
-  display: block;
-  width: 1.875cqw;
-  height: 1.875cqw;
-}
-
-.readerTitle {
-  position: absolute;
-  top: 32.1%;
-  left: 9.38%;
-  max-width: 48%;
-  margin: 0;
-  overflow: hidden;
-  color: var(--color-text);
-  font-family: var(--font-title);
-  font-size: clamp(16px, 2.083cqw, 30px);
-  font-weight: 400;
-  line-height: 1.3;
-  letter-spacing: -0.03em;
-  text-overflow: ellipsis;
-  white-space: nowrap;
-}
-
-.readerProgress {
-  position: absolute;
-  top: 40.4%;
-  right: 4.17%;
-  display: flex;
-  align-items: center;
-  gap: 0.97cqw;
-  width: 31.6%;
-  color: #717070;
-  font-size: clamp(11px, 1.25cqw, 18px);
-  line-height: 1;
-}
-
-.readerProgress > span { flex: 0 0 auto; white-space: nowrap; }
-
-.readerProgressTrack {
-  flex: 1;
-  height: 0.9cqw;
-  overflow: hidden;
-  border-radius: 32px;
-  background: #e2e2e2;
-}
-
-.readerProgressFill {
-  height: 100%;
-  border-radius: inherit;
-  background: #ffcf55;
-  transition: width 180ms ease;
-}
-
-.readerBook {
-  position: absolute;
-  top: 13.45%;
-  left: 4.72%;
-  width: 90.56%;
-  height: 82.62%;
-}
-
-.readerFrame {
-  position: absolute;
-  inset: 0;
-  display: block;
-  width: 100%;
-  height: 100%;
-  max-width: none;
-  pointer-events: none;
-}
-
-.readerPage {
-  position: absolute;
-  top: 5.48%;
-  left: 3.11%;
-  width: 93.78%;
-  height: 88.88%;
-  padding: 1.25cqw 1.32cqw 1.18cqw;
-  border-radius: 5px;
-  background: #fffcef;
-}
-
-.readerPageContent {
-  position: relative;
-  width: 100%;
-  height: 100%;
-  overflow: hidden;
-}
-
-.readerPageContent > img {
-  display: block;
-  width: 100%;
-  height: 100%;
-  object-fit: fill;
-}
-
-.readerCopy {
-  position: absolute;
-  top: 3.28%;
-  left: 55.02%;
-  width: 43%;
-  color: #4a4a4a;
-  font-family: var(--font-title);
-  font-size: clamp(9px, 1.18cqw, 17px);
-  line-height: 1.34;
-}
-
-.readerCopy p { margin: 0 0 0.21cqw; }
-
-.readerArrow {
-  position: absolute;
-  z-index: 3;
-  top: 52.6%;
-  display: grid;
-  width: 4.167cqw;
-  height: 4.274cqw;
-  place-items: center;
-  padding: 0;
-  border: 0;
-  background: transparent;
-  cursor: pointer;
-  transform: translateY(-50%);
-}
-
-.readerArrow img {
-  display: block;
-  width: 4.167cqw;
-  height: 4.274cqw;
-}
-
-.readerArrow:disabled { opacity: 0.35; cursor: default; }
-.readerArrowLeft { left: 1.25%; }
-.readerArrowRight { right: 1.25%; }
-.readerArrowRight img { transform: rotate(180deg); }
-
 @media (max-width: 760px) {
   .page { width: 100vw; height: auto; min-height: 100vh; overflow-x: hidden; overflow-y: visible; }
   .canvas { position: relative; top: auto; left: auto; width: 100vw; min-width: 0; height: auto; min-height: 100vh; overflow: visible; transform: none; }
   .header { position: relative; height: 76px; padding: 20px 20px 0; }
   .logo { font-size: 32px; }
   .close { top: 24px; right: 20px; width: 24px; height: 24px; }
+  .status { position: static; margin: 48px 20px; }
   .heading { position: relative; top: auto; left: auto; margin: 22px 20px 14px; font-size: 20px; }
   .pageList { position: relative; top: auto; left: auto; flex-direction: row; gap: 10px; width: auto; height: auto; padding: 0 20px 14px; overflow-x: auto; overflow-y: hidden; }
   .thumbnail { flex-basis: 100px; width: 100px; height: 73px; }
@@ -496,22 +358,6 @@
   .actions button { width: 100%; min-width: 0; height: 52px; border-radius: 12px; font-size: 15px; }
   .remakeNote { position: static; margin: 4px 0 0; font-size: 12px; text-align: center; white-space: normal; }
 
-  .readerCanvas { width: 100vw; height: 100vh; aspect-ratio: auto; }
-  .readerHeader { height: 76px; }
-  .readerClose { top: 24px; left: 16px; width: 24px; height: 24px; }
-  .readerClose img { width: 24px; height: 24px; }
-  .readerTitle { top: 24px; left: 47px; max-width: 43%; font-size: 16px; }
-  .readerProgress { top: 31px; right: 16px; gap: 6px; width: 32%; font-size: 11px; }
-  .readerProgressTrack { height: 8px; }
-  .readerBook { top: 40%; left: 2%; width: 96%; height: auto; aspect-ratio: 1304.2 / 793.102; }
-  .readerFrame { width: 100%; height: 100%; }
-  .readerPage { top: 5.48%; left: 3.11%; width: 93.78%; height: 88.88%; padding: 1.28vw 1.35vw 1.2vw; }
-  .readerCopy { top: 3.28%; font-size: clamp(8px, 2.4vw, 12px); }
-  .readerCopy p { margin-bottom: 2px; }
-  .readerArrow { top: 52.6%; width: 60px; height: 61.54px; transform: translateY(-50%) scale(.7); }
-  .readerArrow img { width: 60px; height: 61.5373px; }
-  .readerArrowLeft { left: -2px; transform-origin: left center; }
-  .readerArrowRight { right: -2px; transform-origin: right center; }
 }
 
 @media (max-width: 380px) {
