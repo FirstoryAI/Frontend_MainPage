@@ -1,6 +1,7 @@
 import { useEffect, useRef, useState } from 'react';
 import { CHAT_INTRO } from '../categoryContent';
 import { answerInterview } from '../../../services/storiesApi';
+import { extractChoices } from '../interviewChoices';
 import avatar from '../../../assets/images/chat-avatar.png';
 import sendCircle from '../../../assets/icons/send-circle.svg';
 import sendArrow from '../../../assets/icons/send-arrow.svg';
@@ -11,8 +12,10 @@ const MAX_SKIPS = 8;
 const ERROR_TEXT = '잠시 문제가 생겼어요. 다시 보내 주세요.';
 
 // 만들던 인터뷰(turns: [{ question, answer }])를 대화 말풍선으로 바꿔요. 마지막 질문은 아직 답이 없어요.
-function turnsToMessages(turns) {
+// recap은 부모가 앞에서 적은 상황이에요. 디자인처럼 AI 안내 다음에 부모의 첫 말로 보여줘요.
+function turnsToMessages(turns, recap) {
   const messages = [{ id: 'ai-intro', from: 'ai', text: CHAT_INTRO }];
+  if (recap) messages.push({ id: 'user-recap', from: 'user', text: recap });
   turns.forEach((turn, index) => {
     if (turn.question) messages.push({ id: `ai-${index}`, from: 'ai', text: turn.question });
     if (turn.answer) messages.push({ id: `user-${index}`, from: 'user', text: turn.answer });
@@ -23,8 +26,10 @@ function turnsToMessages(turns) {
 // FIRSTORY AI의 인터뷰예요. 질문에 답하면 서버가 다음 질문을 주고, 충분해지면 요약(summary)을 줘요.
 // onFinish(summary): 인터뷰가 끝났을 때, onSafety(safety): 차단(BLOCK)일 때
 // onAnswered(answer): 서버가 받아들인 답(건너뛰면 null)이에요. 수정 후 다시 만들 때 같은 답을 다시 보내려고 모아 둬요.
-function ChatStep({ storyId, turns, onFinish, onSafety, onAnswered }) {
-  const [messages, setMessages] = useState(() => turnsToMessages(turns));
+// recap: 앞에서 적은 상황, initialChoices: 첫 질문의 답변 카드(없으면 빈 목록)
+function ChatStep({ storyId, turns, recap = '', initialChoices = [], onFinish, onSafety, onAnswered }) {
+  const [messages, setMessages] = useState(() => turnsToMessages(turns, recap));
+  const [choices, setChoices] = useState(initialChoices);
   const [draft, setDraft] = useState('');
   const [busy, setBusy] = useState(false);
   const endRef = useRef(null);
@@ -51,6 +56,7 @@ function ChatStep({ storyId, turns, onFinish, onSafety, onAnswered }) {
 
   // 서버 응답 하나를 처리해요. 끝났으면 true를 돌려줘요.
   const handleResponse = (response) => {
+    setChoices(extractChoices(response));
     const action = response.safety?.action;
     if (action === 'BLOCK') {
       onSafety(response.safety);
@@ -75,6 +81,7 @@ function ChatStep({ storyId, turns, onFinish, onSafety, onAnswered }) {
 
     addMessage('user', trimmed);
     setDraft('');
+    setChoices([]);
     setBusy(true);
     try {
       const response = await answerInterview(storyId, trimmed);
@@ -150,6 +157,22 @@ function ChatStep({ storyId, turns, onFinish, onSafety, onAnswered }) {
       <div ref={endRef} />
 
       <div className={styles.composer}>
+        {choices.length > 0 && (
+          <div className={styles.quickReplies} role="group" aria-label="답변 후보">
+            {choices.map((choice) => (
+              <button
+                className={styles.quickReply}
+                type="button"
+                key={choice}
+                disabled={busy}
+                onClick={() => send(choice)}
+              >
+                {choice}
+              </button>
+            ))}
+          </div>
+        )}
+
         <form className={styles.inputBar} onSubmit={handleSubmit}>
           <input
             className={styles.input}

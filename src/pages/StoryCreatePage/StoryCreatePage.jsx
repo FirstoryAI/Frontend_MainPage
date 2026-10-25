@@ -27,6 +27,7 @@ import {
   toChildProfile,
   toSituationRequest,
 } from '../../features/story/storyMappers';
+import { extractChoices } from '../../features/story/interviewChoices';
 import { useStoryGeneration } from '../../features/story/generation/useStoryGeneration';
 import { useNotifications } from '../../features/notifications/useNotifications';
 import {
@@ -85,6 +86,7 @@ function StoryCreatePage() {
   const [editedGoal, setEditedGoal] = useState('');
   // 인터뷰 질문·답변(채팅 화면에 보여줄 것)
   const [interviewTurns, setInterviewTurns] = useState([]);
+  const [interviewChoices, setInterviewChoices] = useState([]);
   // 마무리 화면에서 고친 내용이 서버 동화와 달라졌는지. 달라졌으면 확정할 때 새로 보내요.
   const [stale, setStale] = useState(false);
   // 마무리 화면에서 열려 있는 수정 모달: 'child' | 'situation' | 'goal' | null
@@ -368,6 +370,7 @@ function StoryCreatePage() {
     if (mode === 'chat') {
       interviewAnswers.current = [];
       setInterviewTurns([{ question: response.question }]);
+      setInterviewChoices(extractChoices(response));
       return 'chat';
     }
 
@@ -563,6 +566,8 @@ function StoryCreatePage() {
           <ChatStep
             storyId={storyId}
             turns={interviewTurns}
+            recap={detail.event.trim()}
+            initialChoices={interviewChoices}
             onFinish={handleChatFinish}
             onSafety={setBlocked}
             onAnswered={(answer) => interviewAnswers.current.push(answer)}

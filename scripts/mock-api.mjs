@@ -48,6 +48,11 @@ const PAGE_LINES = [
   ['토리는 친구에게 먼저 다가갔어요.', '“우리 같이 집을 만들어 볼래?”'],
   ['둘이 함께 만든 집에는 멋진 지붕이 생겼어요.', '마음도 조금씩 편안해졌어요.'],
 ];
+// 질문마다 보여줄 답변 후보예요. (실제 서버가 후보를 주면 같은 모양으로 오게 될 거예요)
+const INTERVIEW_CHOICES = [
+  ['마음을 먼저 다독여 주고 싶어요', '다른 친구와도 지낼 수 있다고 알려 주고 싶어요', '둘 다 마음에 걸려요'],
+  ['속상한 마음을 알아줬으면 좋겠어요', '괜찮다고 느꼈으면 좋겠어요'],
+];
 const INTERVIEW_QUESTIONS = [
   '그 일이 있고 나서 아이가 가장 많이 한 말은 무엇이었나요?',
   '아이가 이 이야기를 듣고 어떤 마음이 들면 좋겠어요?',
@@ -315,6 +320,7 @@ function interviewResponse(story, extra = {}) {
     type: isConfirm ? 'CONFIRM' : 'QUESTION',
     turn: asked,
     question: isConfirm ? null : INTERVIEW_QUESTIONS[done],
+    choices: isConfirm ? [] : INTERVIEW_CHOICES[done],
     summary: isConfirm ? story.interview.summary : null,
     contextUpdate: {},
     safety: extra.safety ?? { action: 'PROCEED', level: 'OK', category: null, reason: null, helpKind: null },

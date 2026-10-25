@@ -56,9 +56,9 @@ export const STEP = {
 };
 
 // 헤더 진행 바 채움 길이(트랙 862px 기준). 상황·설명·아이 정보·마무리는 Figma 값이고,
-// 이야기·채팅은 디자인에 값이 없어 이전 단계보다 더 차게 잡았어요. 동화 만드는 중 화면은 진행 바가 없어요.
+// 채팅(715)은 Figma 값이고, 이야기(600)는 디자인에 값이 없어 이전 단계보다 더 차게 잡았어요. 동화 만드는 중 화면은 진행 바가 없어요.
 const PROGRESS_TRACK = 862;
-export const progressByStep = [160, 291, 460, 600, 740, 862].map(
+export const progressByStep = [160, 291, 460, 600, 715, 862].map(
   (width) => width / PROGRESS_TRACK,
 );
 
