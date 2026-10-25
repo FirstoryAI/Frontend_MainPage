@@ -1,7 +1,5 @@
-import { useEffect, useRef } from 'react';
 import { useNavigate } from 'react-router-dom';
 import CtaButton from '../../../components/ui/CtaButton';
-import { useGenerationStage } from '../hooks/useGenerationStage';
 import runner from '../../../assets/images/story-runner.png';
 import circleActive from '../../../assets/icons/step-circle-active.svg';
 import circlePending from '../../../assets/icons/step-circle-pending.svg';
@@ -40,18 +38,9 @@ function lineClass(index, stage) {
   return `${styles.line} ${index === stages.length - 2 ? styles.lineDoneSoft : styles.lineDone}`;
 }
 
-function GeneratingStep({ stage: controlledStage, onComplete }) {
+// stage: 지금 단계(0~2). 진행 상태는 StoryGenerationProvider가 앱 전체에서 관리해요.
+function GeneratingStep({ stage }) {
   const navigate = useNavigate();
-  const completed = useRef(false);
-  const timedStage = useGenerationStage();
-  const stage = controlledStage ?? timedStage;
-
-  useEffect(() => {
-    if (stage === stages.length - 1 && !completed.current) {
-      completed.current = true;
-      onComplete?.();
-    }
-  }, [onComplete, stage]);
 
   return (
     <div className={styles.step}>

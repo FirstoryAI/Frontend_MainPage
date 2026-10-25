@@ -1,0 +1,189 @@
+.page {
+  position: relative;
+  width: 100%;
+  min-width: 320px;
+  height: 100vh;
+  min-height: 500px;
+  overflow: hidden;
+  background: var(--color-page);
+}
+
+.canvas {
+  position: absolute;
+  top: 0;
+  left: 50%;
+  width: 1440px;
+  height: 960px;
+  overflow: hidden;
+  background: var(--color-page);
+  transform: translateX(-50%) scale(var(--scene-scale, 1));
+  transform-origin: top center;
+}
+
+.header {
+  position: absolute;
+  inset: 0 0 auto;
+  height: 109px;
+  padding: 29px 46px 0;
+  background: #fff;
+  box-shadow: 0 2px 10.4px rgb(0 0 0 / 5%);
+}
+
+.logo {
+  display: inline-block;
+  color: var(--color-brand);
+  font-family: var(--font-brand);
+  font-size: 37.959px;
+  line-height: 0.9;
+  letter-spacing: -1.1388px;
+  text-decoration: none;
+  transform: translateY(1px);
+}
+
+.close {
+  position: absolute;
+  top: 43px;
+  right: 61px;
+  width: 27px;
+  height: 27px;
+  padding: 0;
+  background: transparent;
+  border: 0;
+  cursor: pointer;
+}
+
+.book,
+.guide {
+  position: absolute;
+  background: #fff;
+  box-shadow: 0 0 8px rgb(0 0 0 / 10%);
+}
+
+.book {
+  top: 187px;
+  left: 40px;
+  width: 1008px;
+  height: 662px;
+  padding: 23.14px 24.24px;
+  border-radius: 26.447px;
+  box-shadow: 0 0 8.816px rgb(0 0 0 / 10%);
+}
+
+.illustration {
+  position: relative;
+  width: 956.5px;
+  height: 541px;
+  overflow: hidden;
+  border-radius: 8.816px;
+}
+
+.illustration > img {
+  display: block;
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+  object-position: center bottom;
+}
+
+.pageCopy {
+  position: absolute;
+  top: 20.94px;
+  left: 527.84px;
+  width: 375px;
+  color: #4a4a4a;
+  font-family: var(--font-title);
+  font-size: 14.325px;
+  line-height: 1.34;
+  white-space: pre-line;
+}
+
+.pageCopy p { margin: 0 0 3.3px; }
+
+.pagination {
+  display: grid;
+  grid-template-columns: 94.768px 1fr 94.768px;
+  align-items: center;
+  width: 325.08px;
+  margin: 28.86px 0 0 315.16px;
+}
+
+.pagination button {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: 5.5px;
+  width: 94.768px;
+  height: 49.588px;
+  padding: 0;
+  color: var(--color-text);
+  background: #fff;
+  border: 0;
+  border-radius: 9.918px;
+  box-shadow: 0 0 6.502px rgb(0 0 0 / 15%);
+  font-family: var(--font-body);
+  font-size: 15.427px;
+  font-weight: 600;
+  cursor: pointer;
+}
+
+.pagination button:disabled { opacity: 0.4; cursor: default; }
+.pagination button img { display: block; flex: 0 0 auto; }
+.pagination button:first-child img { transform: scaleX(-1); }
+
+.pagination strong {
+  color: #717070;
+  font-size: 19.835px;
+  font-weight: 600;
+  text-align: center;
+  white-space: nowrap;
+}
+
+.pagination strong span { color: var(--color-brand); }
+
+.guide {
+  top: 146px;
+  left: 1065px;
+  width: 336px;
+  height: 765px;
+  padding: 38px 37px;
+  border-radius: 24px;
+}
+
+.guide section + section {
+  margin-top: 37px;
+}
+
+.guide h2 {
+  margin: 0 0 20.5px;
+  color: var(--color-text);
+  font-size: 18px;
+  font-weight: 600;
+  line-height: 1.5;
+}
+
+.guide p {
+  margin: 0;
+  color: var(--color-text);
+  font-size: 16px;
+  font-weight: 300;
+  line-height: 1.5;
+  white-space: pre-line;
+}
+
+@media (max-width: 760px) {
+  .page { width: 100vw; height: auto; min-height: 100vh; overflow-x: hidden; overflow-y: visible; }
+  .canvas { position: relative; top: auto; left: auto; width: 100vw; min-width: 0; height: auto; min-height: 100vh; overflow: visible; transform: none; }
+  .header { position: relative; height: 76px; padding: 20px 20px 0; }
+  .logo { font-size: 32px; }
+  .close { top: 24px; right: 20px; width: 24px; height: 24px; }
+  .book { position: relative; top: auto; left: auto; width: auto; max-width: calc(100vw - 32px); height: auto; margin: 24px 16px 0; padding: 12px; border-radius: 18px; }
+  .illustration { width: 100%; height: auto; aspect-ratio: 956.5 / 541; }
+  .pageCopy { top: 3%; right: 3%; left: auto; width: 45%; font-size: clamp(7px, 2.5vw, 12px); }
+  .pagination { grid-template-columns: 78px auto 78px; gap: 12px; width: auto; margin: 15px auto 2px; justify-content: center; }
+  .pagination button { width: 78px; height: 40px; font-size: 12px; }
+  .pagination strong { font-size: 15px; }
+  .guide { position: relative; top: auto; left: auto; display: grid; gap: 18px; width: auto; max-width: calc(100vw - 32px); height: auto; margin: 14px 16px 24px; padding: 20px; border-radius: 18px; }
+  .guide section + section { margin-top: 0; }
+  .guide h2 { margin-bottom: 6px; font-size: 16px; }
+  .guide p { font-size: 14px; }
+}

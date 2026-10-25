@@ -43,7 +43,7 @@ export const birthYears = Array.from({ length: 13 }, (_, index) => thisYear - in
 
 export const birthMonths = Array.from({ length: 12 }, (_, index) => index + 1);
 
-// 단계 순서: 상황 → 설명 → 아이 정보 → 이야기 → 채팅 → 마무리 → 동화 만드는 중
+// 단계 순서: 상황 → 설명 → 아이 정보 → 이야기 → 채팅 → 마무리 → 동화 만드는 중 → 제작 완료
 export const STEP = {
   SITUATION: 0,
   DETAIL: 1,
@@ -52,6 +52,7 @@ export const STEP = {
   CHAT: 4,
   SUMMARY: 5,
   GENERATING: 6,
+  COMPLETE: 7,
 };
 
 // 헤더 진행 바 채움 길이(트랙 862px 기준). 상황·설명·아이 정보·마무리는 Figma 값이고,
@@ -62,3 +63,6 @@ export const progressByStep = [160, 291, 460, 600, 740, 862].map(
 );
 
 export const SUMMARY_FALLBACK_GOAL = 'FIRSTORY AI와 함께 이야기를 정리해 볼게요.';
+
+// 동화 제목은 생성 결과가 연결되기 전까지 보여줄 임시 제목이에요. (제작 완료 화면의 표지 이미지와 같은 이야기)
+export const STORY_TITLE_PLACEHOLDER = '토리와 빨간 블록';

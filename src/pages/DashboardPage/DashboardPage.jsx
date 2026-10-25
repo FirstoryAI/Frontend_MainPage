@@ -1,12 +1,12 @@
 import { useCallback, useEffect, useRef, useState } from 'react';
 import { useLocation, useNavigate } from 'react-router-dom';
 import Sidebar from '../../components/layout/Sidebar';
+import NotificationBell from '../../components/layout/NotificationBell';
 import OnboardingModal from '../../features/onboarding/components/OnboardingModal';
 import StoryDraftModal from '../../features/story/components/StoryDraftModal';
 import HomeScenarioModal from '../../features/home/components/HomeScenarioModal';
 import { hasSeenOnboarding, markOnboardingSeen } from '../../features/onboarding/onboardingSeen';
 import { readStoryDrafts } from '../../features/story/drafts';
-import iconBell from '../../assets/icons/icon-bell.svg';
 import avatarProfile from '../../assets/icons/avatar-profile.svg';
 import iconPencil from '../../assets/icons/home-pencil.svg';
 import mascotReading from '../../assets/images/home/mascot-reading.png';
@@ -118,15 +118,7 @@ function DashboardPage() {
 
         <div className={styles.main}>
           <div className={styles.topbar}>
-            <button
-              className={styles.bellButton}
-              type="button"
-              aria-label="알림"
-              disabled
-              title="알림 화면이 준비되면 연결됩니다"
-            >
-              <img src={iconBell} alt="" />
-            </button>
+            <NotificationBell />
             <button
               className={styles.avatarButton}
               type="button"

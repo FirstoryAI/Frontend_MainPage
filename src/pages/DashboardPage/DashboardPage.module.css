@@ -16,24 +16,13 @@
 }
 
 .topbar {
+  position: relative;
   display: flex;
   align-items: center;
   justify-content: flex-end;
   gap: 39.6px;
   height: 58.8px;
   margin: 0 75.6px 0 0;
-}
-
-.bellButton {
-  display: block;
-  padding: 0;
-  background: transparent;
-  border: 0;
-  cursor: not-allowed;
-}
-
-.bellButton img {
-  display: block;
 }
 
 .avatar {

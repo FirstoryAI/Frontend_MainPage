@@ -12,9 +12,17 @@ import SummaryStep from '../../features/story/components/SummaryStep';
 import ChildEditModal from '../../features/story/components/ChildEditModal';
 import TextEditModal from '../../features/story/components/TextEditModal';
 import GeneratingStep from '../../features/story/components/GeneratingStep';
+import CompleteStep from '../../features/story/components/CompleteStep';
 import StoryDraftModal from '../../features/story/components/StoryDraftModal';
-import { STEP, SUMMARY_FALLBACK_GOAL, progressByStep } from '../../features/story/constants';
+import {
+  STEP,
+  STORY_TITLE_PLACEHOLDER,
+  SUMMARY_FALLBACK_GOAL,
+  progressByStep,
+} from '../../features/story/constants';
 import { deleteStoryDraft, saveStoryDraft } from '../../features/story/drafts';
+import { useStoryGeneration } from '../../features/story/generation/useStoryGeneration';
+import { useNotifications } from '../../features/notifications/useNotifications';
 import { loadChildProfile, saveChildProfile } from '../../features/profile/childProfile';
 import iconNotice from '../../assets/icons/icon-notice.svg';
 import styles from './StoryCreatePage.module.css';
@@ -52,11 +60,31 @@ function StoryCreatePage() {
   // 마무리 화면에서 열려 있는 수정 모달: 'child' | 'situation' | 'goal' | null
   const [editing, setEditing] = useState(null);
   const [exitPromptOpen, setExitPromptOpen] = useState(false);
+  const { job, startGeneration } = useStoryGeneration();
+  const { markRead } = useNotifications();
+  // 이 화면을 연 뒤에 시작한 제작만 이 화면의 제작으로 봐요. (이전에 끝난 제작이 남아 있어도 헷갈리지 않게)
+  const [openedAt] = useState(() => Date.now());
+
+  const storyTitle = location.state?.story?.title ?? STORY_TITLE_PLACEHOLDER;
+  const activeJob = job && job.startedAt >= openedAt ? job : null;
+  // 동화 만드는 중 화면에 있다가 제작이 끝나면 제작 완료 화면으로 넘어가요.
+  const visibleStep = step === STEP.GENERATING && activeJob?.status === 'done' ? STEP.COMPLETE : step;
+  const completedJobId = visibleStep === STEP.COMPLETE ? activeJob.id : null;
 
   // 다른 단계로 넘어가면 항상 화면 맨 위부터 보여줘요. (좁은 화면에서 이전 스크롤이 남지 않게)
   useEffect(() => {
     window.scrollTo(0, 0);
-  }, [step]);
+  }, [visibleStep]);
+
+  // 다시 만들기로 들어오면 바로 제작을 시작해요.
+  useEffect(() => {
+    if (isRemake) startGeneration({ title: storyTitle });
+  }, [isRemake, startGeneration, storyTitle]);
+
+  // 완료 화면을 직접 봤다면 같은 내용의 알림은 읽은 것으로 해요.
+  useEffect(() => {
+    if (completedJobId) markRead(completedJobId);
+  }, [completedJobId, markRead]);
 
   useEffect(() => {
     if (child.birthYear || child.birthMonth || child.gender || child.traits?.length || child.customTrait || child.likes) {
@@ -122,6 +150,13 @@ function StoryCreatePage() {
     closeEditing();
   };
 
+  const handleStartGeneration = () => {
+    // 제작이 시작되면 이어 만들던 임시 저장은 필요 없어요.
+    if (resumeDraft?.id) deleteStoryDraft(resumeDraft.id);
+    startGeneration({ title: storyTitle });
+    goTo(STEP.GENERATING);
+  };
+
   const handleSaveDraft = () => {
     saveStoryDraft({
       id: resumeDraft?.id,
@@ -143,15 +178,16 @@ function StoryCreatePage() {
     : topic.message.trim() || SUMMARY_FALLBACK_GOAL;
   const summaryGoal = editedGoal || derivedGoal;
 
-  const progress = step === STEP.GENERATING ? null : progressByStep[step];
-  const showFooter = step !== STEP.CHAT && step !== STEP.GENERATING;
+  // 만드는 중·제작 완료 화면은 진행 바와 아래 버튼 없이 로고만 있는 헤더를 써요.
+  const progress = visibleStep >= STEP.GENERATING ? null : progressByStep[step];
+  const showFooter = step !== STEP.CHAT && step < STEP.GENERATING;
 
   return (
     <div className={styles.page}>
       <StoryHeader progress={progress} onExit={() => setExitPromptOpen(true)} />
 
       <main className={styles.main} inert={editing !== null}>
-        {step > STEP.SITUATION && <BackButton onClick={goBack} />}
+        {step > STEP.SITUATION && step < STEP.GENERATING && <BackButton onClick={goBack} />}
 
         {step === STEP.SITUATION && (
           <SituationStep selected={situation} onSelect={setSituation} />
@@ -182,22 +218,8 @@ function StoryCreatePage() {
             onEditGoal={() => setEditing('goal')}
           />
         )}
-        {step === STEP.GENERATING && (
-          <GeneratingStep
-            onComplete={() => {
-              if (resumeDraft?.id) deleteStoryDraft(resumeDraft.id);
-              navigate('/story/preview', {
-                state: {
-                  story: location.state?.story ?? {
-                    description: detail.event.trim() || '친구와 블록을 만들며 생긴 이야기예요.',
-                    parentGuide: summaryGoal,
-                  },
-                  canRemake: !isRemake,
-                },
-              });
-            }}
-          />
-        )}
+        {visibleStep === STEP.GENERATING && <GeneratingStep stage={activeJob?.stage ?? 0} />}
+        {visibleStep === STEP.COMPLETE && <CompleteStep title={storyTitle} />}
       </main>
 
       {showFooter && (
@@ -222,7 +244,7 @@ function StoryCreatePage() {
             </p>
           )}
           {step === STEP.SUMMARY ? (
-            <CtaButton pill onClick={() => goTo(STEP.GENERATING)}>
+            <CtaButton pill onClick={handleStartGeneration}>
               동화 만들기
             </CtaButton>
           ) : (
