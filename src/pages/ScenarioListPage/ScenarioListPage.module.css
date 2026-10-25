@@ -1,0 +1,303 @@
+.page {
+  min-width: 320px;
+  min-height: 100vh;
+  overflow-x: clip;
+  background: var(--color-page);
+}
+
+.shell {
+  min-height: 100vh;
+}
+
+.main {
+  position: relative;
+  min-height: 100vh;
+  /* 오른쪽 여백(40px)은 카드 4개(약 951px)가 세로 스크롤바(약 15px)가 생겨도 한 줄에 들어가도록 여유를 둔 값이에요. */
+  padding: 101px 40px 72px 363px;
+}
+
+.topbar {
+  position: absolute;
+  top: 58.6px;
+  right: 75.6px;
+  display: flex;
+  align-items: center;
+  gap: 39.6px;
+  height: 58.8px;
+}
+
+.bellButton {
+  display: block;
+  padding: 0;
+  background: transparent;
+  border: 0;
+  cursor: not-allowed;
+}
+
+.bellButton img {
+  display: block;
+}
+
+.avatarButton {
+  display: block;
+  flex: 0 0 58.8px;
+  width: 58.8px;
+  height: 58.8px;
+  padding: 0;
+  background: transparent;
+  border: 0;
+  border-radius: 50%;
+  cursor: pointer;
+}
+
+.avatarButton img {
+  display: block;
+  width: 100%;
+  height: 100%;
+}
+
+.avatarButton:focus-visible {
+  outline-offset: 4px;
+}
+
+.heading {
+  position: relative;
+  padding-left: 40px;
+}
+
+.back {
+  position: absolute;
+  top: 10px;
+  left: 1px;
+  display: block;
+  width: 10px;
+  height: 21px;
+}
+
+.back img {
+  position: absolute;
+  top: -2.175px;
+  left: -2.125px;
+  width: 14.2996px;
+  max-width: none;
+  height: 25.3501px;
+}
+
+.title {
+  margin: 0;
+  color: var(--color-heading);
+  font-size: 33px;
+  font-weight: 600;
+  line-height: 1.304;
+  letter-spacing: -0.99px;
+}
+
+.description {
+  margin: 12px 0 0;
+  color: var(--color-secondary);
+  font-size: 16px;
+  line-height: 27px;
+}
+
+.filters {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 12px 13px;
+  margin: 35px 0 0 40px;
+}
+
+.filter {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  height: 43px;
+  padding: 0 22.8px;
+  color: var(--color-text);
+  background: var(--color-surface);
+  border: 0.95px solid var(--color-field-border);
+  border-radius: 23.75px;
+  font-family: var(--font-body);
+  font-size: 17px;
+  font-weight: 400;
+  letter-spacing: -0.51px;
+  white-space: nowrap;
+  cursor: pointer;
+}
+
+.filterActive {
+  color: var(--color-chip-selected);
+  background: #fff6f3;
+  border: 1.9px solid var(--color-chip-selected);
+  font-weight: 500;
+}
+
+/*
+ * 카드는 항상 4열이에요. 목록 영역 폭(gridArea)에 맞춰 카드, 글자, 간격이 함께 줄어요.
+ * --u는 "디자인 값 1px이 지금 몇 px인가"를 뜻해요. 디자인(1440px)에서는 폭 951px일 때 0.849예요.
+ */
+.gridArea {
+  container-type: inline-size;
+  margin: 42px 0 0 35px;
+}
+
+.grid {
+  --u: calc(min(100cqw, 951px) / 1120);
+
+  display: grid;
+  grid-template-columns: repeat(4, calc(250 * var(--u)));
+  gap: calc(55.7 * var(--u)) calc(40 * var(--u));
+  margin: 0;
+  padding: 0;
+  list-style: none;
+}
+
+/* 카드 크기는 홈의 추천 카드(250×287)와 같은 비율이고, 안쪽 치수는 모두 --u로 줄어들어요. */
+.card {
+  position: relative;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  width: calc(250 * var(--u));
+  height: calc(287 * var(--u));
+  padding: calc(24 * var(--u)) calc(15 * var(--u)) 0;
+  overflow: hidden;
+  color: #fff;
+  appearance: none;
+  border: 0;
+  border-radius: calc(20 * var(--u));
+  box-shadow: inset 0 0 6.708px rgb(255 255 255 / 51%);
+  font-family: var(--font-body);
+  text-align: center;
+  cursor: pointer;
+}
+
+.card:focus-visible {
+  outline: 3px solid #3a2e28;
+  outline-offset: 4px;
+}
+
+.friend { background: #ff7c68; }
+.emotion { background: #65d0a5; }
+.kindergarten { background: #ffcf55; }
+.habit { background: #9e95ff; }
+
+.category {
+  z-index: 1;
+  display: inline-flex;
+  align-items: center;
+  height: max(16px, calc(22 * var(--u)));
+  padding: 0 calc(9 * var(--u));
+  border-radius: 17.831px;
+  background: rgb(255 255 255 / 30%);
+  font-size: max(9px, calc(12 * var(--u)));
+  font-weight: 600;
+  line-height: calc(27 * var(--u));
+}
+
+.cardTitle {
+  z-index: 1;
+  margin-top: calc(9 * var(--u));
+  font-size: max(12px, calc(22 * var(--u)));
+  font-weight: 600;
+  line-height: calc(35 * var(--u));
+  letter-spacing: calc(-0.4 * var(--u));
+}
+
+.cardDescription {
+  z-index: 1;
+  margin-top: calc(1 * var(--u));
+  font-size: max(9px, calc(12 * var(--u)));
+  line-height: calc(27 * var(--u));
+}
+
+.cardImage {
+  position: absolute;
+  display: block;
+  object-fit: fill;
+  object-position: center bottom;
+  pointer-events: none;
+}
+
+.friend .cardImage {
+  bottom: calc(13 * var(--u));
+  left: calc(33.4 * var(--u));
+  width: calc(185.8 * var(--u));
+  height: calc(111 * var(--u));
+}
+
+.emotion .cardImage {
+  bottom: calc(13 * var(--u));
+  left: calc(73 * var(--u));
+  width: calc(90 * var(--u));
+  height: calc(114 * var(--u));
+}
+
+.kindergarten .cardImage {
+  bottom: calc(17.5 * var(--u));
+  left: calc(58 * var(--u));
+  width: calc(133 * var(--u));
+  height: calc(103 * var(--u));
+}
+
+.habit .cardImage {
+  bottom: calc(-4 * var(--u));
+  left: calc(14 * var(--u));
+  width: calc(222 * var(--u));
+  height: calc(148 * var(--u));
+}
+
+@media (max-width: 900px) {
+  .main {
+    padding: 24px 16px 40px;
+  }
+
+  .topbar {
+    position: static;
+    justify-content: flex-end;
+    height: 48px;
+    margin-bottom: 8px;
+  }
+
+  .avatarButton {
+    flex-basis: 48px;
+    width: 48px;
+    height: 48px;
+  }
+
+  .heading {
+    padding-left: 28px;
+  }
+
+  .back {
+    top: 8px;
+  }
+
+  .title {
+    font-size: 26px;
+  }
+
+  .description {
+    font-size: 14px;
+    line-height: 22px;
+  }
+
+  .filters {
+    gap: 10px;
+    margin: 24px 0 0;
+  }
+
+  .gridArea {
+    margin: 28px 0 0;
+  }
+}
+
+/* 휴대폰 폭에서는 4열이 너무 작아져서 디자인 크기 카드를 가운데 정렬해 줄바꿈해요. */
+@media (max-width: 700px) {
+  .grid {
+    --u: 0.8491px;
+
+    grid-template-columns: repeat(auto-fill, calc(250 * var(--u)));
+    justify-content: center;
+    gap: 47.3px 33.96px;
+  }
+}
