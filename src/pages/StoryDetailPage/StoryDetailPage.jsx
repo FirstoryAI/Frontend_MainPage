@@ -7,6 +7,7 @@ import avatarPerson from '../../assets/icons/avatar-person.svg';
 import iconTrash from '../../assets/icons/icon-trash.svg';
 import iconClose from '../../assets/remake/header-close.svg';
 import bookCover from '../../assets/images/library-book-cover.png';
+import SafeImage from '../../features/story/components/SafeImage';
 import StoryReader from '../../features/story/components/StoryReader';
 import readerStyles from '../../features/story/components/StoryReader.module.css';
 import { deleteStory, getBook, getGuide, getStoryDetail } from '../../services/storiesApi';
@@ -194,11 +195,12 @@ function StoryDetailPage() {
           <div className={styles.detail}>
             <section className={styles.bookColumn} aria-label="동화 표지">
               <div className={styles.cover}>
-                {coverUrl ? (
-                  <img className={styles.coverFull} src={coverUrl} alt={`${title} 표지`} />
-                ) : (
-                  <img className={styles.coverCrop} src={bookCover} alt={`${title} 표지`} />
-                )}
+                <SafeImage
+                  className={styles.coverFull}
+                  src={coverUrl}
+                  alt={`${title} 표지`}
+                  fallback={<img className={styles.coverCrop} src={bookCover} alt={`${title} 표지`} />}
+                />
               </div>
 
               <div className={styles.titleRow}>

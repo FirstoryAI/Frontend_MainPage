@@ -9,6 +9,7 @@ import { useSceneScale } from '../../features/story/hooks/useSceneScale';
 import { useStoryGeneration } from '../../features/story/generation/useStoryGeneration';
 import RemakeDialog from '../../features/story/components/RemakeDialog';
 import StoryReader from '../../features/story/components/StoryReader';
+import SafeImage from '../../features/story/components/SafeImage';
 import PageTurnOverlay from '../../features/story/components/PageTurnOverlay';
 import { usePageTurn } from '../../features/story/hooks/usePageTurn';
 import { guideFor } from '../../features/story/guideContent';
@@ -156,7 +157,7 @@ function StoryPreviewPage({ initialRemakeOpen = false }) {
                 aria-label={`${item.pageNo}쪽 미리보기`}
                 aria-current={selected ? 'page' : undefined}
               >
-                {item.imageUrl ? <img src={item.imageUrl} alt="" /> : <div className={styles.noImage} aria-hidden="true" />}
+                <SafeImage src={item.imageUrl} alt="" fallback={<div className={styles.noImage} aria-hidden="true" />} />
                 <span>{item.pageNo}</span>
               </button>
             );
@@ -177,13 +178,19 @@ function StoryPreviewPage({ initialRemakeOpen = false }) {
               }
             }}
           >
-            {page.imageUrl ? (
-              <img src={page.imageUrl} alt={`${currentPage}쪽 동화 삽화`} />
-            ) : (
-              <p className={styles.noImageText}>
-                {page.imageStatus === 'FAILED' ? '이 쪽의 그림을 만들지 못했어요.' : '그림을 준비하는 중이에요.'}
-              </p>
-            )}
+            <SafeImage
+              src={page.imageUrl}
+              alt={`${currentPage}쪽 동화 삽화`}
+              fallback={(
+                <p className={styles.noImageText}>
+                  {page.imageStatus === 'FAILED'
+                    ? '이 쪽의 그림을 만들지 못했어요.'
+                    : page.imageStatus === 'PENDING'
+                      ? '그림을 준비하는 중이에요.'
+                      : '그림을 불러오지 못했어요.'}
+                </p>
+              )}
+            />
             <div className={styles.pageCopy}>
               {lines.map((line) => <p key={line}>{line}</p>)}
             </div>
