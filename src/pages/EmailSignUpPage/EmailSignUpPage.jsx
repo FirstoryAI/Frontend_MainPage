@@ -217,6 +217,10 @@ function EmailSignUpPage() {
         }
         if (validationMessages.length) {
           event.preventDefault();
+          // 포커스를 안내보다 먼저 옮긴다. 포커스가 옮겨질 때 안내를 지우는 onFocusCapture가
+          // 방금 만든 안내를 곧바로 지우지 않도록 순서를 지켜야 한다.
+          (emailIsInvalid ? emailInput : passwordInput).focus();
+          form.querySelector('[data-signup-validation]')?.remove();
           const notice = document.createElement('div');
           notice.dataset.signupValidation = 'true';
           notice.className = styles.signupValidationMessage;
@@ -235,7 +239,6 @@ function EmailSignUpPage() {
             submitButton.insertAdjacentElement('beforebegin', notice);
             notice.style.top = `${Math.max(0, submitButton.offsetTop - notice.offsetHeight - 12)}px`;
           } else form.appendChild(notice);
-          (emailIsInvalid ? emailInput : passwordInput).focus();
           return;
         }
         handleSubmit(event);
