@@ -14,7 +14,11 @@ import ChildInfoModal from '../../features/profile/components/ChildInfoModal';
 import NotificationModal from '../../features/profile/components/NotificationModal';
 import TermsModal from '../../features/profile/components/TermsModal';
 import SubscriptionModal from '../../features/profile/components/SubscriptionModal';
-import { loadChildProfile, saveChildProfile } from '../../features/profile/childProfile';
+import WithdrawModal from '../../features/profile/components/WithdrawModal';
+import { fromChild, toChildProfile } from '../../features/story/storyMappers';
+import { createChild, getChildren, updateChild } from '../../services/childrenApi';
+import { withdraw } from '../../services/meApi';
+import { initializeCsrf } from '../../services/apiClient';
 import styles from './MyPage.module.css';
 
 const menuItems = [
@@ -32,22 +36,51 @@ function MyPage() {
   const [notificationOpen, setNotificationOpen] = useState(false);
   const [termsOpen, setTermsOpen] = useState(false);
   const [subscriptionOpen, setSubscriptionOpen] = useState(false);
-  const [child, setChild] = useState(() => loadChildProfile());
+  const [withdrawOpen, setWithdrawOpen] = useState(false);
+  // 서버에 저장된 아이 프로필(첫 번째)이에요. 없으면 null이고, 저장하면 새로 만들어요.
+  const [childId, setChildId] = useState(null);
+  const [child, setChild] = useState(null);
 
   useEffect(() => {
-    const syncChildProfile = (event) => {
-      if (!event.key || event.key === 'firstory.childProfile') {
-        setChild(loadChildProfile());
-      }
+    let active = true;
+    getChildren()
+      .then((children) => {
+        if (!active || children.length === 0) return;
+        setChildId(children[0].id);
+        setChild(fromChild(children[0]));
+      })
+      .catch(() => {});
+    return () => {
+      active = false;
     };
-    window.addEventListener('storage', syncChildProfile);
-    return () => window.removeEventListener('storage', syncChildProfile);
   }, []);
 
-  const handleSaveChild = (updatedChild) => {
-    saveChildProfile(updatedChild);
-    setChild(updatedChild);
-    setChildInfoOpen(false);
+  // 아이 정보를 서버에 저장해요. 저장하지 못하면 이유를 돌려줘서 팝업에 보여줘요.
+  const handleSaveChild = async (updatedChild) => {
+    if (!updatedChild.birthYear || !updatedChild.birthMonth) return '나이를 입력해 주세요.';
+
+    try {
+      const profile = toChildProfile(updatedChild);
+      const saved = childId ? await updateChild(childId, profile) : await createChild(profile);
+      setChildId(saved.id);
+      setChild(fromChild(saved));
+      setChildInfoOpen(false);
+      return '';
+    } catch (error) {
+      return error.message || '아이 정보를 저장하지 못했어요.';
+    }
+  };
+
+  // 탈퇴하면 서버가 모든 기기의 로그인을 끊어요. 쿠키가 지워지므로 CSRF 토큰을 다시 받아 둬요.
+  const handleWithdraw = async (password) => {
+    try {
+      await withdraw(password);
+      await initializeCsrf().catch(() => {});
+      navigate('/', { replace: true });
+      return '';
+    } catch (error) {
+      return error.message || '탈퇴하지 못했어요. 잠시 뒤에 다시 시도해 주세요.';
+    }
   };
 
   const handleProfileImageChange = (event) => {
@@ -171,10 +204,17 @@ function MyPage() {
 
         <ul className={styles.accountMenu} aria-label="계정 메뉴">
           <li className={styles.accountItem}>
-            <span>탈퇴하기</span>
-            <span className={styles.chevronBox} aria-hidden="true">
-              <img className={styles.chevron} src={chevron} alt="" />
-            </span>
+            <button
+              className={styles.menuAction}
+              type="button"
+              onClick={() => setWithdrawOpen(true)}
+              aria-haspopup="dialog"
+            >
+              <span>탈퇴하기</span>
+              <span className={styles.chevronBox} aria-hidden="true">
+                <img className={styles.chevron} src={chevron} alt="" />
+              </span>
+            </button>
           </li>
         </ul>
       </main>
@@ -182,6 +222,7 @@ function MyPage() {
       {childInfoOpen && (
         <ChildInfoModal child={child} onSave={handleSaveChild} onClose={() => setChildInfoOpen(false)} />
       )}
+      {withdrawOpen && <WithdrawModal onConfirm={handleWithdraw} onClose={() => setWithdrawOpen(false)} />}
       {termsOpen ? (
         <TermsModal onClose={() => setTermsOpen(false)} />
       ) : subscriptionOpen ? (

@@ -1,6 +1,14 @@
 import styles from './StoryDraftModal.module.css';
-import { formatDraftDate, getDraftTitle } from '../drafts';
 import iconClose from '../../../assets/icons/icon-close.svg';
+
+// 만들던 동화를 마지막으로 고친 때를 '10월 25일 오후 8:12'처럼 보여줘요.
+function formatDraftDate(value) {
+  const date = new Date(value);
+  if (Number.isNaN(date.getTime())) return '';
+  return new Intl.DateTimeFormat('ko-KR', {
+    month: 'long', day: 'numeric', hour: '2-digit', minute: '2-digit',
+  }).format(date);
+}
 
 function StoryDraftModal({
   mode,
@@ -46,8 +54,8 @@ function StoryDraftModal({
                 <button className={styles.draftItem} type="button" key={draft.id} onClick={() => onOpenDraft(draft)}>
                   <span className={styles.draftIcon} aria-hidden="true">📖</span>
                   <span className={styles.draftCopy}>
-                    <strong>{getDraftTitle(draft)}</strong>
-                    <small>{draft.detail?.category || '동화 만들기'} · {formatDraftDate(draft.savedAt)}</small>
+                    <strong>{draft.title}</strong>
+                    <small>{draft.categoryLabel || '동화 만들기'} · {formatDraftDate(draft.updatedAt)}</small>
                   </span>
                   <span className={styles.chevron} aria-hidden="true">›</span>
                 </button>

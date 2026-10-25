@@ -24,6 +24,15 @@
   transform: translateY(12px);
 }
 
+.noticeDialog {
+  padding: 56px 32px 40px;
+}
+
+.noticeDialog .description {
+  margin-top: 14px;
+  line-height: 1.6;
+}
+
 .close {
   position: absolute;
   top: 30px;

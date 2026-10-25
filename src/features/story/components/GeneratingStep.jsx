@@ -1,3 +1,4 @@
+import { useEffect, useState } from 'react';
 import { useNavigate } from 'react-router-dom';
 import CtaButton from '../../../components/ui/CtaButton';
 import runner from '../../../assets/images/story-runner.png';
@@ -8,6 +9,7 @@ import glyphBook from '../../../assets/icons/step-book.svg';
 import glyphPencil from '../../../assets/icons/step-pencil.svg';
 import glyphBrush from '../../../assets/icons/step-brush.svg';
 import glyphCheck from '../../../assets/icons/step-check.svg';
+import { getCurrentMember } from '../../../services/homeApi';
 import iconHomeWhite from '../../../assets/icons/icon-home-white.svg';
 import styles from './GeneratingStep.module.css';
 
@@ -19,9 +21,6 @@ const stages = [
 
 // 마스코트가 현재 단계 아이콘 바로 위에 오도록 하는 가로 중심 위치
 const runnerCenter = ['18px', '50%', 'calc(100% - 18px)'];
-
-// 알림 받을 번호는 아직 가져올 곳이 없어 화면 예시 값을 보여줘요.
-const PHONE_PLACEHOLDER = '010-****-1234';
 
 function circleFor(index, stage) {
   if (index < stage) {
@@ -41,6 +40,20 @@ function lineClass(index, stage) {
 // stage: 지금 단계(0~2). 진행 상태는 StoryGenerationProvider가 앱 전체에서 관리해요.
 function GeneratingStep({ stage }) {
   const navigate = useNavigate();
+  const [phone, setPhone] = useState('');
+
+  // 알림 받을 번호는 가려진 형태(010-****-5678)로 내 정보에서 가져와요.
+  useEffect(() => {
+    let active = true;
+    getCurrentMember()
+      .then((member) => {
+        if (active) setPhone(member.phoneMasked ?? '');
+      })
+      .catch(() => {});
+    return () => {
+      active = false;
+    };
+  }, []);
 
   return (
     <div className={styles.step}>
@@ -89,7 +102,7 @@ function GeneratingStep({ stage }) {
 
       <div className={styles.card}>
         <p className={styles.cardText}>다 되면 카카오톡으로 알려드려요</p>
-        <p className={styles.phone}>{PHONE_PLACEHOLDER}</p>
+        <p className={styles.phone}>{phone}</p>
         <button
           className={styles.changeButton}
           type="button"

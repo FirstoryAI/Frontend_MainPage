@@ -7,11 +7,36 @@ import StoryDraftModal from '../../features/story/components/StoryDraftModal';
 import HomeScenarioModal from '../../features/home/components/HomeScenarioModal';
 import { scenarios } from '../../features/home/scenarios';
 import { hasSeenOnboarding, markOnboardingSeen } from '../../features/onboarding/onboardingSeen';
-import { readStoryDrafts } from '../../features/story/drafts';
+import { useStoryGeneration } from '../../features/story/generation/useStoryGeneration';
+import { getDraft } from '../../services/storiesApi';
+import { getStories } from '../../services/libraryApi';
+import { markOnboardingSeen as saveOnboardingSeen } from '../../services/meApi';
 import avatarProfile from '../../assets/icons/avatar-profile.svg';
 import iconPencil from '../../assets/icons/home-pencil.svg';
 import mascotReading from '../../assets/images/home/mascot-reading.png';
 import styles from './DashboardPage.module.css';
+
+// 서버에 저장된 '만들던 동화'(아직 인터뷰·확정 전)를 이어 만들 목록으로 바꿔요.
+const DRAFT_STATUSES = ['DRAFT', 'INTERVIEWING', 'CONFIRMING'];
+const MAX_DRAFTS = 10;
+
+async function loadDrafts() {
+  const { items = [] } = await getStories({ filter: 'CREATING', size: 50 });
+  const drafts = items.filter((story) => DRAFT_STATUSES.includes(story.status)).slice(0, MAX_DRAFTS);
+
+  return Promise.all(
+    drafts.map(async (story) => {
+      const draft = await getDraft(story.id).catch(() => null);
+      const concern = draft?.parent?.concern?.trim();
+      return {
+        id: story.id,
+        title: concern ? (concern.length > 28 ? `${concern.slice(0, 28)}…` : concern) : '새로운 동화',
+        categoryLabel: draft?.situation?.categoryLabel ?? '',
+        updatedAt: story.updatedAt,
+      };
+    }),
+  );
+}
 
 function DashboardPage() {
   const location = useLocation();
@@ -24,19 +49,27 @@ function DashboardPage() {
   const [storyModal, setStoryModal] = useState(null);
   const [selectedScenario, setSelectedScenario] = useState(null);
   const [drafts, setDrafts] = useState([]);
+  const { resumeGeneration } = useStoryGeneration();
+
   useEffect(() => {
     if (onboardingOpen) markOnboardingSeen(onboardingKey);
   }, [onboardingKey, onboardingOpen]);
 
+  // 새로고침했을 때 만드는 중인 동화가 있으면 다시 따라가서, 끝나면 알림이 오게 해요.
+  useEffect(() => {
+    resumeGeneration();
+  }, [resumeGeneration]);
+
   useEffect(() => {
     if (!location.state?.chooseStory) return;
-    setDrafts(readStoryDrafts());
+    loadDrafts().then(setDrafts).catch(() => setDrafts([]));
     setStoryModal('choose');
     navigate(location.pathname, { replace: true, state: null });
   }, [location.pathname, location.state, navigate]);
 
   const closeOnboarding = useCallback(() => {
     markOnboardingSeen(onboardingKey);
+    saveOnboardingSeen().catch(() => {});
     setOnboardingOpen(false);
     navigate(location.pathname, { replace: true, state: null });
   }, [navigate, location.pathname, onboardingKey]);
@@ -194,7 +227,7 @@ function DashboardPage() {
           onStartNew={startNewStory}
           onOpenDraftList={() => setStoryModal('list')}
           onBack={() => setStoryModal('choose')}
-          onOpenDraft={(draft) => navigate('/story/new', { state: { draft } })}
+          onOpenDraft={(draft) => navigate('/story/new', { state: { draftStoryId: draft.id } })}
         />
       )}
     </div>

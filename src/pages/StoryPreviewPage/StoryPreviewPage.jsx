@@ -3,46 +3,66 @@ import { Link, useLocation, useNavigate, useParams } from 'react-router-dom';
 import pageArrowLeft from '../../assets/remake/page-arrow-left.svg';
 import pageArrowRight from '../../assets/remake/page-arrow-right.svg';
 import headerClose from '../../assets/remake/header-close.svg';
-import readerFrame from '../../assets/story-reader/frame.svg';
-import readerArrowLeft from '../../assets/story-reader/arrow-left.svg';
-import readerArrowRight from '../../assets/story-reader/arrow-right.svg';
-import readerClose from '../../assets/story-reader/close.svg';
 import styles from './StoryPreviewPage.module.css';
 
-import { SCENE_DESCRIPTION, SCENE_GUIDE, storyPages as pages } from '../../features/story/storyPages';
 import { useSceneScale } from '../../features/story/hooks/useSceneScale';
+import { useStoryGeneration } from '../../features/story/generation/useStoryGeneration';
 import RemakeDialog from '../../features/story/components/RemakeDialog';
+import StoryReader from '../../features/story/components/StoryReader';
+import PageTurnOverlay from '../../features/story/components/PageTurnOverlay';
+import { usePageTurn } from '../../features/story/hooks/usePageTurn';
+import { guideFor } from '../../features/story/guideContent';
+import { approveStory, getGuide, getPreview, getStoryDetail, regenerateStory } from '../../services/storiesApi';
 
-// initialRemakeOpen: '다시 만들기' 팝업을 연 채로 시작해요. (서재에서 만들지 못한 동화를 다시 만들 때)
-// 이때 팝업을 닫으면 미리보기 대신 서재로 돌아가요.
+const REGENERATE_LIMIT = 1;
+
+// 화면의 '다시 만들 부분'을 API의 scope로 바꿔요.
+const REMAKE_SCOPES = { all: 'CHARACTER_STORY', text: 'TEXT', image: 'IMAGES' };
+
+// 만든 동화를 확정하기 전에 8쪽을 넘겨 보는 화면이에요. (GET /api/stories/{id}/preview)
+// initialRemakeOpen: '다시 만들기' 팝업을 연 채로 시작해요. 이때 팝업을 닫으면 서재로 돌아가요.
 function StoryPreviewPage({ initialRemakeOpen = false }) {
   const location = useLocation();
   const navigate = useNavigate();
   const { storyId } = useParams();
   const story = location.state?.story ?? {};
-  const canRemake = location.state?.canRemake ?? true;
-  const [currentPage, setCurrentPage] = useState(1);
+  const { startGeneration } = useStoryGeneration();
   const scale = useSceneScale();
+  const [preview, setPreview] = useState(null);
+  // 동화 줄거리(상세)와 대화 가이드예요. 가이드는 서버가 확정 전에는 주지 않을 수 있어요.
+  const [summary, setSummary] = useState('');
+  const [guide, setGuide] = useState(null);
+  const [loadError, setLoadError] = useState('');
+  const [currentPage, setCurrentPage] = useState(1);
   const [isReaderOpen, setIsReaderOpen] = useState(false);
   const [isRemakeOpen, setIsRemakeOpen] = useState(initialRemakeOpen);
+  const [approving, setApproving] = useState(false);
+  const [notice, setNotice] = useState('');
 
   useEffect(() => {
-    if (!isReaderOpen) return undefined;
-
-    const handleReaderKeys = (event) => {
-      if (event.key === 'Escape') setIsReaderOpen(false);
-      if (event.key === 'ArrowLeft') setCurrentPage((pageNumber) => Math.max(1, pageNumber - 1));
-      if (event.key === 'ArrowRight') setCurrentPage((pageNumber) => Math.min(pages.length, pageNumber + 1));
-    };
-
-    const previousOverflow = document.body.style.overflow;
-    document.body.style.overflow = 'hidden';
-    window.addEventListener('keydown', handleReaderKeys);
+    let active = true;
+    getPreview(storyId)
+      .then((result) => active && setPreview(result))
+      .catch((error) => active && setLoadError(error.message || '미리보기를 불러오지 못했어요.'));
+    getStoryDetail(storyId)
+      .then((detail) => active && setSummary(detail.summary ?? ''))
+      .catch(() => {});
+    getGuide(storyId)
+      .then((result) => active && setGuide(result))
+      .catch(() => {});
     return () => {
-      document.body.style.overflow = previousOverflow;
-      window.removeEventListener('keydown', handleReaderKeys);
+      active = false;
     };
-  }, [isReaderOpen]);
+  }, [storyId]);
+
+  const pages = preview?.pages ?? [];
+  const title = preview?.version?.title ?? story.title ?? '';
+  // 다시 만들기는 동화당 1회만 할 수 있어요. 서버가 더 많이 남았다고 알려줘도 1회까지만 보여주고,
+  // 이미 다시 만든 동화(2번째 버전부터)는 더 이상 할 수 없어요.
+  const alreadyRemade = (preview?.version?.versionNo ?? 1) > 1;
+  const remaining = alreadyRemade ? 0 : Math.min(preview?.regenerateRemaining ?? 0, REGENERATE_LIMIT);
+  const canRemake = remaining > 0;
+  const turn = usePageTurn(currentPage, pages.map((item) => item.imageUrl));
 
   const closeRemake = () => {
     if (initialRemakeOpen) {
@@ -52,44 +72,92 @@ function StoryPreviewPage({ initialRemakeOpen = false }) {
     setIsRemakeOpen(false);
   };
 
-  const remake = ({ type, request }) => {
-    navigate('/story/new', {
-      state: { remake: { storyId: storyId ?? story.id, type, request }, story },
-    });
+  // 다시 만들기를 시작하면 만드는 중 화면으로 가요. 못 하면 이유를 팝업에 돌려줘요.
+  const remake = async ({ type, request }) => {
+    try {
+      const response = await regenerateStory(storyId, {
+        scope: REMAKE_SCOPES[type],
+        ...(request ? { feedback: request } : {}),
+      });
+      const safety = response.safety;
+      if (safety?.action === 'ASK_REVISE') return safety.reason || '요청을 조금 바꿔서 다시 써 주세요.';
+      if (safety?.action === 'BLOCK') return safety.reason || '이 요청으로는 다시 만들 수 없어요.';
+
+      startGeneration(Number(storyId));
+      navigate('/story/new', { state: { generation: { storyId: Number(storyId) } } });
+      return '';
+    } catch (error) {
+      return error.message || '다시 만들지 못했어요. 잠시 뒤에 다시 시도해 주세요.';
+    }
   };
 
-  const page = pages[currentPage - 1];
+  // 지금 보여 주는 버전으로 확정하고, 서재에서 '서재에 저장했어요' 팝업을 보여줘요.
+  const approve = async () => {
+    if (approving) return;
+
+    setApproving(true);
+    setNotice('');
+    try {
+      await approveStory(storyId);
+      navigate('/library', { state: { story: { ...story, id: Number(storyId), title }, newlyCreated: true } });
+    } catch (error) {
+      setNotice(error.message || '확정하지 못했어요. 잠시 뒤에 다시 시도해 주세요.');
+      setApproving(false);
+    }
+  };
+
   const showPage = (nextPage) => {
     setCurrentPage(Math.min(pages.length, Math.max(1, nextPage)));
   };
 
+  const page = pages[currentPage - 1];
+  // 쪽마다 설명·가이드가 있으면 그걸, 아직 없으면 동화 줄거리를 보여줘요.
+  const pageGuide = guide ? guideFor(guide, currentPage, pages.length) : null;
+  const lines = page ? page.text.split('\n').filter(Boolean) : [];
+
+  const header = (
+    <header className={styles.header}>
+      <Link className={styles.logo} to="/home" aria-label="FIRSTORY 홈">FIRSTORY</Link>
+      <button className={styles.close} type="button" onClick={() => navigate('/library')} aria-label="서재로 돌아가기">
+        <img src={headerClose} alt="" />
+      </button>
+    </header>
+  );
+
+  if (!preview) {
+    return (
+      <div className={styles.page}>
+        <div className={styles.canvas} style={{ '--scene-scale': scale }}>
+          {header}
+          <p className={styles.status} role={loadError ? 'alert' : 'status'}>
+            {loadError || '미리보기를 불러오는 중이에요.'}
+          </p>
+        </div>
+      </div>
+    );
+  }
+
   return (
     <div className={styles.page}>
       <div className={styles.canvas} style={{ '--scene-scale': scale }}>
-        <header className={styles.header}>
-          <Link className={styles.logo} to="/home" aria-label="FIRSTORY 홈">FIRSTORY</Link>
-          <button className={styles.close} type="button" onClick={() => navigate('/library')} aria-label="서재로 돌아가기">
-            <img src={headerClose} alt="" />
-          </button>
-        </header>
+        {header}
 
         <h1 className={styles.heading}>미리보기</h1>
 
         <nav className={styles.pageList} aria-label="동화 페이지" inert={isRemakeOpen}>
-          {pages.map((item, index) => {
-            const number = index + 1;
-            const selected = currentPage === number;
+          {pages.map((item) => {
+            const selected = currentPage === item.pageNo;
             return (
               <button
                 className={`${styles.thumbnail} ${selected ? styles.selectedThumbnail : ''}`}
                 type="button"
-                key={number}
-                onClick={() => showPage(number)}
-                aria-label={`${number}쪽 미리보기`}
+                key={item.pageNo}
+                onClick={() => showPage(item.pageNo)}
+                aria-label={`${item.pageNo}쪽 미리보기`}
                 aria-current={selected ? 'page' : undefined}
               >
-                <img src={item.image} alt="" />
-                <span>{number}</span>
+                {item.imageUrl ? <img src={item.imageUrl} alt="" /> : <div className={styles.noImage} aria-hidden="true" />}
+                <span>{item.pageNo}</span>
               </button>
             );
           })}
@@ -109,16 +177,23 @@ function StoryPreviewPage({ initialRemakeOpen = false }) {
               }
             }}
           >
-            <img src={page.image} alt={`${currentPage}쪽 동화 삽화`} />
+            {page.imageUrl ? (
+              <img src={page.imageUrl} alt={`${currentPage}쪽 동화 삽화`} />
+            ) : (
+              <p className={styles.noImageText}>
+                {page.imageStatus === 'FAILED' ? '이 쪽의 그림을 만들지 못했어요.' : '그림을 준비하는 중이에요.'}
+              </p>
+            )}
             <div className={styles.pageCopy}>
-              {page.text.map((line) => <p key={line}>{line}</p>)}
+              {lines.map((line) => <p key={line}>{line}</p>)}
             </div>
+            <PageTurnOverlay turn={turn} />
           </div>
           <div className={styles.pagination}>
             <button type="button" onClick={() => showPage(currentPage - 1)} disabled={currentPage === 1}>
               <img src={pageArrowLeft} alt="" /> 이전 쪽
             </button>
-            <strong><span>{currentPage}</span> / 10</strong>
+            <strong><span>{currentPage}</span> / {pages.length}</strong>
             <button type="button" onClick={() => showPage(currentPage + 1)} disabled={currentPage === pages.length}>
               다음 쪽 <img src={pageArrowRight} alt="" />
             </button>
@@ -128,87 +203,43 @@ function StoryPreviewPage({ initialRemakeOpen = false }) {
         <aside className={styles.storyInfo} inert={isRemakeOpen}>
           <section>
             <h2>동화 설명</h2>
-            <p>{SCENE_DESCRIPTION}</p>
+            <p>{pageGuide?.description || summary || title}</p>
           </section>
           <section>
             <h2>부모를 위한 가이드</h2>
-            <p>{SCENE_GUIDE}</p>
+            <p>{pageGuide ? pageGuide.talk : '대화 가이드를 아직 받지 못했어요. 확정하면 쪽마다 볼 수 있어요.'}</p>
           </section>
           <p className={styles.remakeNote}>
-            {canRemake ? '다시 만들기는 1회 가능해요' : '다시 만들기를 사용했어요'}
+            {canRemake ? `다시 만들기는 ${remaining}회 가능해요` : '다시 만들기를 사용했어요'}
           </p>
         </aside>
 
         <div className={styles.actions} inert={isRemakeOpen}>
           <div className={styles.remakeAction}>
-            <button
-              type="button"
-              onClick={() => setIsRemakeOpen(true)}
-              disabled={!canRemake}
-            >다시 만들기</button>
+            <button type="button" onClick={() => setIsRemakeOpen(true)} disabled={!canRemake}>
+              다시 만들기
+            </button>
           </div>
-          <button className={styles.confirm} type="button" onClick={() => navigate('/library', { state: { story, newlyCreated: true } })}>
-            이대로 확정
+          <button className={styles.confirm} type="button" onClick={approve} disabled={approving}>
+            {approving ? '확정하는 중…' : '이대로 확정'}
           </button>
+          {notice && (
+            <p className={styles.actionError} role="alert">
+              {notice}
+            </p>
+          )}
         </div>
         {isRemakeOpen && <RemakeDialog onClose={closeRemake} onRemake={remake} />}
       </div>
       {isReaderOpen && (
-        <section className={styles.reader} aria-label="동화 읽기" aria-modal="true" role="dialog">
-          <div className={styles.readerCanvas}>
-            <header className={styles.readerHeader}>
-              <button
-                className={styles.readerClose}
-                type="button"
-                onClick={() => setIsReaderOpen(false)}
-                aria-label="미리보기로 돌아가기"
-              >
-                <img src={readerClose} alt="" />
-              </button>
-              <h1 className={styles.readerTitle}>{story.title || story.name || '공룡 아로의 새 친구'}</h1>
-              <div className={styles.readerProgress} aria-label={`${currentPage} / ${pages.length}쪽`}>
-                <span>{currentPage} / {pages.length}</span>
-                <div className={styles.readerProgressTrack}>
-                  <div
-                    className={styles.readerProgressFill}
-                    style={{ width: `${(currentPage / pages.length) * 100}%` }}
-                  />
-                </div>
-              </div>
-            </header>
-
-            <div className={styles.readerBook}>
-              <img className={styles.readerFrame} src={readerFrame} alt="" />
-              <div className={styles.readerPage}>
-                <div className={styles.readerPageContent}>
-                  <img src={page.image} alt={`${currentPage}쪽 동화 삽화`} />
-                  <div className={styles.readerCopy}>
-                    {page.text.map((line, index) => <p key={`${currentPage}-${index}`}>{line}</p>)}
-                  </div>
-                </div>
-              </div>
-            </div>
-
-            <button
-              className={`${styles.readerArrow} ${styles.readerArrowLeft}`}
-              type="button"
-              onClick={() => showPage(currentPage - 1)}
-              disabled={currentPage === 1}
-              aria-label="이전 쪽"
-            >
-              <img src={readerArrowLeft} alt="" />
-            </button>
-            <button
-              className={`${styles.readerArrow} ${styles.readerArrowRight}`}
-              type="button"
-              onClick={() => showPage(currentPage + 1)}
-              disabled={currentPage === pages.length}
-              aria-label="다음 쪽"
-            >
-              <img src={readerArrowRight} alt="" />
-            </button>
-          </div>
-        </section>
+        <StoryReader
+          title={title}
+          pages={pages}
+          page={currentPage}
+          onPage={setCurrentPage}
+          onClose={() => setIsReaderOpen(false)}
+          closeLabel="미리보기로 돌아가기"
+        />
       )}
     </div>
   );

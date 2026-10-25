@@ -38,10 +38,13 @@ function RadioMark({ checked }) {
 
 // 미리보기 위에 뜨는 '어떤 부분을 다시 만들까요?' 팝업이에요.
 // 1440×960 미리보기 화면(캔버스) 안에 놓이도록 만들었어요. 좁은 화면에서는 화면 전체 기준으로 떠요.
+// onRemake({ type, request })는 다시 만들 수 없으면 이유(문장)를, 시작했으면 아무것도 돌려주지 않아요.
 function RemakeDialog({ onClose, onRemake }) {
   const dialogRef = useRef(null);
   const [selectedOption, setSelectedOption] = useState('');
   const [request, setRequest] = useState('');
+  const [submitting, setSubmitting] = useState(false);
+  const [error, setError] = useState('');
 
   useEffect(() => {
     const previousFocus = document.activeElement;
@@ -58,12 +61,16 @@ function RemakeDialog({ onClose, onRemake }) {
     };
   }, [onClose]);
 
-  const remake = () => {
-    if (!selectedOption) {
+  const remake = async () => {
+    if (!selectedOption || submitting) {
       return;
     }
 
-    onRemake({ type: selectedOption, request: request.trim() });
+    setSubmitting(true);
+    setError('');
+    const message = await onRemake({ type: selectedOption, request: request.trim() });
+    setSubmitting(false);
+    if (message) setError(message);
   };
 
   return (
@@ -129,15 +136,21 @@ function RemakeDialog({ onClose, onRemake }) {
           />
         </div>
 
+        {error && (
+          <p className={styles.dialogError} role="alert">
+            {error}
+          </p>
+        )}
+
         <div className={styles.dialogActions}>
           <button className={styles.cancelButton} type="button" onClick={onClose}>취소</button>
           <button
             className={styles.remakeButton}
             type="button"
             onClick={remake}
-            aria-disabled={!selectedOption}
+            aria-disabled={!selectedOption || submitting}
           >
-            다시 만들기
+            {submitting ? '요청하는 중…' : '다시 만들기'}
           </button>
         </div>
       </section>

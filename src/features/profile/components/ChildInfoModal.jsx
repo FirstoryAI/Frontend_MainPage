@@ -4,7 +4,7 @@ import closeIcon from '../../../assets/child-info/close.svg';
 import removeIcon from '../../../assets/child-info/chip-remove.svg';
 import addIcon from '../../../assets/child-info/add.svg';
 import styles from './ChildInfoModal.module.css';
-import { childFromAge } from '../childProfile';
+import { childFromAge } from '../childAge';
 import { calcAge, joinLikes, parseLikes } from '../../story/utils';
 
 const traitRows = [
@@ -22,6 +22,8 @@ function ChildInfoModal({ child, onSave, onClose }) {
   const [customTrait, setCustomTrait] = useState(child?.customTrait ?? '');
   const [favorites, setFavorites] = useState(parseLikes(child?.likes ?? ''));
   const [newFavorite, setNewFavorite] = useState('');
+  const [saving, setSaving] = useState(false);
+  const [error, setError] = useState('');
 
   useEffect(() => {
     const previouslyFocused = document.activeElement;
@@ -67,14 +69,21 @@ function ChildInfoModal({ child, onSave, onClose }) {
     setNewFavorite('');
   };
 
-  const saveChanges = () => {
+  // onSave는 저장하지 못했을 때 이유(문장)를 돌려줘요.
+  const saveChanges = async () => {
+    if (saving) return;
+
     const updatedChild = childFromAge(age, child ?? {});
-    onSave?.({
+    setSaving(true);
+    setError('');
+    const message = await onSave?.({
       ...updatedChild,
       traits: selectedTraits,
       customTrait,
       likes: joinLikes(favorites),
     });
+    setSaving(false);
+    if (message) setError(message);
   };
 
   return (
@@ -197,8 +206,13 @@ function ChildInfoModal({ child, onSave, onClose }) {
           </button>
         </div>
 
-        <button className={styles.saveButton} type="button" onClick={saveChanges}>
-          수정하기
+        {error && (
+          <p className={styles.saveError} role="alert">
+            {error}
+          </p>
+        )}
+        <button className={styles.saveButton} type="button" onClick={saveChanges} disabled={saving}>
+          {saving ? '저장 중…' : '수정하기'}
         </button>
       </section>
     </div>

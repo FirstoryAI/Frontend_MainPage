@@ -8,6 +8,9 @@ import avatarPerson from '../../assets/icons/avatar-person.svg';
 import bookCover from '../../assets/images/library-book-cover.png';
 import { getHome } from '../../services/homeApi';
 import { getStories } from '../../services/libraryApi';
+import { retryStory } from '../../services/storiesApi';
+import { GENERATING_STATUSES, libraryGroup } from '../../features/story/storyMappers';
+import { useStoryGeneration } from '../../features/story/generation/useStoryGeneration';
 import styles from './LibraryPage.module.css';
 
 const filters = [
@@ -19,14 +22,13 @@ const filters = [
   { value: 'FAILED', label: '만들지 못했어요', countKey: 'failed' },
 ];
 
-const statusLabels = {
-  DRAFT: '제작 중', CREATING: '제작 중', REVIEWING: '확인을 기다려요',
+const groupLabels = {
+  CREATING: '제작 중', REVIEWING: '확인을 기다려요',
   UNREAD: '아직 읽지 않았어요', READ: '함께 읽었어요', FAILED: '만들지 못했어요',
 };
 
-const statusClasses = {
-  DRAFT: 'creating', CREATING: 'creating', REVIEWING: 'reviewing',
-  UNREAD: 'unread', READ: 'read', FAILED: 'failed',
+const groupClasses = {
+  CREATING: 'creating', REVIEWING: 'reviewing', UNREAD: 'unread', READ: 'read', FAILED: 'failed',
 };
 
 function formatStoryDate(value) {
@@ -35,9 +37,6 @@ function formatStoryDate(value) {
   if (Number.isNaN(date.getTime())) return '';
   return new Intl.DateTimeFormat('ko-KR', { month: 'long', day: 'numeric' }).format(date);
 }
-
-// 확인을 기다리는 동화는 미리보기, 읽을 수 있는 동화(아직 읽지 않았어요·함께 읽었어요)는 동화 상세로 열려요.
-const openableStatuses = ['REVIEWING', 'UNREAD', 'READ'];
 
 function LibraryPage() {
   const navigate = useNavigate();
@@ -53,6 +52,12 @@ function LibraryPage() {
   const [isLoading, setIsLoading] = useState(true);
   const [isLoadingMore, setIsLoadingMore] = useState(false);
   const [error, setError] = useState('');
+  const { resumeGeneration } = useStoryGeneration();
+
+  // 새로고침했을 때 만드는 중인 동화가 있으면 다시 따라가서, 끝나면 알림이 오게 해요.
+  useEffect(() => {
+    resumeGeneration();
+  }, [resumeGeneration]);
 
   useEffect(() => {
     getHome().then((home) => {
@@ -94,15 +99,30 @@ function LibraryPage() {
   };
 
   const readSavedStory = () => {
-    navigate(`/library/${savedStory.id ?? 'new'}`, { state: { story: savedStory } });
+    navigate(`/library/${savedStory.id}`, { state: { story: savedStory } });
   };
 
-  const openStory = (story, status) => {
-    if (status === 'REVIEWING') {
-      navigate('/story/preview', { state: { story } });
-      return;
+  // 동화 상태에 따라 열리는 화면이 달라요.
+  // 확인을 기다려요 → 미리보기, 읽을 수 있는 동화 → 동화 상세, 만들던 동화 → 이어 만들기·진행 보기
+  const openStory = (story) => {
+    const state = { story };
+    const group = libraryGroup(story);
+
+    if (group === 'REVIEWING') navigate(`/story/${story.id}/preview`, { state });
+    else if (group === 'UNREAD' || group === 'READ') navigate(`/library/${story.id}`, { state });
+    else if (GENERATING_STATUSES.includes(story.status)) navigate('/story/new', { state: { generation: { storyId: story.id } } });
+    else if (group === 'CREATING') navigate('/story/new', { state: { draftStoryId: story.id } });
+  };
+
+  // 만들지 못한 동화는 같은 범위로 다시 만들어요. (다시 만들기 횟수에 넣지 않아요)
+  const handleRetry = async (story) => {
+    setError('');
+    try {
+      await retryStory(story.id);
+      navigate('/story/new', { state: { generation: { storyId: story.id } } });
+    } catch (requestError) {
+      setError(requestError.message || '다시 시도하지 못했어요.');
     }
-    navigate(`/library/${story.id}`, { state: { story } });
   };
 
   const handleLoadMore = async () => {
@@ -159,27 +179,27 @@ function LibraryPage() {
             {error && <p className={styles.error} role="alert">{error}</p>}
             <section className={styles.storyGrid} aria-live="polite" aria-busy={isLoading}>
               {isLoading ? <p className={styles.message}>서재를 불러오는 중이에요.</p> : stories.map((story) => {
-                const status = String(story.status || '').toUpperCase();
+                const group = libraryGroup(story);
                 const storyTitle = story.title || '제목을 준비하고 있어요';
                 const meta = [story.childDisplayName, formatStoryDate(story.updatedAt || story.createdAt)]
                   .filter(Boolean).join(' · ');
                 return (
                   <article className={styles.storyCard} key={story.id}>
-                    <span className={`${styles.badge} ${styles[statusClasses[status]] || ''}`}>
-                      {story.label || statusLabels[status] || '동화'}
+                    <span className={`${styles.badge} ${styles[groupClasses[group]] || ''}`}>
+                      {story.label || groupLabels[group] || '동화'}
                     </span>
                     <img className={styles.cover} src={story.coverUrl || bookCover} alt={story.title ? `${story.title} 표지` : '동화 표지'} />
                     <h2 className={styles.storyTitle}>
-                      {openableStatuses.includes(status) ? (
-                        <button className={styles.storyOpen} type="button" onClick={() => openStory(story, status)}>
+                      {group !== 'FAILED' ? (
+                        <button className={styles.storyOpen} type="button" onClick={() => openStory(story)}>
                           {storyTitle}
                         </button>
                       ) : storyTitle}
                     </h2>
                     <div className={styles.storyFooter}>
                       <p className={styles.storyMeta}>{meta}</p>
-                      {status === 'FAILED' && (
-                        <button className={styles.retryButton} type="button" onClick={() => navigate(`/story/${story.id}/remake`)}>
+                      {group === 'FAILED' && (
+                        <button className={styles.retryButton} type="button" onClick={() => handleRetry(story)}>
                           다시 만들기
                         </button>
                       )}

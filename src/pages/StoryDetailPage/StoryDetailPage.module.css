@@ -95,6 +95,12 @@
   letter-spacing: -0.99px;
 }
 
+.notice {
+  margin: 12px 0 0;
+  color: #a34439;
+  font-size: 15px;
+}
+
 .detail {
   display: grid;
   grid-template-columns: 354px minmax(0, 637px);
@@ -159,7 +165,7 @@
   background: transparent;
   border: 0;
   border-radius: 50%;
-  cursor: not-allowed;
+  cursor: pointer;
 }
 
 .trash img {
@@ -185,6 +191,11 @@
   color: #fff;
   background: var(--color-secondary-green);
   box-shadow: inset 0 0 4.2px rgb(255 255 255 / 25%);
+  cursor: pointer;
+}
+
+.readButton:disabled {
+  opacity: 0.55;
   cursor: not-allowed;
 }
 

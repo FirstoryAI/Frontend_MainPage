@@ -8,6 +8,10 @@ export default [
   js.configs.recommended,
   reactHooks.configs.flat.recommended,
   {
+    files: ['vite.config.js', 'scripts/**/*.mjs'],
+    languageOptions: { globals: globals.node },
+  },
+  {
     files: ['**/*.{js,jsx}'],
     languageOptions: {
       ecmaVersion: 2024,

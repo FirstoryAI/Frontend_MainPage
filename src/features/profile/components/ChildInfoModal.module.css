@@ -279,3 +279,14 @@
     width: 560px;
   }
 }
+
+.saveError {
+  position: absolute;
+  top: 626px;
+  left: 61px;
+  width: 330px;
+  margin: 0;
+  color: #a34439;
+  font-size: 14px;
+  line-height: 1.4;
+}

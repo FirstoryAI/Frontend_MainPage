@@ -5,6 +5,9 @@
   "type": "module",
   "scripts": {
     "dev": "vite",
+    "mock-api": "node scripts/mock-api.mjs",
+    "dev:mock": "node scripts/dev-mock.mjs",
+    "check-api": "node scripts/check-api.mjs",
     "build": "vite build",
     "lint": "eslint .",
     "preview": "vite preview"
