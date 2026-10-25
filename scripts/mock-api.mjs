@@ -726,6 +726,7 @@ export function startMockApi({ port = Number(process.env.MOCK_API_PORT) || 8787,
       const fields = [];
       if (!CATEGORY_LABELS[body.category]) fields.push(['category', '어떤 일인지 골라 주세요.']);
       if (!['PAST', 'UPCOMING'].includes(body.timing)) fields.push(['timing', '언제 일인지 골라 주세요.']);
+      if (body.category === 'OTHER' && !body.customCategory?.trim()) return json(res, 400, { code: 'VALIDATION_FAILED', message: '기타를 고르면 내용을 직접 입력해 주세요.' });
       if (fields.length) return invalid(res, fields);
       const safety = safetyCheck(body.description, body.customCategory, body.customReaction);
       const blocked = handleSafety(story, safety);

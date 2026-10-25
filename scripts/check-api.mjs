@@ -150,12 +150,20 @@ async function errorChecks() {
   check('확정 전 대화 가이드 → 409', await call('GET', `/api/stories/${id}/guide`), 409);
   check('확정 전 읽기 시작 → 409', await call('POST', `/api/stories/${id}/reading-sessions`), [403, 404, 409]);
 
+  console.log(' (그 밖의 일 분류)');
+  const otherId = await newStory('그 밖의 일 점검');
+  if (otherId) {
+    check('기타(OTHER)인데 분류 직접 입력 없음 → 400', await call('PUT', `/api/stories/${otherId}/situation`, { timing: 'PAST', category: 'OTHER', description: '친구와 다퉜어요', reactions: [], emotions: [] }), 400);
+    check('기타(OTHER) + 분류 직접 입력 → 200 (화면이 보내는 방식)', await call('PUT', `/api/stories/${otherId}/situation`, { timing: 'PAST', category: 'OTHER', customCategory: '친구와 다퉜어요', description: '친구와 다퉜어요', reactions: ['OTHER'], customReaction: '울었어요', emotions: [] }), 200);
+    await call('DELETE', `/api/stories/${otherId}`);
+  }
+
   console.log(' (위기 신호 — 서버가 어떤 글을 어떻게 판단하는지 보여줘요)');
   for (const probe of SAFETY_PROBES) {
     const probeId = await newStory(`위기 신호 점검 "${probe.name}"`);
     if (!probeId) continue;
     const response = await call('PUT', `/api/stories/${probeId}/situation`, {
-      timing: 'PAST', category: 'OTHER', description: probe.text, reactions: [], emotions: [],
+      timing: 'PAST', category: 'FRIEND_CONFLICT', description: probe.text, reactions: [], emotions: [],
     });
     check(`"${probe.text}" → 상황 저장`, response, 200, (r) => `safety.action=${r.data?.safety?.action}, saved=${r.data?.saved}, status=${r.data?.status}`);
     await call('DELETE', `/api/stories/${probeId}`);
@@ -169,7 +177,7 @@ async function errorChecks() {
     await call('PUT', `/api/stories/${editId}/message`, { message: '' });
     const start = await call('POST', `/api/stories/${editId}/interview/start`);
     check('인터뷰 시작', start, 200, (r) => `status=${r.data?.status}, type=${r.data?.type}, 첫 질문="${short(r.data?.question)}"`);
-    check('인터뷰 시작 뒤 상황 수정 → 409(지금 명세)', await call('PUT', `/api/stories/${editId}/situation`, { timing: 'PAST', category: 'OTHER', description: '수정', reactions: [], emotions: [] }), [200, 409]);
+    check('인터뷰 시작 뒤 상황 수정 → 409(지금 명세)', await call('PUT', `/api/stories/${editId}/situation`, { timing: 'PAST', category: 'FRIEND_CONFLICT', description: '수정', reactions: [], emotions: [] }), [200, 409]);
     await call('DELETE', `/api/stories/${editId}`);
   }
 
