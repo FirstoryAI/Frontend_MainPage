@@ -1,0 +1,284 @@
+.page {
+  min-width: 320px;
+  min-height: 100vh;
+  overflow-x: clip;
+  background: var(--color-page);
+}
+
+.shell {
+  min-height: 100vh;
+}
+
+.main {
+  position: relative;
+  min-height: 100vh;
+  padding: 101px 91px 72px 363px;
+}
+
+.topbar {
+  position: absolute;
+  top: 58.6px;
+  right: 75.6px;
+  display: flex;
+  align-items: center;
+  gap: 39.6px;
+  height: 58.8px;
+}
+
+.bellButton {
+  display: block;
+  padding: 0;
+  background: transparent;
+  border: 0;
+  cursor: not-allowed;
+}
+
+.bellButton img {
+  display: block;
+}
+
+.avatarButton {
+  display: block;
+  flex: 0 0 58.8px;
+  width: 58.8px;
+  height: 58.8px;
+  padding: 0;
+  background: transparent;
+  border: 0;
+  border-radius: 50%;
+  cursor: pointer;
+}
+
+.avatarButton img {
+  display: block;
+  width: 100%;
+  height: 100%;
+}
+
+.avatarButton:focus-visible {
+  outline-offset: 4px;
+}
+
+.heading {
+  position: relative;
+  padding-left: 40px;
+}
+
+.back {
+  position: absolute;
+  top: 10px;
+  left: 1px;
+  display: block;
+  width: 10px;
+  height: 21px;
+}
+
+.back img {
+  position: absolute;
+  top: -2.175px;
+  left: -2.125px;
+  width: 14.2996px;
+  max-width: none;
+  height: 25.3501px;
+}
+
+.title {
+  margin: 0;
+  color: var(--color-heading);
+  font-size: 33px;
+  font-weight: 600;
+  line-height: 1.304;
+  letter-spacing: -0.99px;
+}
+
+.description {
+  margin: 12px 0 0;
+  color: var(--color-secondary);
+  font-size: 16px;
+  line-height: 27px;
+}
+
+.filters {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 12px 13px;
+  margin: 35px 0 0 40px;
+}
+
+.filter {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  height: 43px;
+  padding: 0 22.8px;
+  color: var(--color-text);
+  background: var(--color-surface);
+  border: 0.95px solid var(--color-field-border);
+  border-radius: 23.75px;
+  font-family: var(--font-body);
+  font-size: 17px;
+  font-weight: 400;
+  letter-spacing: -0.51px;
+  white-space: nowrap;
+  cursor: pointer;
+}
+
+.filterActive {
+  color: var(--color-chip-selected);
+  background: #fff6f3;
+  border: 1.9px solid var(--color-chip-selected);
+  font-weight: 500;
+}
+
+.grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, 212.277px);
+  gap: 47.3px 33.96px;
+  justify-content: start;
+  margin: 42px 0 0 35px;
+  padding: 0;
+  list-style: none;
+}
+
+/* 홈의 추천 카드(250×287)를 0.849배로 줄인 크기예요. 안쪽 치수는 모두 --s를 곱해요. */
+.card {
+  --s: 0.8491;
+
+  position: relative;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  width: 212.277px;
+  height: 243.694px;
+  padding: calc(24px * var(--s)) calc(15px * var(--s)) 0;
+  overflow: hidden;
+  color: #fff;
+  appearance: none;
+  border: 0;
+  border-radius: calc(20px * var(--s));
+  box-shadow: inset 0 0 6.708px rgb(255 255 255 / 51%);
+  font-family: var(--font-body);
+  text-align: center;
+  cursor: pointer;
+}
+
+.card:focus-visible {
+  outline: 3px solid #3a2e28;
+  outline-offset: 4px;
+}
+
+.friend { background: #ff7c68; }
+.emotion { background: #65d0a5; }
+.kindergarten { background: #ffcf55; }
+.habit { background: #9e95ff; }
+
+.category {
+  z-index: 1;
+  display: inline-flex;
+  align-items: center;
+  height: calc(22px * var(--s));
+  padding: 0 calc(9px * var(--s));
+  border-radius: 17.831px;
+  background: rgb(255 255 255 / 30%);
+  font-size: calc(12px * var(--s));
+  font-weight: 600;
+  line-height: calc(27px * var(--s));
+}
+
+.cardTitle {
+  z-index: 1;
+  margin-top: calc(9px * var(--s));
+  font-size: calc(22px * var(--s));
+  font-weight: 600;
+  line-height: calc(35px * var(--s));
+  letter-spacing: calc(-0.4px * var(--s));
+}
+
+.cardDescription {
+  z-index: 1;
+  margin-top: calc(1px * var(--s));
+  font-size: calc(12px * var(--s));
+  line-height: calc(27px * var(--s));
+}
+
+.cardImage {
+  position: absolute;
+  display: block;
+  object-fit: fill;
+  object-position: center bottom;
+  pointer-events: none;
+}
+
+.friend .cardImage {
+  bottom: calc(13px * var(--s));
+  left: calc(33.4px * var(--s));
+  width: calc(185.8px * var(--s));
+  height: calc(111px * var(--s));
+}
+
+.emotion .cardImage {
+  bottom: calc(13px * var(--s));
+  left: calc(73px * var(--s));
+  width: calc(90px * var(--s));
+  height: calc(114px * var(--s));
+}
+
+.kindergarten .cardImage {
+  bottom: calc(17.5px * var(--s));
+  left: calc(58px * var(--s));
+  width: calc(133px * var(--s));
+  height: calc(103px * var(--s));
+}
+
+.habit .cardImage {
+  bottom: calc(-4px * var(--s));
+  left: calc(14px * var(--s));
+  width: calc(222px * var(--s));
+  height: calc(148px * var(--s));
+}
+
+@media (max-width: 900px) {
+  .main {
+    padding: 24px 16px 40px;
+  }
+
+  .topbar {
+    position: static;
+    justify-content: flex-end;
+    height: 48px;
+    margin-bottom: 8px;
+  }
+
+  .avatarButton {
+    flex-basis: 48px;
+    width: 48px;
+    height: 48px;
+  }
+
+  .heading {
+    padding-left: 28px;
+  }
+
+  .back {
+    top: 8px;
+  }
+
+  .title {
+    font-size: 26px;
+  }
+
+  .description {
+    font-size: 14px;
+    line-height: 22px;
+  }
+
+  .filters {
+    gap: 10px;
+    margin: 24px 0 0;
+  }
+
+  .grid {
+    justify-content: center;
+    margin: 28px 0 0;
+  }
+}
