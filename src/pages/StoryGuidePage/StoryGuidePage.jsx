@@ -4,6 +4,8 @@ import pageArrowLeft from '../../assets/remake/page-arrow-left.svg';
 import pageArrowRight from '../../assets/remake/page-arrow-right.svg';
 import headerClose from '../../assets/remake/header-close.svg';
 import { guideFor } from '../../features/story/guideContent';
+import PageTurnOverlay from '../../features/story/components/PageTurnOverlay';
+import { usePageTurn } from '../../features/story/hooks/usePageTurn';
 import { useSceneScale } from '../../features/story/hooks/useSceneScale';
 import { getBook, getGuide } from '../../services/storiesApi';
 import styles from './StoryGuidePage.module.css';
@@ -32,6 +34,7 @@ function StoryGuidePage() {
 
   const pages = data?.book.pages ?? [];
   const page = pages[currentPage - 1];
+  const turn = usePageTurn(currentPage, pages.map((item) => item.imageUrl));
   const showPage = (nextPage) => {
     setCurrentPage(Math.min(pages.length, Math.max(1, nextPage)));
   };
@@ -68,6 +71,7 @@ function StoryGuidePage() {
                 <div className={styles.pageCopy}>
                   {page.text.split('\n').filter(Boolean).map((line) => <p key={line}>{line}</p>)}
                 </div>
+                <PageTurnOverlay turn={turn} />
               </div>
               <div className={styles.pagination}>
                 <button type="button" onClick={() => showPage(currentPage - 1)} disabled={currentPage === 1}>

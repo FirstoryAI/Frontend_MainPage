@@ -9,8 +9,12 @@ import { useSceneScale } from '../../features/story/hooks/useSceneScale';
 import { useStoryGeneration } from '../../features/story/generation/useStoryGeneration';
 import RemakeDialog from '../../features/story/components/RemakeDialog';
 import StoryReader from '../../features/story/components/StoryReader';
+import PageTurnOverlay from '../../features/story/components/PageTurnOverlay';
+import { usePageTurn } from '../../features/story/hooks/usePageTurn';
 import { guideFor } from '../../features/story/guideContent';
 import { approveStory, getGuide, getPreview, getStoryDetail, regenerateStory } from '../../services/storiesApi';
+
+const REGENERATE_LIMIT = 1;
 
 // 화면의 '다시 만들 부분'을 API의 scope로 바꿔요.
 const REMAKE_SCOPES = { all: 'CHARACTER_STORY', text: 'TEXT', image: 'IMAGES' };
@@ -53,8 +57,12 @@ function StoryPreviewPage({ initialRemakeOpen = false }) {
 
   const pages = preview?.pages ?? [];
   const title = preview?.version?.title ?? story.title ?? '';
-  const remaining = preview?.regenerateRemaining ?? 0;
+  // 다시 만들기는 동화당 1회만 할 수 있어요. 서버가 더 많이 남았다고 알려줘도 1회까지만 보여주고,
+  // 이미 다시 만든 동화(2번째 버전부터)는 더 이상 할 수 없어요.
+  const alreadyRemade = (preview?.version?.versionNo ?? 1) > 1;
+  const remaining = alreadyRemade ? 0 : Math.min(preview?.regenerateRemaining ?? 0, REGENERATE_LIMIT);
   const canRemake = remaining > 0;
+  const turn = usePageTurn(currentPage, pages.map((item) => item.imageUrl));
 
   const closeRemake = () => {
     if (initialRemakeOpen) {
@@ -179,6 +187,7 @@ function StoryPreviewPage({ initialRemakeOpen = false }) {
             <div className={styles.pageCopy}>
               {lines.map((line) => <p key={line}>{line}</p>)}
             </div>
+            <PageTurnOverlay turn={turn} />
           </div>
           <div className={styles.pagination}>
             <button type="button" onClick={() => showPage(currentPage - 1)} disabled={currentPage === 1}>

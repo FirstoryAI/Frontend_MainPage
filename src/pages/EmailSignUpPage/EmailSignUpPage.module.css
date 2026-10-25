@@ -5,39 +5,47 @@
 }
 
 .main {
-  position: relative;
+  display: flex;
+  justify-content: center;
   min-height: calc(100vh - var(--header-height));
+  padding: 111px 16px 64px;
 }
 
 .card {
-  position: absolute;
-  top: 111px;
-  left: 50%;
-  width: 540px;
-  height: 880px;
-  overflow: hidden;
+  display: flex;
+  flex-direction: column;
+  width: min(540px, 100%);
+  height: fit-content;
+  padding: 45px 52px 40px;
   background: var(--color-surface);
   border-radius: 24px;
   box-shadow: 0 0 8.2px rgb(0 0 0 / 10%);
-  transform: translateX(-50%);
 }
 
 .backLink {
-  position: absolute;
-  top: 45px;
-  left: 52px;
+  align-self: flex-start;
+  padding: 0;
   color: var(--color-secondary);
+  background: transparent;
+  border: 0;
+  font-family: var(--font-body);
   font-size: 16px;
   font-weight: 600;
   line-height: 1.5;
   text-decoration: none;
+  cursor: pointer;
+}
+
+.stepLabel {
+  margin: 44px 0 0;
+  color: var(--color-brand);
+  font-size: 16px;
+  font-weight: 600;
+  line-height: 1.5;
 }
 
 .title {
-  position: absolute;
-  top: 105px;
-  left: 52px;
-  margin: 0;
+  margin: 4px 0 0;
   color: var(--color-heading);
   font-size: 33px;
   font-weight: 600;
@@ -45,35 +53,29 @@
   letter-spacing: -0.99px;
 }
 
+.form {
+  display: flex;
+  flex-direction: column;
+  margin-top: 36px;
+}
+
 .label {
-  position: absolute;
-  left: 52px;
+  margin: 0 0 8px;
   color: var(--color-text);
   font-size: 18px;
   font-weight: 600;
   line-height: 1.5;
 }
 
-.emailLabel {
-  top: 447px;
-}
-
-.passwordLabel {
-  top: 568px;
-}
-
-.phoneLabel {
-  top: 175px;
-}
-
-.codeLabel {
-  top: 283px;
+.form > .input + .label,
+.inlineRow + .label {
+  margin-top: 28px;
 }
 
 .input {
-  position: absolute;
-  left: 48px;
-  width: 443px;
+  flex: 1 1 auto;
+  min-width: 0;
+  width: 100%;
   height: 63px;
   padding: 0 24px;
   color: var(--color-text);
@@ -97,32 +99,23 @@
   outline-offset: 1px;
 }
 
-.emailInput {
-  top: 489px;
+.input:disabled {
+  background: #faf6f3;
+  cursor: not-allowed;
 }
 
-.passwordInput {
-  top: 610px;
+.inlineRow {
+  display: flex;
+  align-items: center;
+  gap: 14px;
 }
 
-.phoneInput,
-.codeInput {
-  width: 280px;
+.inlineRow .input {
   height: 56px;
 }
 
-.phoneInput {
-  top: 213px;
-}
-
-.codeInput {
-  top: 321px;
-}
-
 .inlineButton {
-  position: absolute;
-  left: 344px;
-  width: 147px;
+  flex: 0 0 147px;
   height: 56px;
   color: var(--color-brand);
   background: #fff7f2;
@@ -140,32 +133,20 @@
   cursor: not-allowed;
 }
 
-.sendCodeButton {
-  top: 213px;
-}
-
-.verifyButton {
-  top: 321px;
-}
-
-.phoneHelp,
-.phoneStatus {
-  position: absolute;
-  left: 52px;
-  right: 52px;
-  margin: 0;
+.hint,
+.status {
+  margin: 8px 0 0;
   font-size: 14px;
   line-height: 1.5;
 }
 
-.phoneHelp {
-  top: 382px;
+.hint {
   color: var(--color-secondary);
 }
 
-.phoneStatus {
-  top: 408px;
+.status {
   min-height: 21px;
+  margin-top: 4px;
   color: #c83e35;
 }
 
@@ -173,23 +154,18 @@
   color: #27875e;
 }
 
-.signupFeedback {
-  position: absolute;
-  top: 680px;
-  left: 52px;
-  right: 52px;
-  margin: 0;
+.error {
+  margin: 12px 0 0;
   color: #c83e35;
   font-size: 14px;
   line-height: 1.45;
 }
 
 .submitButton {
-  position: absolute;
-  top: 744px;
-  left: 80px;
-  width: 379px;
+  align-self: center;
+  width: min(379px, 100%);
   height: 63px;
+  margin-top: 36px;
   color: var(--color-surface);
   background: var(--color-brand);
   border: 0;
@@ -207,11 +183,7 @@
 }
 
 .loginPrompt {
-  position: absolute;
-  top: 830px;
-  left: 0;
-  right: 0;
-  margin: 0;
+  margin: 32px 0 0;
   color: var(--color-secondary);
   font-size: 15px;
   font-weight: 400;
@@ -228,95 +200,42 @@
   font-size: 15px;
   font-weight: 500;
   line-height: 1.5;
-  cursor: not-allowed;
-  opacity: 1;
+  cursor: pointer;
+}
+
+.loginLink:hover {
+  text-decoration: underline;
 }
 
 @media (min-width: 761px) and (max-height: 850px) {
-  .card {
-    top: clamp(20px, 4vh, 40px);
-  }
-}
-
-@media (min-width: 761px) and (max-height: 720px) {
-  .card {
-    top: 16px;
-    transform: translateX(-50%) scale(0.84);
-    transform-origin: top center;
+  .main {
+    padding-top: clamp(20px, 4vh, 40px);
   }
 }
 
 @media (max-width: 760px) {
   .main {
     min-height: calc(100vh - var(--header-height-mobile));
-    padding: 1px 0 32px;
+    padding: 32px 16px 32px;
   }
 
   .card {
-    position: relative;
-    top: auto;
-    left: auto;
-    width: min(540px, calc(100% - 32px));
-    margin: 32px auto 0;
-    transform: none;
+    padding: 32px 24px 32px;
   }
 
-  .backLink,
-  .title,
-  .label {
-    left: 24px;
-  }
-
-  .input,
-  .submitButton {
-    left: 24px;
-    right: 24px;
-    width: auto;
-  }
-
-  .phoneInput,
-  .codeInput {
-    right: 142px;
-    width: auto;
-  }
-
-  .inlineButton {
-    left: auto;
-    right: 24px;
-    width: 110px;
-  }
-
-  .phoneHelp,
-  .phoneStatus {
-    left: 24px;
-    right: 24px;
-  }
-
-  .signupFeedback {
-    left: 24px;
-    right: 24px;
+  .stepLabel {
+    margin-top: 32px;
   }
 
   .title {
     font-size: clamp(28px, 8vw, 33px);
   }
-}
-.signupValidationMessage {
-  box-sizing: border-box;
-  z-index: 3;
-  display: grid;
-  gap: 2px;
-  margin: 0;
-  padding: 0 8px;
-  color: #c65345;
-  font-size: 15px;
-  font-weight: 500;
-  line-height: 1.6;
-  text-align: center;
-  justify-items: center;
-}
 
-.signupValidationMessage p {
-  margin: 0;
-}
+  .inlineRow {
+    gap: 8px;
+  }
 
+  .inlineButton {
+    flex-basis: 110px;
+  }
+}
