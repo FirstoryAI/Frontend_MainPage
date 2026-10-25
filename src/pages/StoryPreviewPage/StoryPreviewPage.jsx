@@ -10,6 +10,7 @@ import { useStoryGeneration } from '../../features/story/generation/useStoryGene
 import RemakeDialog from '../../features/story/components/RemakeDialog';
 import StoryReader from '../../features/story/components/StoryReader';
 import SafeImage from '../../features/story/components/SafeImage';
+import StoryText from '../../features/story/components/StoryText';
 import PageTurnOverlay from '../../features/story/components/PageTurnOverlay';
 import { usePageTurn } from '../../features/story/hooks/usePageTurn';
 import { guideFor } from '../../features/story/guideContent';
@@ -192,7 +193,7 @@ function StoryPreviewPage({ initialRemakeOpen = false }) {
               )}
             />
             <div className={styles.pageCopy}>
-              {lines.map((line) => <p key={line}>{line}</p>)}
+              {lines.map((line) => <p key={line}><StoryText text={line} /></p>)}
             </div>
             <PageTurnOverlay turn={turn} />
           </div>

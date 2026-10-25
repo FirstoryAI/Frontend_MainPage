@@ -6,6 +6,7 @@ import headerClose from '../../assets/remake/header-close.svg';
 import { guideFor } from '../../features/story/guideContent';
 import PageTurnOverlay from '../../features/story/components/PageTurnOverlay';
 import SafeImage from '../../features/story/components/SafeImage';
+import StoryText from '../../features/story/components/StoryText';
 import { usePageTurn } from '../../features/story/hooks/usePageTurn';
 import { useSceneScale } from '../../features/story/hooks/useSceneScale';
 import { getBook, getGuide } from '../../services/storiesApi';
@@ -70,7 +71,7 @@ function StoryGuidePage() {
                   fallback={<p className={styles.noImage}>그림을 아직 준비하지 못했어요.</p>}
                 />
                 <div className={styles.pageCopy}>
-                  {page.text.split('\n').filter(Boolean).map((line) => <p key={line}>{line}</p>)}
+                  {page.text.split('\n').filter(Boolean).map((line) => <p key={line}><StoryText text={line} /></p>)}
                 </div>
                 <PageTurnOverlay turn={turn} />
               </div>

@@ -244,8 +244,13 @@ async function flowCheck() {
     }
     const list = (await call('GET', '/api/stories?filter=REVIEWING&size=50')).data?.items ?? [];
     const card = list.find((item) => item.id === id);
-    results.push({ label: '서재 표지(coverUrl)', ok: Boolean(card?.coverUrl) });
-    console.log(`  ${card?.coverUrl ? '[OK]  ' : '[실패]'} 서재 표지 주소: ${card?.coverUrl ?? '없음'}`);
+    const cover = card?.coverUrl ? await call('GET', card.coverUrl) : null;
+    const coverOk = Boolean(cover && cover.status === 200 && (cover.headers?.get('content-type') ?? '').startsWith('image/'));
+    results.push({ label: '서재 표지(coverUrl)', ok: coverOk });
+    console.log(`  ${coverOk ? '[OK]  ' : '[실패]'} 서재 표지: ${card?.coverUrl ?? '주소 없음'} → ${cover?.status ?? '-'}`);
+    const marked = (preview.data?.pages ?? []).filter((page) => page.text?.includes('**')).length;
+    if (marked) console.log(`  [참고] ${marked}쪽의 글에 **강조** 표시가 들어 있어요 (화면에서는 굵게 보여줘요)`);
+    console.log(`  [참고] 쪽 수 ${preview.data?.pages?.length}쪽 (명세의 읽기 진행 쪽 범위는 1~8)`);
   }
 
   if (!KEEP) {
