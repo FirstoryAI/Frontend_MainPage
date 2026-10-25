@@ -39,10 +39,10 @@
 .bookTitle {
   margin-top: 24px;
   color: var(--color-text);
-  font-size: 12px;
+  font-size: 18px;
   font-weight: 600;
-  line-height: 16px;
-  letter-spacing: -0.36px;
+  line-height: 31px;
+  letter-spacing: -0.54px;
   text-align: center;
 }
 
