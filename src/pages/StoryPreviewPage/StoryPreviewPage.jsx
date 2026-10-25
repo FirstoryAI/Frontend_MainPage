@@ -9,7 +9,8 @@ import { useSceneScale } from '../../features/story/hooks/useSceneScale';
 import { useStoryGeneration } from '../../features/story/generation/useStoryGeneration';
 import RemakeDialog from '../../features/story/components/RemakeDialog';
 import StoryReader from '../../features/story/components/StoryReader';
-import { approveStory, getPreview, regenerateStory } from '../../services/storiesApi';
+import { guideFor } from '../../features/story/guideContent';
+import { approveStory, getGuide, getPreview, getStoryDetail, regenerateStory } from '../../services/storiesApi';
 
 // 화면의 '다시 만들 부분'을 API의 scope로 바꿔요.
 const REMAKE_SCOPES = { all: 'CHARACTER_STORY', text: 'TEXT', image: 'IMAGES' };
@@ -24,6 +25,9 @@ function StoryPreviewPage({ initialRemakeOpen = false }) {
   const { startGeneration } = useStoryGeneration();
   const scale = useSceneScale();
   const [preview, setPreview] = useState(null);
+  // 동화 줄거리(상세)와 대화 가이드예요. 가이드는 서버가 확정 전에는 주지 않을 수 있어요.
+  const [summary, setSummary] = useState('');
+  const [guide, setGuide] = useState(null);
   const [loadError, setLoadError] = useState('');
   const [currentPage, setCurrentPage] = useState(1);
   const [isReaderOpen, setIsReaderOpen] = useState(false);
@@ -36,6 +40,12 @@ function StoryPreviewPage({ initialRemakeOpen = false }) {
     getPreview(storyId)
       .then((result) => active && setPreview(result))
       .catch((error) => active && setLoadError(error.message || '미리보기를 불러오지 못했어요.'));
+    getStoryDetail(storyId)
+      .then((detail) => active && setSummary(detail.summary ?? ''))
+      .catch(() => {});
+    getGuide(storyId)
+      .then((result) => active && setGuide(result))
+      .catch(() => {});
     return () => {
       active = false;
     };
@@ -93,6 +103,8 @@ function StoryPreviewPage({ initialRemakeOpen = false }) {
   };
 
   const page = pages[currentPage - 1];
+  // 쪽마다 설명·가이드가 있으면 그걸, 아직 없으면 동화 줄거리를 보여줘요.
+  const pageGuide = guide ? guideFor(guide, currentPage, pages.length) : null;
   const lines = page ? page.text.split('\n').filter(Boolean) : [];
 
   const header = (
@@ -182,11 +194,11 @@ function StoryPreviewPage({ initialRemakeOpen = false }) {
         <aside className={styles.storyInfo} inert={isRemakeOpen}>
           <section>
             <h2>동화 설명</h2>
-            <p>{title}</p>
+            <p>{pageGuide?.description || summary || title}</p>
           </section>
           <section>
             <h2>부모를 위한 가이드</h2>
-            <p>이대로 확정하면 쪽마다 아이와 나눌 대화 가이드를 볼 수 있어요.</p>
+            <p>{pageGuide ? pageGuide.talk : '대화 가이드를 아직 받지 못했어요. 확정하면 쪽마다 볼 수 있어요.'}</p>
           </section>
           <p className={styles.remakeNote}>
             {canRemake ? `다시 만들기는 ${remaining}회 가능해요` : '다시 만들기를 사용했어요'}

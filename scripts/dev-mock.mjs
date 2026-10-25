@@ -3,7 +3,7 @@ import { spawn } from 'node:child_process';
 import { startMockApi } from './mock-api.mjs';
 
 const port = Number(process.env.MOCK_API_PORT) || 8787;
-await startMockApi({ port, seed: true });
+await startMockApi({ port, seed: process.argv.includes('--seed') });
 
 const npm = process.platform === 'win32' ? 'npm.cmd' : 'npm';
 const vite = spawn(npm, ['run', 'dev', '--', ...process.argv.slice(2)], {

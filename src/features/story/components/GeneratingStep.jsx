@@ -38,8 +38,7 @@ function lineClass(index, stage) {
 }
 
 // stage: 지금 단계(0~2). 진행 상태는 StoryGenerationProvider가 앱 전체에서 관리해요.
-// failed: 동화를 만들지 못했을 때. error는 서버가 알려준 이유, onRetry는 같은 범위로 다시 시도해요.
-function GeneratingStep({ stage, failed = false, error = '', onRetry }) {
+function GeneratingStep({ stage }) {
   const navigate = useNavigate();
   const [phone, setPhone] = useState('');
 
@@ -95,35 +94,26 @@ function GeneratingStep({ stage, failed = false, error = '', onRetry }) {
       </div>
 
       <h1 className={styles.title} role="status">
-        {failed ? '동화를 만들지 못했어요' : stages[stage].title}
+        {stages[stage].title}
       </h1>
       <p className={styles.notice}>
-        {failed
-          ? error || '잠시 뒤에 다시 시도해 주세요.'
-          : '보통 3~4분 정도 걸려요. 화면을 나가도 동화는 계속 만들어져요.'}
+        보통 3~4분 정도 걸려요. 화면을 나가도 동화는 계속 만들어져요.
       </p>
 
-      {!failed && (
-        <div className={styles.card}>
-          <p className={styles.cardText}>다 되면 카카오톡으로 알려드려요</p>
-          <p className={styles.phone}>{phone}</p>
-          <button
-            className={styles.changeButton}
-            type="button"
-            disabled
-            title="번호 변경 화면이 준비되면 연결됩니다"
-          >
-            번호 바꾸기
-          </button>
-        </div>
-      )}
+      <div className={styles.card}>
+        <p className={styles.cardText}>다 되면 카카오톡으로 알려드려요</p>
+        <p className={styles.phone}>{phone}</p>
+        <button
+          className={styles.changeButton}
+          type="button"
+          disabled
+          title="번호 변경 화면이 준비되면 연결됩니다"
+        >
+          번호 바꾸기
+        </button>
+      </div>
 
       <div className={styles.footer}>
-        {failed && (
-          <CtaButton pill onClick={onRetry}>
-            다시 시도
-          </CtaButton>
-        )}
         <CtaButton
           pill
           iconOnly

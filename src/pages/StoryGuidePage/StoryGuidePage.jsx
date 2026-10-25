@@ -3,33 +3,10 @@ import { Link, useLocation, useNavigate, useParams } from 'react-router-dom';
 import pageArrowLeft from '../../assets/remake/page-arrow-left.svg';
 import pageArrowRight from '../../assets/remake/page-arrow-right.svg';
 import headerClose from '../../assets/remake/header-close.svg';
+import { guideFor } from '../../features/story/guideContent';
 import { useSceneScale } from '../../features/story/hooks/useSceneScale';
 import { getBook, getGuide } from '../../services/storiesApi';
 import styles from './StoryGuidePage.module.css';
-
-// 이 쪽에 대한 설명과 대화 가이드를 골라요. 쪽 사이 질문(afterPage)이 있으면 그 질문을, 없으면 읽기 전·후 안내를 보여줘요.
-function guideFor(guide, pageNo, pageCount) {
-  const prompt = guide.prompts?.find((item) => item.afterPage === pageNo);
-  if (prompt) {
-    return {
-      description: prompt.purpose,
-      talk: [prompt.question, prompt.parentHint].filter(Boolean).join('\n'),
-    };
-  }
-  if (pageNo === 1) {
-    return {
-      description: guide.beforeReading?.intent ?? '',
-      talk: (guide.beforeReading?.tips ?? []).join('\n'),
-    };
-  }
-  if (pageNo === pageCount) {
-    return {
-      description: '이야기를 다 읽은 뒤에 아이와 나눠 볼 수 있어요.',
-      talk: [guide.afterReading?.bridgeQuestion, guide.afterReading?.ifUndecided].filter(Boolean).join('\n'),
-    };
-  }
-  return { description: '이 쪽은 이야기를 그대로 읽어 주세요.', talk: '' };
-}
 
 // 동화 상세에서 '대화 가이드 보기'를 누르면 보이는, 쪽마다 부모를 위한 대화 가이드를 함께 읽는 화면이에요.
 // (GET /api/stories/{id}/book, /guide — 확정한 동화만 볼 수 있어요)

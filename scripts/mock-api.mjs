@@ -1,7 +1,10 @@
 // FIRSTORY API 명세(/v3/api-docs)를 따라 하는 개발용 가짜 서버예요. 서버·실제 계정 없이 화면 전체 흐름을 확인할 때 써요.
 //
-//   npm run mock-api          서버만 실행 (기본 포트 8787, 시작할 때 로그인하면 상태별 동화 5개를 만들어 줘요)
+//   npm run mock-api          서버만 실행 (기본 포트 8787)
 //   npm run dev:mock          가짜 서버 + 프론트 개발 서버를 함께 실행
+//
+// 처음엔 동화가 하나도 없어요. 실제처럼 직접 만들어야 생겨요.
+// 상태별 예시 동화(제작 중·확인을 기다려요·읽음·실패)가 필요하면 --seed로 실행하세요.
 //
 // - 데이터는 메모리에만 있어서 서버를 끄면 사라져요.
 // - 휴대폰 인증번호는 항상 000000이고, 이메일·비밀번호는 아무 값이나 돼요.
@@ -785,7 +788,7 @@ export function startMockApi({ port = Number(process.env.MOCK_API_PORT) || 8787,
       if (story.status !== 'DRAFT') return conflict();
       if (!story.situation || !story.child) return error(res, 400, 'INCOMPLETE_STORY', '상황과 아이 정보를 먼저 입력해 주세요.');
       story.status = 'INTERVIEWING';
-      story.interview.turns.push({ turn: 1, question: INTERVIEW_QUESTIONS[0] });
+      story.interview.turns.push({ turnNo: 1, question: INTERVIEW_QUESTIONS[0] });
       story.updatedAt = now();
       return json(res, 200, interviewResponse(story));
     }
@@ -793,8 +796,7 @@ export function startMockApi({ port = Number(process.env.MOCK_API_PORT) || 8787,
       if (story.status !== 'INTERVIEWING') return conflict();
       const answered = story.interview.turns.filter((turn) => turn.answer !== undefined).length;
       const turn = story.interview.turns[answered];
-      if (body.skip) turn.skipped = true;
-      else {
+      if (!body.skip) {
         if (!body.answer?.trim() || body.answer.length > 500) return invalid(res, [['answer', '답변은 1~500자로 입력해 주세요.']]);
         const safety = safetyCheck(body.answer);
         if (safety.action === 'BLOCK') {
@@ -805,7 +807,7 @@ export function startMockApi({ port = Number(process.env.MOCK_API_PORT) || 8787,
       }
       turn.answer = body.skip ? '' : body.answer.trim();
       const done = story.interview.turns.filter((candidate) => candidate.answer !== undefined).length;
-      if (done < INTERVIEW_QUESTIONS.length) story.interview.turns.push({ turn: done + 1, question: INTERVIEW_QUESTIONS[done] });
+      if (done < INTERVIEW_QUESTIONS.length) story.interview.turns.push({ turnNo: done + 1, question: INTERVIEW_QUESTIONS[done] });
       story.updatedAt = now();
       return json(res, 200, interviewResponse(story));
     }
@@ -908,5 +910,5 @@ export function startMockApi({ port = Number(process.env.MOCK_API_PORT) || 8787,
 }
 
 if (process.argv[1] === fileURLToPath(import.meta.url)) {
-  startMockApi({ seed: !process.argv.includes('--no-seed') });
+  startMockApi({ seed: process.argv.includes('--seed') });
 }

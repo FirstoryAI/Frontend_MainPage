@@ -15,7 +15,8 @@ import GeneratingStep from '../../features/story/components/GeneratingStep';
 import CompleteStep from '../../features/story/components/CompleteStep';
 import StoryDraftModal from '../../features/story/components/StoryDraftModal';
 import ToneDialog from '../../features/story/components/ToneDialog';
-import BlockedDialog from '../../features/story/components/BlockedDialog';
+import BlockedStep from '../../features/story/components/BlockedStep';
+import GenerationFailedStep from '../../features/story/components/GenerationFailedStep';
 import { STEP, SUMMARY_FALLBACK_GOAL, progressByStep } from '../../features/story/constants';
 import {
   GENERATING_STATUSES,
@@ -97,6 +98,8 @@ function StoryCreatePage() {
 
   // 서버에 만들고 있는 동화. 화면 곳곳의 async 함수가 같은 값을 보도록 ref에 두고, id만 화면용으로 따로 보관해요.
   const session = useRef(emptySession());
+  // 인터뷰에서 보낸 답(건너뛰면 null)을 순서대로 모아 둬요. 수정한 내용으로 동화를 다시 만들 때 같은 답을 다시 보내요.
+  const interviewAnswers = useRef([]);
   const [storyId, setStoryId] = useState(generationStoryId);
 
   const { job, startGeneration } = useStoryGeneration();
@@ -175,6 +178,9 @@ function StoryCreatePage() {
         setTopic({ message, undecided: !message && draft.status !== 'DRAFT' });
         setChatGoal(draft.interview?.summary ?? '');
         setInterviewTurns(draft.interview?.turns ?? []);
+        interviewAnswers.current = (draft.interview?.turns ?? [])
+          .filter((turn) => turn.answer !== undefined && turn.answer !== null)
+          .map((turn) => turn.answer || null);
 
         const early = [STEP.SITUATION, STEP.DETAIL, STEP.CHILD, STEP.TOPIC];
         if (GENERATING_STATUSES.includes(draft.status)) {
@@ -183,6 +189,11 @@ function StoryCreatePage() {
         } else if (draft.status === 'CONFIRMING') {
           setHistory(early);
           setStep(STEP.SUMMARY);
+        } else if (draft.status === 'FAILED') {
+          // 만들지 못한 동화는 입력 내용을 고쳐서 다시 만들 수 있게, 마무리 화면에서 새로 시작해요.
+          setHistory(early);
+          setStep(STEP.SUMMARY);
+          setStale(true);
         } else if (draft.status === 'INTERVIEWING') {
           setHistory(early);
           setStep(STEP.CHAT);
@@ -336,20 +347,28 @@ function StoryCreatePage() {
     }
   };
 
-  // 인터뷰를 시작해요. auto면 질문을 모두 건너뛰고 서버가 정리한 요약까지 가요. 'chat' | 'summary' | null
-  const runInterview = async ({ auto }) => {
+  // 인터뷰를 시작해요. 'chat' | 'summary' | null을 돌려줘요.
+  // mode: 'chat' 채팅으로 답하기 / 'skip' 질문을 모두 건너뛰고 요약까지 / 'replay' 이전에 한 답을 그대로 다시 보내고 요약까지
+  const runInterview = async ({ mode }) => {
     const id = session.current.id;
     let response = await startInterview(id);
     updateSession({ status: response.status });
     if (!(await checkSafety(response, { allowToneDialog: false }))) return null;
 
-    if (!auto) {
+    if (mode === 'chat') {
+      interviewAnswers.current = [];
       setInterviewTurns([{ question: response.question }]);
       return 'chat';
     }
 
+    const queue = mode === 'replay' ? [...interviewAnswers.current] : [];
+    interviewAnswers.current = [];
     for (let count = 0; response.type === 'QUESTION' && count < MAX_AUTO_SKIPS; count += 1) {
-      response = await answerInterview(id, null);
+      const answer = queue.length > 0 ? queue.shift() : null;
+      response = await answerInterview(id, answer);
+      // 같은 답이 다시 쓰기 안내를 받으면 그 질문은 건너뛰어요.
+      if (answer !== null && response.safety?.action === 'ASK_REVISE') response = await answerInterview(id, null);
+      else interviewAnswers.current.push(answer);
       if (!(await checkSafety(response, { allowToneDialog: false }))) return null;
     }
     if (response.type !== 'CONFIRM') throw new Error('이야기를 정리하지 못했어요. 다시 시도해 주세요.');
@@ -376,7 +395,7 @@ function StoryCreatePage() {
       setStale(false);
       const next = await run(async () => {
         if (!(await syncStory('message'))) return null;
-        return runInterview({ auto: !topic.undecided });
+        return runInterview({ mode: topic.undecided ? 'chat' : 'skip' });
       });
       if (next === 'chat') goTo(STEP.CHAT);
       else if (next === 'summary') goTo(STEP.SUMMARY);
@@ -393,10 +412,11 @@ function StoryCreatePage() {
     goTo(STEP.SUMMARY);
   };
 
-  // 마무리 화면에서 고친 내용으로 새 동화를 만들어 인터뷰 요약까지 다시 받아요.
+  // 서버는 인터뷰를 시작한 뒤에는 입력 수정을 받지 않아요.
+  // 그래서 마무리 화면에서 고친 내용으로 새 동화를 만들고, 앞서 인터뷰에서 한 답을 그대로 다시 보내 요약까지 받아요.
   const rebuildStory = async () => {
     if (!(await syncStory('message'))) return false;
-    return (await runInterview({ auto: true })) === 'summary';
+    return (await runInterview({ mode: 'replay' })) === 'summary';
   };
 
   const handleStartGeneration = async () => {
@@ -433,6 +453,12 @@ function StoryCreatePage() {
 
     const retried = await run(() => retryStory(id));
     if (retried) startGeneration(id);
+  };
+
+  // 만들지 못한 동화는 입력 내용을 불러와 마무리 화면에서 고친 뒤 다시 만들어요.
+  const handleEditInputs = () => {
+    const id = session.current.id ?? storyId;
+    if (id) navigate('/story/new', { state: { draftStoryId: id } });
   };
 
   const closeEditing = () => setEditing(null);
@@ -479,6 +505,11 @@ function StoryCreatePage() {
   const progress = visibleStep >= STEP.GENERATING ? null : progressByStep[step];
   const showFooter = step !== STEP.CHAT && step < STEP.GENERATING;
 
+  // 위기 신호가 있어 동화를 만들 수 없을 때는 안내 화면만 보여줘요.
+  if (blocked) {
+    return <BlockedStep onHome={handleDiscard} />;
+  }
+
   if (loadingDraft) {
     return (
       <div className={styles.page}>
@@ -519,6 +550,7 @@ function StoryCreatePage() {
             turns={interviewTurns}
             onFinish={handleChatFinish}
             onSafety={setBlocked}
+            onAnswered={(answer) => interviewAnswers.current.push(answer)}
           />
         )}
         {step === STEP.SUMMARY && (
@@ -531,13 +563,11 @@ function StoryCreatePage() {
             onEditGoal={() => setEditing('goal')}
           />
         )}
-        {visibleStep === STEP.GENERATING && (
-          <GeneratingStep
-            stage={activeJob?.stage ?? 0}
-            failed={activeJob?.status === 'failed'}
-            error={activeJob?.error ?? ''}
-            onRetry={handleRetry}
-          />
+        {visibleStep === STEP.GENERATING && activeJob?.status === 'failed' && (
+          <GenerationFailedStep onRetry={handleRetry} onEdit={handleEditInputs} busy={busy} />
+        )}
+        {visibleStep === STEP.GENERATING && activeJob?.status !== 'failed' && (
+          <GeneratingStep stage={activeJob?.stage ?? 0} />
         )}
         {visibleStep === STEP.COMPLETE && <CompleteStep title={activeJob.title} />}
       </main>
@@ -612,7 +642,6 @@ function StoryCreatePage() {
         />
       )}
       {toneResolver && <ToneDialog onSelect={chooseTone} />}
-      {blocked && <BlockedDialog safety={blocked} onClose={handleDiscard} />}
     </div>
   );
 }
