@@ -10,19 +10,12 @@
 }
 
 .topbar {
+  position: relative;
   display: flex;
   align-items: center;
   justify-content: flex-end;
   gap: 39.6px;
   height: 58.8px;
-}
-
-.bellButton {
-  display: block;
-  padding: 0;
-  background: transparent;
-  border: 0;
-  cursor: not-allowed;
 }
 
 .avatarButton {
@@ -162,6 +155,39 @@
   letter-spacing: -0.5601px;
   text-overflow: ellipsis;
   white-space: nowrap;
+}
+
+/* 제목 버튼이 카드 전체를 눌리는 영역으로 넓혀 줘요. */
+.storyOpen {
+  display: block;
+  width: 100%;
+  padding: 0;
+  overflow: hidden;
+  color: inherit;
+  background: transparent;
+  border: 0;
+  font: inherit;
+  letter-spacing: inherit;
+  text-align: left;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+  cursor: pointer;
+}
+
+.storyOpen::after {
+  position: absolute;
+  inset: 0;
+  border-radius: 12px;
+  content: '';
+}
+
+.storyOpen:focus-visible {
+  outline: none;
+}
+
+.storyOpen:focus-visible::after {
+  outline: 3px solid var(--color-brand);
+  outline-offset: 2px;
 }
 
 .storyFooter {

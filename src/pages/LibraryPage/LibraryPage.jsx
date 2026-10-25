@@ -1,7 +1,7 @@
 import { useEffect, useState } from 'react';
 import { useNavigate } from 'react-router-dom';
 import Sidebar from '../../components/layout/Sidebar';
-import iconBell from '../../assets/icons/icon-bell.svg';
+import NotificationBell from '../../components/layout/NotificationBell';
 import avatarCircle from '../../assets/icons/avatar-circle.svg';
 import avatarPerson from '../../assets/icons/avatar-person.svg';
 import bookCover from '../../assets/images/library-book-cover.png';
@@ -34,6 +34,9 @@ function formatStoryDate(value) {
   if (Number.isNaN(date.getTime())) return '';
   return new Intl.DateTimeFormat('ko-KR', { month: 'long', day: 'numeric' }).format(date);
 }
+
+// 확인을 기다리는 동화는 미리보기, 읽을 수 있는 동화(아직 읽지 않았어요·함께 읽었어요)는 동화 상세로 열려요.
+const openableStatuses = ['REVIEWING', 'UNREAD', 'READ'];
 
 function LibraryPage() {
   const navigate = useNavigate();
@@ -80,6 +83,14 @@ function LibraryPage() {
     return () => { active = false; };
   }, [activeFilter]);
 
+  const openStory = (story, status) => {
+    if (status === 'REVIEWING') {
+      navigate('/story/preview', { state: { story } });
+      return;
+    }
+    navigate(`/library/${story.id}`, { state: { story } });
+  };
+
   const handleLoadMore = async () => {
     setIsLoadingMore(true);
     setError('');
@@ -101,15 +112,7 @@ function LibraryPage() {
 
       <div className={styles.main}>
         <div className={styles.topbar}>
-          <button
-            className={styles.bellButton}
-            type="button"
-            aria-label="알림"
-            disabled
-            title="알림 화면이 준비되면 연결됩니다"
-          >
-            <img src={iconBell} alt="" />
-          </button>
+          <NotificationBell />
           <button
             className={styles.avatarButton}
             type="button"
@@ -151,7 +154,13 @@ function LibraryPage() {
                     {story.label || statusLabels[status] || '동화'}
                   </span>
                   <img className={styles.cover} src={story.coverUrl || bookCover} alt={story.title ? `${story.title} 표지` : '동화 표지'} />
-                  <h2 className={styles.storyTitle}>{storyTitle}</h2>
+                  <h2 className={styles.storyTitle}>
+                    {openableStatuses.includes(status) ? (
+                      <button className={styles.storyOpen} type="button" onClick={() => openStory(story, status)}>
+                        {storyTitle}
+                      </button>
+                    ) : storyTitle}
+                  </h2>
                   <div className={styles.storyFooter}>
                     <p className={styles.storyMeta}>{meta}</p>
                     {status === 'FAILED' && (

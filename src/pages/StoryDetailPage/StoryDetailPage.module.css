@@ -1,0 +1,290 @@
+.page {
+  min-width: 320px;
+  min-height: 100vh;
+  background: var(--color-page);
+}
+
+.main {
+  min-height: 100vh;
+  padding: 58.6px 65px 64px 363px;
+}
+
+.topbar {
+  position: relative;
+  display: flex;
+  align-items: center;
+  justify-content: flex-end;
+  gap: 39.6px;
+  height: 58.8px;
+}
+
+.avatarButton {
+  position: relative;
+  flex: 0 0 58.8px;
+  width: 58.8px;
+  height: 58.8px;
+  padding: 0;
+  background: transparent;
+  border: 0;
+  border-radius: 50%;
+  cursor: pointer;
+}
+
+.avatarButton img {
+  position: absolute;
+}
+
+.avatarCircle {
+  inset: 0;
+}
+
+.avatarPerson {
+  top: 12.8px;
+  left: 9.45px;
+}
+
+.crumbs {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 4px 12px;
+  margin-top: 14.6px;
+  color: var(--color-secondary);
+  font-size: 18px;
+  font-weight: 500;
+  line-height: 1.5;
+}
+
+.crumbs a {
+  color: inherit;
+  text-decoration: none;
+}
+
+.heading {
+  margin: 16px 0 0;
+  color: var(--color-heading);
+  font-size: 33px;
+  font-weight: 700;
+  line-height: 1.304;
+  letter-spacing: -0.99px;
+}
+
+.detail {
+  display: grid;
+  grid-template-columns: 354px minmax(0, 637px);
+  column-gap: 31px;
+  margin: 16px 0 0 -10px;
+}
+
+.bookColumn {
+  padding-top: 56px;
+}
+
+.cover {
+  position: relative;
+  width: 296px;
+  height: 290px;
+  margin-left: 29px;
+  overflow: hidden;
+}
+
+/* 표지는 Figma(296×290)와 같이 이미지를 살짝 확대해 잘라 넣어요. */
+.coverCrop {
+  position: absolute;
+  top: -9.47%;
+  left: -8.47%;
+  width: 115.73%;
+  max-width: none;
+  height: 118.11%;
+}
+
+.coverFull {
+  display: block;
+  width: 100%;
+  height: 100%;
+  object-fit: contain;
+}
+
+.titleRow {
+  display: flex;
+  align-items: flex-start;
+  justify-content: space-between;
+  width: 271px;
+  margin: 6px 0 0 40px;
+}
+
+.title {
+  min-width: 0;
+  margin: 0;
+  color: #484848;
+  font-size: 26px;
+  font-weight: 600;
+  line-height: 1.304;
+  letter-spacing: -0.78px;
+  overflow-wrap: anywhere;
+}
+
+.trash {
+  flex: 0 0 31px;
+  width: 31px;
+  height: 31px;
+  margin-top: 1px;
+  padding: 0;
+  background: transparent;
+  border: 0;
+  border-radius: 50%;
+  cursor: not-allowed;
+}
+
+.trash img {
+  display: block;
+}
+
+.readButton,
+.guideButton {
+  display: block;
+  width: 316px;
+  height: 58px;
+  margin-left: 19px;
+  border: 0;
+  border-radius: 14px;
+  font-family: var(--font-body);
+  font-size: 18px;
+  font-weight: 600;
+  line-height: 1.5;
+}
+
+.readButton {
+  margin-top: 34px;
+  color: #fff;
+  background: var(--color-secondary-green);
+  box-shadow: inset 0 0 4.2px rgb(255 255 255 / 25%);
+  cursor: not-allowed;
+}
+
+.guideButton {
+  margin-top: 12px;
+  color: var(--color-text);
+  background: #fff;
+  box-shadow: 0 0 2px rgb(0 0 0 / 25%);
+  cursor: pointer;
+}
+
+.guideButton:focus-visible {
+  outline: 3px solid var(--color-brand);
+  outline-offset: 3px;
+}
+
+.cards {
+  display: grid;
+  gap: 21px;
+  align-content: start;
+  margin-top: 70px;
+}
+
+.card {
+  min-height: 124px;
+  padding: 23px 28px 17px;
+  color: var(--color-text);
+  background: #fff;
+  border-radius: 18px;
+  box-shadow: 0 0 6.3px rgb(0 0 0 / 10%);
+}
+
+.card h2 {
+  margin: 0;
+  font-size: 20px;
+  font-weight: 700;
+  line-height: 1.5;
+}
+
+.card p {
+  margin: 6px 0 0;
+  color: #747474;
+  font-size: 16px;
+  font-weight: 400;
+  line-height: 1.5;
+  word-break: keep-all;
+}
+
+.summaryCard {
+  min-height: 173px;
+  padding-top: 24px;
+}
+
+.summaryCard p {
+  margin-top: 13px;
+}
+
+.afterCard {
+  padding-top: 20px;
+}
+
+.afterCard .question {
+  margin-top: 7px;
+  color: #646464;
+  font-size: 17px;
+  font-weight: 500;
+}
+
+.afterCard p:last-child {
+  margin: 0 0 0 5px;
+}
+
+@media (max-width: 1180px) {
+  .detail {
+    grid-template-columns: minmax(0, 1fr);
+    margin-left: 0;
+  }
+
+  .bookColumn {
+    padding-top: 28px;
+  }
+
+  .cards {
+    margin-top: 28px;
+  }
+}
+
+@media (max-width: 900px) {
+  .main {
+    padding: 24px 24px 48px;
+  }
+
+  .crumbs {
+    font-size: 16px;
+  }
+
+  .heading {
+    font-size: 28px;
+  }
+}
+
+@media (max-width: 560px) {
+  .main {
+    padding-inline: 16px;
+  }
+
+  .topbar {
+    gap: 24px;
+  }
+
+  .cover,
+  .readButton,
+  .guideButton {
+    margin-left: 0;
+  }
+
+  .readButton,
+  .guideButton {
+    width: 100%;
+  }
+
+  .titleRow {
+    width: min(296px, 100%);
+    margin-left: 0;
+  }
+
+  .card {
+    padding-inline: 20px;
+  }
+}

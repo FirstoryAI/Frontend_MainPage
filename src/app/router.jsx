@@ -7,6 +7,8 @@ import GuardianConsentPage from '../pages/GuardianConsentPage/GuardianConsentPag
 import DashboardPage from '../pages/DashboardPage/DashboardPage';
 import LibraryPage from '../pages/LibraryPage/LibraryPage';
 import StoryCreatePage from '../pages/StoryCreatePage/StoryCreatePage';
+import StoryDetailPage from '../pages/StoryDetailPage/StoryDetailPage';
+import StoryGuidePage from '../pages/StoryGuidePage/StoryGuidePage';
 import StoryRemakePage from '../pages/StoryRemakePage/StoryRemakePage';
 import StoryPreviewPage from '../pages/StoryPreviewPage/StoryPreviewPage';
 import NotFoundPage from '../pages/NotFoundPage/NotFoundPage';
@@ -23,6 +25,8 @@ export const router = createBrowserRouter([
       { path: '/home', element: <DashboardPage /> },
       { path: '/mypage', element: <MyPage /> },
       { path: '/library', element: <LibraryPage /> },
+      { path: '/library/:storyId', element: <StoryDetailPage /> },
+      { path: '/library/:storyId/guide', element: <StoryGuidePage /> },
       { path: '/story/new', element: <StoryCreatePage /> },
       { path: '/story/preview', element: <StoryPreviewPage /> },
       { path: '/story/:storyId/remake', element: <StoryRemakePage /> },
