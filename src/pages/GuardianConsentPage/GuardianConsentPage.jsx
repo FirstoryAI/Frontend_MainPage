@@ -32,6 +32,8 @@ function GuardianConsentPage() {
   const [agreements, setAgreements] = useState(initialAgreements);
   const [error, setError] = useState('');
   const [isSubmitting, setIsSubmitting] = useState(false);
+  // 가입이 끝나 입력해 둔 가입 정보를 비운 뒤에는, 가입 화면으로 되돌리지 않고 홈으로 이동하는 걸 기다려요.
+  const [isCompleted, setIsCompleted] = useState(false);
   const navigate = useNavigate();
   const { signupDraft, setSignupDraft, setSignupFeedback } = useSignupDraft();
 
@@ -79,6 +81,7 @@ function GuardianConsentPage() {
         ...loadNotificationSettings(),
         sms: agreements.notification,
       });
+      setIsCompleted(true);
       setSignupDraft(null);
       setSignupFeedback(null);
       navigate('/home', {
@@ -124,7 +127,7 @@ function GuardianConsentPage() {
   };
 
   if (!signupDraft) {
-    return <Navigate to="/auth/email/signup" replace />;
+    return isCompleted ? null : <Navigate to="/auth/email/signup" replace />;
   }
 
   return (
