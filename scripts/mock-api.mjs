@@ -9,7 +9,7 @@
 // - 데이터는 메모리에만 있어서 서버를 끄면 사라져요.
 // - 휴대폰 인증번호는 항상 000000이고, 이메일·비밀번호는 아무 값이나 돼요.
 // - 동화 만들기는 약 11초(단계당 3초)만에 끝나요. MOCK_STAGE_MS로 바꿀 수 있어요.
-// - 글에 "위기"가 들어가면 다시 쓰기 안내(ASK_REVISE), "자해"가 들어가면 차단(BLOCK),
+// - 글에 "이별"이 들어가면 분위기 선택(CHOOSE_TONE), "위기"가 들어가면 다시 쓰기 안내(ASK_REVISE), "자해"가 들어가면 차단(BLOCK),
 //   상황 설명에 "실패테스트"가 들어가면 동화 만들기가 실패해요.
 import http from 'node:http';
 import { randomUUID } from 'node:crypto';
@@ -270,6 +270,9 @@ function safetyCheck(...texts) {
   }
   if (text.includes('위기')) {
     return { action: 'ASK_REVISE', level: 'REVISE', category: 'SENSITIVE', reason: '조금 더 부드러운 표현으로 다시 써 주세요.', helpKind: null };
+  }
+  if (text.includes('이별')) {
+    return { action: 'CHOOSE_TONE', level: 'SENSITIVE', category: 'SEPARATION', reason: null, helpKind: null };
   }
   return { action: 'PROCEED', level: 'OK', category: null, reason: null, helpKind: null };
 }

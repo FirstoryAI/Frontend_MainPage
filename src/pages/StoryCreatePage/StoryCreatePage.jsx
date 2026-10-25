@@ -14,7 +14,7 @@ import TextEditModal from '../../features/story/components/TextEditModal';
 import GeneratingStep from '../../features/story/components/GeneratingStep';
 import CompleteStep from '../../features/story/components/CompleteStep';
 import StoryDraftModal from '../../features/story/components/StoryDraftModal';
-import ToneDialog from '../../features/story/components/ToneDialog';
+import ToneStep from '../../features/story/components/ToneStep';
 import BlockedStep from '../../features/story/components/BlockedStep';
 import GenerationFailedStep from '../../features/story/components/GenerationFailedStep';
 import { STEP, SUMMARY_FALLBACK_GOAL, progressByStep } from '../../features/story/constants';
@@ -94,7 +94,9 @@ function StoryCreatePage() {
   const [busy, setBusy] = useState(false);
   const [notice, setNotice] = useState('');
   const [blocked, setBlocked] = useState(null);
+  // 분위기 선택 단계가 열려 있으면 고른 값을 돌려줄 resolve 함수예요. 닫으면 null이에요.
   const [toneResolver, setToneResolver] = useState(null);
+  const [selectedTone, setSelectedTone] = useState('');
 
   // 서버에 만들고 있는 동화. 화면 곳곳의 async 함수가 같은 값을 보도록 ref에 두고, id만 화면용으로 따로 보관해요.
   const session = useRef(emptySession());
@@ -265,17 +267,25 @@ function StoryCreatePage() {
     }
   };
 
-  const askTone = () => new Promise((resolve) => setToneResolver(() => resolve));
+  const askTone = () => {
+    setSelectedTone('');
+    return new Promise((resolve) => setToneResolver(() => resolve));
+  };
 
-  const chooseTone = (tone) => {
+  // 분위기 선택 단계를 닫아요. 고른 분위기가 있으면 넘겨주고, 뒤로가기면 null이에요.
+  const closeTone = (tone) => {
     toneResolver?.(tone);
     setToneResolver(null);
   };
 
+  // 분위기를 골라 서버에 저장해요. 뒤로가기로 고르지 않으면 false예요.
   const pickTone = async () => {
     const tone = await askTone();
+    if (!tone) return false;
+
     await saveTone(session.current.id, tone);
     updateSession({ tone });
+    return true;
   };
 
   // 위기 신호 검사 결과를 처리해요. 계속 진행해도 되면 true예요.
@@ -296,7 +306,7 @@ function StoryCreatePage() {
     }
     if (safety.action === 'CHOOSE_TONE') {
       updateSession({ toneRequired: true });
-      if (allowToneDialog) await pickTone();
+      if (allowToneDialog && !(await pickTone())) return false;
     }
     return true;
   };
@@ -429,13 +439,13 @@ function StoryCreatePage() {
       }
 
       const id = session.current.id;
-      if (session.current.toneRequired && !session.current.tone) await pickTone();
+      if (session.current.toneRequired && !session.current.tone && !(await pickTone())) return false;
 
       try {
         await confirmStory(id);
       } catch (error) {
         if (error.code !== 'TONE_REQUIRED') throw error;
-        await pickTone();
+        if (!(await pickTone())) return false;
         await confirmStory(id);
       }
       return true;
@@ -501,8 +511,10 @@ function StoryCreatePage() {
     if (completedNotificationId) markRead(completedNotificationId);
   }, [completedNotificationId, markRead]);
 
+  const toneOpen = Boolean(toneResolver);
+
   // 만드는 중·제작 완료 화면은 진행 바와 아래 버튼 없이 로고만 있는 헤더를 써요.
-  const progress = visibleStep >= STEP.GENERATING ? null : progressByStep[step];
+  const progress = visibleStep >= STEP.GENERATING ? null : progressByStep[toneOpen ? STEP.SITUATION : step];
   const showFooter = step !== STEP.CHAT && step < STEP.GENERATING;
 
   // 위기 신호가 있어 동화를 만들 수 없을 때는 안내 화면만 보여줘요.
@@ -526,25 +538,28 @@ function StoryCreatePage() {
       <StoryHeader progress={progress} onExit={() => setExitPromptOpen(true)} />
 
       <main className={styles.main} inert={editing !== null}>
-        {step > STEP.SITUATION && step < STEP.GENERATING && <BackButton onClick={goBack} />}
+        {toneOpen && <BackButton onClick={() => closeTone(null)} />}
+        {!toneOpen && step > STEP.SITUATION && step < STEP.GENERATING && <BackButton onClick={goBack} />}
 
-        {step === STEP.SITUATION && (
+        {toneOpen && <ToneStep category={detail.category} selected={selectedTone} onSelect={setSelectedTone} />}
+
+        {!toneOpen && step === STEP.SITUATION && (
           <SituationStep selected={situation} onSelect={setSituation} />
         )}
-        {step === STEP.DETAIL && (
+        {!toneOpen && step === STEP.DETAIL && (
           <DetailStep detail={detail} onChange={merge(setDetail)} />
         )}
-        {step === STEP.CHILD && (
+        {!toneOpen && step === STEP.CHILD && (
           <ChildInfoStep child={child} onChange={merge(setChild)} />
         )}
-        {step === STEP.TOPIC && (
+        {!toneOpen && step === STEP.TOPIC && (
           <TopicStep
             category={detail.category}
             topic={topic}
             onChange={merge(setTopic)}
           />
         )}
-        {step === STEP.CHAT && (
+        {!toneOpen && step === STEP.CHAT && (
           <ChatStep
             storyId={storyId}
             turns={interviewTurns}
@@ -553,7 +568,7 @@ function StoryCreatePage() {
             onAnswered={(answer) => interviewAnswers.current.push(answer)}
           />
         )}
-        {step === STEP.SUMMARY && (
+        {!toneOpen && step === STEP.SUMMARY && (
           <SummaryStep
             child={child}
             situation={detail.event.trim()}
@@ -563,16 +578,24 @@ function StoryCreatePage() {
             onEditGoal={() => setEditing('goal')}
           />
         )}
-        {visibleStep === STEP.GENERATING && activeJob?.status === 'failed' && (
+        {!toneOpen && visibleStep === STEP.GENERATING && activeJob?.status === 'failed' && (
           <GenerationFailedStep onRetry={handleRetry} onEdit={handleEditInputs} busy={busy} />
         )}
-        {visibleStep === STEP.GENERATING && activeJob?.status !== 'failed' && (
+        {!toneOpen && visibleStep === STEP.GENERATING && activeJob?.status !== 'failed' && (
           <GeneratingStep stage={activeJob?.stage ?? 0} />
         )}
-        {visibleStep === STEP.COMPLETE && <CompleteStep title={activeJob.title} />}
+        {!toneOpen && visibleStep === STEP.COMPLETE && <CompleteStep title={activeJob.title} />}
       </main>
 
-      {showFooter && (
+      {toneOpen && (
+        <footer className={styles.footer}>
+          <CtaButton pill disabled={!selectedTone} onClick={() => closeTone(selectedTone)}>
+            다음
+          </CtaButton>
+        </footer>
+      )}
+
+      {!toneOpen && showFooter && (
         <footer
           className={`${styles.footer} ${step === STEP.SUMMARY ? styles.summaryFooter : ''}`}
           inert={editing !== null}
@@ -641,7 +664,6 @@ function StoryCreatePage() {
           onDiscard={handleDiscard}
         />
       )}
-      {toneResolver && <ToneDialog onSelect={chooseTone} />}
     </div>
   );
 }
