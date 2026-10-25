@@ -151,7 +151,7 @@ function StoryCreatePage() {
       <StoryHeader progress={progress} onExit={() => setExitPromptOpen(true)} />
 
       <main className={styles.main} inert={editing !== null}>
-        {step > STEP.SITUATION && <BackButton onClick={goBack} />}
+        {step > STEP.SITUATION && step !== STEP.GENERATING && <BackButton onClick={goBack} />}
 
         {step === STEP.SITUATION && (
           <SituationStep selected={situation} onSelect={setSituation} />
