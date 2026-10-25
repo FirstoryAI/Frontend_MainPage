@@ -623,6 +623,7 @@ export function startMockApi({ port = Number(process.env.MOCK_API_PORT) || 8787,
     }
     if (method === 'GET' && path === '/api/stories') {
       const filter = url.searchParams.get('filter') || 'ALL';
+      if (!['ALL', 'CREATING', 'REVIEWING', 'UNREAD', 'READ', 'FAILED'].includes(filter)) return invalid(res, [['filter', '알 수 없는 목록이에요.']]);
       const page = Number(url.searchParams.get('page') || 0);
       const size = Math.min(50, Math.max(1, Number(url.searchParams.get('size') || 20)));
       const all = [...user.stories.values()].filter((story) => inGroup(story, filter)).sort((a, b) => b.updatedAt.localeCompare(a.updatedAt));

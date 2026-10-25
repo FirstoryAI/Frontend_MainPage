@@ -24,6 +24,21 @@ API_PROXY_TARGET=https://backendmainpage-production.up.railway.app
 - `npm run mock-api`: 가짜 API 서버만 실행 (포트 8787)
 - `npm run dev:mock`: 가짜 API 서버와 개발 서버를 함께 실행
 
+## 서버 API 점검 (`npm run check-api`)
+
+실제 서버가 프론트가 기대하는 대로 동작하는지 터미널에서 점검합니다. 본인 테스트 계정으로 로그인해 확인하고, 결과를 `[OK]`/`[실패]`로 보여 줍니다. 비밀번호는 저장하지 않습니다.
+
+```powershell
+$env:FIRSTORY_EMAIL = '테스트 계정 이메일'
+$env:FIRSTORY_PASSWORD = '테스트 계정 비밀번호'
+npm run check-api                 # 읽기 점검: 내 정보·홈·서재·아이 프로필·표지 그림
+npm run check-api -- --errors     # + 예외 상황: 로그인 없음·잘못된 값·없는 동화·상태 오류·위기 신호(분위기 선택·차단)
+npm run check-api -- --flow       # + 동화 한 편을 끝까지 (AI 인터뷰 질문, 글, 그림 8장, 서재 표지) — 몇 분 걸림
+```
+
+- 주소는 `API_BASE` 환경 변수, 없으면 `.env`의 `API_PROXY_TARGET`을 씁니다. 가짜 서버(`npm run mock-api`)에도 같은 방법으로 쓸 수 있습니다.
+- `--errors`, `--flow`는 점검용 임시 동화를 만들고 끝나면 지웁니다. (`--keep`을 붙이면 `--flow` 동화를 남깁니다.) 동화 확정이나 탈퇴는 하지 않습니다.
+
 ## 서버 없이 확인하기 (가짜 API 서버)
 
 `scripts/mock-api.mjs`는 API 명세(`/v3/api-docs`)를 따라 하는 개발용 서버입니다. 실제 서버에 계정을 만들지 않고도 가입부터 동화 만들기·미리보기·확정·함께 읽기까지 전체 흐름을 눌러 볼 수 있습니다.
