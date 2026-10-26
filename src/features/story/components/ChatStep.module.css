@@ -85,6 +85,11 @@
   padding: 40px 0 72px;
 }
 
+.continue {
+  display: flex;
+  justify-content: flex-end;
+}
+
 .quickReplies {
   display: flex;
   flex-wrap: wrap;
