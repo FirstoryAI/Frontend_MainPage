@@ -31,7 +31,7 @@ async function loadDrafts() {
       return {
         id: story.id,
         title: concern ? (concern.length > 28 ? `${concern.slice(0, 28)}…` : concern) : '새로운 동화',
-        categoryLabel: draft?.situation?.categoryLabel ?? '',
+        categoryLabel: story.categoryLabel ?? draft?.situation?.categoryLabel ?? '',
         updatedAt: story.updatedAt,
       };
     }),

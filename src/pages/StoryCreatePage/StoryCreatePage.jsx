@@ -40,6 +40,7 @@ import {
   saveChild as saveChildInfo,
   saveMessage,
   saveSituation,
+  saveSummary,
   saveTone,
   startInterview,
 } from '../../services/storiesApi';
@@ -61,6 +62,8 @@ const initialTopic = { message: '', undecided: false };
 const FLOW_STEPS = ['situation', 'child', 'message'];
 // 서버가 '넘어가기'를 계속 받아 줄 때 무한히 돌지 않도록 두는 한도예요.
 const MAX_AUTO_SKIPS = 8;
+// '이번 이야기에서 나누고 싶은 것'은 서버가 1~300자만 받아요.
+const GOAL_MAX_LENGTH = 300;
 const emptySession = () => ({ id: null, status: null, toneRequired: false, tone: null });
 
 function StoryCreatePage() {
@@ -81,14 +84,13 @@ function StoryCreatePage() {
   const [saveChild, setSaveChild] = useState(false);
   const [interests, setInterests] = useState(() => interestPairs(null));
   const [topic, setTopic] = useState(initialTopic);
-  // AI 인터뷰가 정리한 요약과, 마무리 화면에서 고친 '나누고 싶은 것'
+  // 서버가 정리한 '이번 이야기에서 나누고 싶은 것'(부모에게 그대로 보여 주는 문장)
   const [chatGoal, setChatGoal] = useState('');
-  const [editedGoal, setEditedGoal] = useState('');
   // 인터뷰 질문·답변(채팅 화면에 보여줄 것)
   const [interviewTurns, setInterviewTurns] = useState([]);
   const [interviewChoices, setInterviewChoices] = useState([]);
-  // 마무리 화면에서 고친 내용이 서버 동화와 달라졌는지. 달라졌으면 확정할 때 새로 보내요.
-  const [stale, setStale] = useState(false);
+  // 만들지 못한 동화를 이어 고칠 때처럼 서버 동화가 더 이상 고칠 수 없는 상태면, 확정할 때 새로 만들어 보내요.
+  const [needsRecreate, setNeedsRecreate] = useState(false);
   // 마무리 화면에서 열려 있는 수정 모달: 'child' | 'situation' | 'goal' | null
   const [editing, setEditing] = useState(null);
   const [exitPromptOpen, setExitPromptOpen] = useState(false);
@@ -102,8 +104,6 @@ function StoryCreatePage() {
 
   // 서버에 만들고 있는 동화. 화면 곳곳의 async 함수가 같은 값을 보도록 ref에 두고, id만 화면용으로 따로 보관해요.
   const session = useRef(emptySession());
-  // 인터뷰에서 보낸 답(건너뛰면 null)을 순서대로 모아 둬요. 수정한 내용으로 동화를 다시 만들 때 같은 답을 다시 보내요.
-  const interviewAnswers = useRef([]);
   const [storyId, setStoryId] = useState(generationStoryId);
 
   const { job, startGeneration } = useStoryGeneration();
@@ -182,9 +182,6 @@ function StoryCreatePage() {
         setTopic({ message, undecided: !message && draft.status !== 'DRAFT' });
         setChatGoal(draft.interview?.summary ?? '');
         setInterviewTurns(draft.interview?.turns ?? []);
-        interviewAnswers.current = (draft.interview?.turns ?? [])
-          .filter((turn) => turn.answer !== undefined && turn.answer !== null)
-          .map((turn) => turn.answer || null);
 
         const early = [STEP.SITUATION, STEP.DETAIL, STEP.CHILD, STEP.TOPIC];
         if (GENERATING_STATUSES.includes(draft.status)) {
@@ -197,7 +194,7 @@ function StoryCreatePage() {
           // 만들지 못한 동화는 입력 내용을 고쳐서 다시 만들 수 있게, 마무리 화면에서 새로 시작해요.
           setHistory(early);
           setStep(STEP.SUMMARY);
-          setStale(true);
+          setNeedsRecreate(true);
         } else if (draft.status === 'INTERVIEWING') {
           setHistory(early);
           setStep(STEP.CHAT);
@@ -313,11 +310,11 @@ function StoryCreatePage() {
     return true;
   };
 
-  // 서버에 이 단계까지 입력한 동화가 DRAFT로 있게 해요. 새로 만들었으면 true예요.
-  // 인터뷰를 시작한 뒤에는 입력을 고칠 수 없어서, 이전 단계에서 바꾸면 지우고 새로 만들어요.
+  // 서버에 이 단계까지 입력한 동화가 고칠 수 있는 상태(DRAFT, 생성 전 확인 CONFIRMING)로 있게 해요. 새로 만들었으면 true예요.
+  // 인터뷰 중(INTERVIEWING)이거나 이미 만든 동화는 입력을 고칠 수 없어서, 이전 단계에서 바꾸면 지우고 새로 만들어요.
   const ensureDraftStory = async () => {
     const current = session.current;
-    if (current.id && current.status === 'DRAFT') return false;
+    if (current.id && (current.status === 'DRAFT' || current.status === 'CONFIRMING')) return false;
 
     if (current.id) await deleteStory(current.id).catch(() => {});
     const created = await createStory();
@@ -325,7 +322,7 @@ function StoryCreatePage() {
     return true;
   };
 
-  const messageText = editedGoal.trim() || (topic.undecided ? '' : topic.message.trim());
+  const messageText = topic.undecided ? '' : topic.message.trim();
 
   const putStep = (name) => {
     const id = session.current.id;
@@ -360,28 +357,22 @@ function StoryCreatePage() {
   };
 
   // 인터뷰를 시작해요. 'chat' | 'summary' | null을 돌려줘요.
-  // mode: 'chat' 채팅으로 답하기 / 'skip' 질문을 모두 건너뛰고 요약까지 / 'replay' 이전에 한 답을 그대로 다시 보내고 요약까지
+  // mode: 'chat' 채팅으로 답하기 / 'skip' 질문을 모두 건너뛰고 요약까지
+  // 서버는 질문 없이 바로 CONFIRM을 줄 수도 있어요(질문은 0~5개). 그때는 채팅을 열지 않고 마무리 화면으로 가요.
   const runInterview = async ({ mode }) => {
     const id = session.current.id;
     let response = await startInterview(id);
     updateSession({ status: response.status });
     if (!(await checkSafety(response, { allowToneDialog: false }))) return null;
 
-    if (mode === 'chat') {
-      interviewAnswers.current = [];
+    if (mode === 'chat' && response.type === 'QUESTION') {
       setInterviewTurns([{ question: response.question }]);
       setInterviewChoices(extractChoices(response));
       return 'chat';
     }
 
-    const queue = mode === 'replay' ? [...interviewAnswers.current] : [];
-    interviewAnswers.current = [];
     for (let count = 0; response.type === 'QUESTION' && count < MAX_AUTO_SKIPS; count += 1) {
-      const answer = queue.length > 0 ? queue.shift() : null;
-      response = await answerInterview(id, answer);
-      // 같은 답이 다시 쓰기 안내를 받으면 그 질문은 건너뛰어요.
-      if (answer !== null && response.safety?.action === 'ASK_REVISE') response = await answerInterview(id, null);
-      else interviewAnswers.current.push(answer);
+      response = await answerInterview(id, null);
       if (!(await checkSafety(response, { allowToneDialog: false }))) return null;
     }
     if (response.type !== 'CONFIRM') throw new Error('이야기를 정리하지 못했어요. 다시 시도해 주세요.');
@@ -404,12 +395,13 @@ function StoryCreatePage() {
     }
     if (step === STEP.TOPIC) {
       // '아직 잘 모르겠어요'는 AI 인터뷰로 정리하고, 직접 적었다면 바로 마무리 화면으로 가요.
-      setEditedGoal('');
-      setStale(false);
+      // 이미 정리까지 끝난 동화(CONFIRMING)는 고친 내용만 저장하고 인터뷰는 다시 하지 않아요.
       const next = await run(async () => {
         if (!(await syncStory('message'))) return null;
+        if (session.current.status === 'CONFIRMING') return 'summary';
         return runInterview({ mode: topic.undecided ? 'chat' : 'skip' });
       });
+      if (next) setNeedsRecreate(false);
       if (next === 'chat') goTo(STEP.CHAT);
       else if (next === 'summary') goTo(STEP.SUMMARY);
       return;
@@ -420,25 +412,33 @@ function StoryCreatePage() {
   const handleChatFinish = (summary) => {
     updateSession({ status: 'CONFIRMING' });
     setChatGoal(summary);
-    setEditedGoal('');
-    setStale(false);
+    setNeedsRecreate(false);
     goTo(STEP.SUMMARY);
   };
 
-  // 서버는 인터뷰를 시작한 뒤에는 입력 수정을 받지 않아요.
-  // 그래서 마무리 화면에서 고친 내용으로 새 동화를 만들고, 앞서 인터뷰에서 한 답을 그대로 다시 보내 요약까지 받아요.
-  const rebuildStory = async () => {
+  // 만들지 못한 동화는 서버에서 더 고칠 수 없어요. 화면의 내용으로 새 동화를 만들고, 화면에 보이던 '나누고 싶은 것'을 그대로 저장해요.
+  const recreateStory = async () => {
+    const keptGoal = chatGoal;
     if (!(await syncStory('message'))) return false;
-    return (await runInterview({ mode: 'replay' })) === 'summary';
+    if ((await runInterview({ mode: 'skip' })) !== 'summary') return false;
+    if (keptGoal) {
+      const saved = await saveSummary(session.current.id, keptGoal);
+      if (saved.safety?.action === 'ASK_REVISE') {
+        setNotice(saved.safety.reason || '나누고 싶은 것의 표현을 조금 바꿔 주세요.');
+        return false;
+      }
+      setChatGoal(keptGoal);
+    }
+    return true;
   };
 
   const handleStartGeneration = async () => {
     if (busy) return;
 
     const started = await run(async () => {
-      if (stale) {
-        if (!(await rebuildStory())) return false;
-        setStale(false);
+      if (needsRecreate) {
+        if (!(await recreateStory())) return false;
+        setNeedsRecreate(false);
       }
 
       const id = session.current.id;
@@ -476,23 +476,55 @@ function StoryCreatePage() {
 
   const closeEditing = () => setEditing(null);
 
-  const handleSaveChild = (changes) => {
-    setChild((current) => ({ ...current, ...changes }));
-    setStale(true);
+  // 마무리 화면에서 고친 내용을 바로 서버에 저장해요. 저장되지 않으면 이유를 돌려줘서 수정 창에 보여줘요(저장되면 '').
+  // 만들지 못한 동화를 이어 고치는 중이면 서버에는 아직 보내지 않고, 동화 만들기를 누를 때 새 동화로 한꺼번에 보내요.
+  const saveEdit = async (put, commit) => {
+    let response = null;
+    if (!needsRecreate) {
+      try {
+        response = await put(session.current.id);
+      } catch (error) {
+        return error.message || '저장하지 못했어요. 잠시 뒤에 다시 시도해 주세요.';
+      }
+      if (response.safety?.action === 'ASK_REVISE') {
+        return response.safety.reason || '표현을 조금 바꿔서 다시 써 주세요.';
+      }
+    }
+
+    commit();
     closeEditing();
+    if (response) {
+      try {
+        await checkSafety(response);
+      } catch (error) {
+        setNotice(error.message || '잠시 문제가 생겼어요. 다시 시도해 주세요.');
+      }
+    }
+    return '';
+  };
+
+  const handleSaveChild = (changes) => {
+    const nextChild = { ...child, ...changes };
+    return saveEdit(
+      (id) => saveChildInfo(id, {
+        ...(savedChildId ? { childId: savedChildId } : {}),
+        profile: toChildProfile(nextChild, interests),
+        saveForNextTime: saveChild,
+      }),
+      () => setChild(nextChild),
+    );
   };
 
   const handleSaveSituation = (event) => {
-    setDetail((current) => ({ ...current, event }));
-    setStale(true);
-    closeEditing();
+    const nextDetail = { ...detail, event };
+    return saveEdit(
+      (id) => saveSituation(id, toSituationRequest(situation, nextDetail)),
+      () => setDetail(nextDetail),
+    );
   };
 
-  const handleSaveGoal = (goal) => {
-    setEditedGoal(goal);
-    setStale(true);
-    closeEditing();
-  };
+  const handleSaveGoal = (goal) =>
+    saveEdit((id) => saveSummary(id, goal), () => setChatGoal(goal));
 
   // 서버는 입력할 때마다 만들던 동화를 저장해 두므로, '저장할게요'는 그대로 나가면 돼요.
   const handleDiscard = async () => {
@@ -501,8 +533,7 @@ function StoryCreatePage() {
     navigate('/home');
   };
 
-  const derivedGoal = chatGoal || (topic.undecided ? '' : topic.message.trim()) || SUMMARY_FALLBACK_GOAL;
-  const summaryGoal = editedGoal || derivedGoal;
+  const summaryGoal = chatGoal || (topic.undecided ? '' : topic.message.trim()) || SUMMARY_FALLBACK_GOAL;
 
   const activeJob = job && job.storyId === storyId ? job : null;
   // 동화 만드는 중 화면에 있다가 제작이 끝나면 제작 완료 화면으로 넘어가요.
@@ -570,7 +601,6 @@ function StoryCreatePage() {
             initialChoices={interviewChoices}
             onFinish={handleChatFinish}
             onSafety={setBlocked}
-            onAnswered={(answer) => interviewAnswers.current.push(answer)}
           />
         )}
         {!toneOpen && step === STEP.SUMMARY && (
@@ -589,7 +619,7 @@ function StoryCreatePage() {
         {!toneOpen && visibleStep === STEP.GENERATING && activeJob?.status !== 'failed' && (
           <GeneratingStep stage={activeJob?.stage ?? 0} />
         )}
-        {!toneOpen && visibleStep === STEP.COMPLETE && <CompleteStep title={activeJob.title} />}
+        {!toneOpen && visibleStep === STEP.COMPLETE && <CompleteStep title={activeJob.title} coverUrl={activeJob.coverUrl} />}
       </main>
 
       {toneOpen && (
@@ -657,6 +687,7 @@ function StoryCreatePage() {
           titleId="goal-edit-title"
           label="이번 이야기에서 나누고 싶은 것"
           initialValue={summaryGoal}
+          maxLength={GOAL_MAX_LENGTH}
           onSave={handleSaveGoal}
           onClose={closeEditing}
         />

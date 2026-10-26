@@ -52,10 +52,18 @@
   line-height: 45px;
 }
 
+.error {
+  margin: 16px 0 0;
+  color: #a34439;
+  font-size: 16px;
+  line-height: 1.5;
+}
+
 .saveButton {
   align-self: flex-end;
-  width: 118.5px;
+  min-width: 118.5px;
   height: 43.5px;
+  padding: 0 20px;
   margin-top: 45px;
   color: var(--color-surface);
   background: var(--color-secondary-green);

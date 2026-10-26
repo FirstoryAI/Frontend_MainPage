@@ -11,7 +11,7 @@ import { StoryGenerationContext } from './storyGenerationContext';
 const POLL_INTERVAL = 3000;
 
 // 진행 중인 동화는 하나만 따라가요. 새로 시작하면 이전 것은 더 이상 따라가지 않아요.
-// job: { storyId, stage(0~2), status: 'running' | 'done' | 'failed', title, error, notificationId }
+// job: { storyId, stage(0~2), status: 'running' | 'done' | 'failed', title, coverUrl, error, notificationId }
 export function StoryGenerationProvider({ children }) {
   const { addNotification } = useNotifications();
   const [job, setJob] = useState(null);
@@ -62,7 +62,7 @@ export function StoryGenerationProvider({ children }) {
         const detail = await getStoryDetail(storyId).catch(() => null);
         const title = detail?.title ?? '새 동화';
         const notificationId = `story-${storyId}-${generation.runNo}-done`;
-        setJob({ storyId, stage: 2, status: 'done', title, notificationId });
+        setJob({ storyId, stage: 2, status: 'done', title, coverUrl: detail?.coverUrl ?? null, notificationId });
         addNotification({
           id: notificationId,
           title: '동화 제작이 완료되었어요',

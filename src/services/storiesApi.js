@@ -7,6 +7,8 @@ export const createStory = () => apiClient.post('/api/stories');
 export const saveSituation = (id, body) => apiClient.put(`${story(id)}/situation`, body);
 export const saveChild = (id, body) => apiClient.put(`${story(id)}/child`, body);
 export const saveMessage = (id, message) => apiClient.put(`${story(id)}/message`, { message });
+// 생성 전 확인 화면(CONFIRMING)에서 '이번 이야기에서 나누고 싶은 것'을 고쳐요. (1~300자)
+export const saveSummary = (id, summary) => apiClient.put(`${story(id)}/summary`, { summary });
 export const saveTone = (id, tone) => apiClient.put(`${story(id)}/tone`, { tone });
 export const startInterview = (id) => apiClient.post(`${story(id)}/interview/start`);
 export const answerInterview = (id, answer) =>

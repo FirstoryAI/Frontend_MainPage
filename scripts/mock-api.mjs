@@ -16,6 +16,8 @@ import { randomUUID } from 'node:crypto';
 import { fileURLToPath } from 'node:url';
 
 const STAGE_MS = Number(process.env.MOCK_STAGE_MS) || 3000;
+// 입력을 고칠 수 있는 상태예요. 인터뷰를 마친 뒤(생성 전 확인)에도 고칠 수 있어요.
+const EDITABLE = ['DRAFT', 'CONFIRMING'];
 const CREATING = ['DRAFT', 'INTERVIEWING', 'CONFIRMING', 'REQUESTED', 'GENERATING_TEXT', 'GENERATING_IMAGES'];
 const GENERATING = ['REQUESTED', 'GENERATING_TEXT', 'GENERATING_IMAGES'];
 const CATEGORY_LABELS = {
@@ -47,6 +49,8 @@ const PAGE_LINES = [
   ['다음 날, 토리는 다시 블록 놀이 자리로 갔어요.', '토리는 어떻게 했을까요?'],
   ['토리는 친구에게 먼저 다가갔어요.', '“우리 같이 집을 만들어 볼래?”'],
   ['둘이 함께 만든 집에는 멋진 지붕이 생겼어요.', '마음도 조금씩 편안해졌어요.'],
+  ['토리의 가슴이 **콩닥콩닥** 뛰었어요.', '이제 친구와 같이 놀아도 괜찮을 것 같았어요.'],
+  ['토리는 오늘 있었던 일을 엄마에게 이야기했어요.', '엄마는 토리의 마음을 가만히 들어 주었어요.'],
 ];
 // 질문마다 보여줄 답변 후보예요. (실제 서버가 후보를 주면 같은 모양으로 오게 될 거예요)
 const INTERVIEW_CHOICES = [
@@ -305,14 +309,13 @@ function handleSafety(story, safety) {
 function interviewResponse(story, extra = {}) {
   const asked = story.interview.turns.length;
   const done = story.interview.turns.filter((turn) => turn.answer !== undefined).length;
-  const isConfirm = done >= INTERVIEW_QUESTIONS.length;
+  const isConfirm = story.interview.noQuestions || done >= INTERVIEW_QUESTIONS.length;
   if (isConfirm) {
     story.status = 'CONFIRMING';
     story.interview.endReason = 'SUFFICIENT';
-    story.interview.summary = [
-      story.situation?.description,
-      story.message ? `전하고 싶은 말: ${story.message}` : '전하고 싶은 말은 AI와 함께 정리했어요.',
-    ].filter(Boolean).join('\n');
+    story.interview.summary = story.message
+      ? `${story.message} 이야기를 아이와 나누고 싶어요.`
+      : '아이의 속상한 마음을 먼저 알아주고, 괜찮다는 걸 함께 느끼는 이야기를 나누고 싶어요.';
   }
   return {
     storyId: story.id,
@@ -436,7 +439,7 @@ function guide(story) {
       seq: index + 1,
       afterPage,
       question: ['토리는 어떤 기분이었을까?', '친구 얼굴은 어땠을까?', '너라면 어떻게 했을 것 같아?'][index],
-      purpose: ['아이가 등장인물의 마음을 짐작해 보게 해요.', '다른 사람의 표정을 살피는 연습이에요.', '자기 생각을 말해 보게 해요.'][index],
+      purpose: ['empathy', 'perspective', 'connect'][index],
       parentHint: ['정답이 없어요. 아이 말을 그대로 받아 주세요.', '“슬퍼 보였구나”처럼 마음을 말로 받아 주세요.', '대답하지 않아도 괜찮아요.'][index],
     })),
     afterReading: {
@@ -722,7 +725,7 @@ export function startMockApi({ port = Number(process.env.MOCK_API_PORT) || 8787,
     }
 
     if (method === 'PUT' && section === 'situation') {
-      if (story.status !== 'DRAFT') return conflict();
+      if (!EDITABLE.includes(story.status)) return conflict();
       const fields = [];
       if (!CATEGORY_LABELS[body.category]) fields.push(['category', '어떤 일인지 골라 주세요.']);
       if (!['PAST', 'UPCOMING'].includes(body.timing)) fields.push(['timing', '언제 일인지 골라 주세요.']);
@@ -740,7 +743,7 @@ export function startMockApi({ port = Number(process.env.MOCK_API_PORT) || 8787,
       return json(res, 200, step(story, safety));
     }
     if (method === 'PUT' && section === 'child') {
-      if (story.status !== 'DRAFT') return conflict();
+      if (!EDITABLE.includes(story.status)) return conflict();
       let profile = body.profile;
       if (body.childId) {
         const saved = user.children.get(Number(body.childId));
@@ -767,8 +770,19 @@ export function startMockApi({ port = Number(process.env.MOCK_API_PORT) || 8787,
       story.updatedAt = now();
       return json(res, 200, step(story, safety));
     }
+    if (method === 'PUT' && section === 'summary') {
+      if (story.status !== 'CONFIRMING') return conflict();
+      const summary = body.summary?.trim() ?? '';
+      if (!summary || summary.length > 300) return invalid(res, [['summary', '나누고 싶은 것은 1~300자로 입력해 주세요.']]);
+      const safety = safetyCheck(summary);
+      const blocked = handleSafety(story, safety);
+      if (blocked) return json(res, 200, blocked);
+      story.interview.summary = summary;
+      story.updatedAt = now();
+      return json(res, 200, step(story, safety));
+    }
     if (method === 'PUT' && section === 'message') {
-      if (story.status !== 'DRAFT') return conflict();
+      if (!EDITABLE.includes(story.status)) return conflict();
       const safety = safetyCheck(body.message);
       const blocked = handleSafety(story, safety);
       if (blocked) return json(res, 200, blocked);
@@ -799,7 +813,8 @@ export function startMockApi({ port = Number(process.env.MOCK_API_PORT) || 8787,
       if (story.status !== 'DRAFT') return conflict();
       if (!story.situation || !story.child) return error(res, 400, 'INCOMPLETE_STORY', '상황과 아이 정보를 먼저 입력해 주세요.');
       story.status = 'INTERVIEWING';
-      story.interview.turns.push({ turnNo: 1, question: INTERVIEW_QUESTIONS[0] });
+      story.interview.noQuestions = Boolean(story.situation.description?.includes('바로정리'));
+      if (!story.interview.noQuestions) story.interview.turns.push({ turnNo: 1, question: INTERVIEW_QUESTIONS[0] });
       story.updatedAt = now();
       return json(res, 200, interviewResponse(story));
     }
@@ -884,7 +899,7 @@ export function startMockApi({ port = Number(process.env.MOCK_API_PORT) || 8787,
       return json(res, 200, { storyId: story.id, status: story.status, confirmedAt: story.confirmedAt });
     }
     if (method === 'GET' && section === 'guide') {
-      if (story.status !== 'COMPLETED') return conflict('확정한 동화만 대화 가이드를 볼 수 있어요.');
+      if (!['REVIEWING', 'COMPLETED'].includes(story.status)) return conflict('동화가 만들어진 뒤에 대화 가이드를 볼 수 있어요.');
       return json(res, 200, guide(story));
     }
     if (method === 'GET' && section === 'book') {

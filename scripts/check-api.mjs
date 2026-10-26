@@ -177,7 +177,20 @@ async function errorChecks() {
     await call('PUT', `/api/stories/${editId}/message`, { message: '' });
     const start = await call('POST', `/api/stories/${editId}/interview/start`);
     check('인터뷰 시작', start, 200, (r) => `status=${r.data?.status}, type=${r.data?.type}, 첫 질문="${short(r.data?.question)}"`);
-    check('인터뷰 시작 뒤 상황 수정 → 409(지금 명세)', await call('PUT', `/api/stories/${editId}/situation`, { timing: 'PAST', category: 'FRIEND_CONFLICT', description: '수정', reactions: [], emotions: [] }), [200, 409]);
+    check('인터뷰 중(INTERVIEWING) 상황 수정 → 409', await call('PUT', `/api/stories/${editId}/situation`, { timing: 'PAST', category: 'FRIEND_CONFLICT', description: '수정', reactions: [], emotions: [] }), 409);
+
+    // 질문을 모두 넘겨 생성 전 확인(CONFIRMING)까지 간 뒤에는 수정할 수 있어요. (백엔드 10/27 배포분부터)
+    let step = start;
+    for (let count = 0; step.data?.type === 'QUESTION' && count < 8; count += 1) {
+      step = await call('POST', `/api/stories/${editId}/interview/answer`, { skip: true });
+    }
+    check('질문을 모두 넘기면 마무리(CONFIRM)', step, 200, (r) => `type=${r.data?.type}, 요약="${short(r.data?.summary, 60)}"`);
+    const put = (path, body) => call('PUT', `/api/stories/${editId}/${path}`, body);
+    check('확인 단계(CONFIRMING)에서 상황 수정 → 200', await put('situation', { timing: 'PAST', category: 'FRIEND_CONFLICT', description: '수정한 상황', reactions: [], emotions: [] }), 200);
+    check('확인 단계에서 아이 수정 → 200', await put('child', { profile: { birthYm: '2021-05', gender: 'FEMALE' }, saveForNextTime: false }), 200);
+    check('확인 단계에서 전하고 싶은 말 수정 → 200', await put('message', { message: '수정한 말' }), 200);
+    check('나누고 싶은 것 수정(PUT /summary) → 200', await put('summary', { summary: '친구와 마음을 나누는 이야기를 하고 싶어요.' }), 200);
+    check('나누고 싶은 것이 비어 있으면 → 400', await put('summary', { summary: '' }), 400);
     await call('DELETE', `/api/stories/${editId}`);
   }
 
@@ -250,7 +263,8 @@ async function flowCheck() {
     console.log(`  ${coverOk ? '[OK]  ' : '[실패]'} 서재 표지: ${card?.coverUrl ?? '주소 없음'} → ${cover?.status ?? '-'}`);
     const marked = (preview.data?.pages ?? []).filter((page) => page.text?.includes('**')).length;
     if (marked) console.log(`  [참고] ${marked}쪽의 글에 **강조** 표시가 들어 있어요 (화면에서는 굵게 보여줘요)`);
-    console.log(`  [참고] 쪽 수 ${preview.data?.pages?.length}쪽 (명세의 읽기 진행 쪽 범위는 1~8)`);
+    console.log(`  [참고] 쪽 수 ${preview.data?.pages?.length}쪽 (화면은 응답의 쪽 수를 그대로 써요)`);
+    check('확정 전(REVIEWING) 대화 가이드 → 200', await call('GET', `/api/stories/${id}/guide`), 200, (r) => `질문 ${r.data?.prompts?.length}개`);
   }
 
   if (!KEEP) {

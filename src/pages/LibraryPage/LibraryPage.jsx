@@ -182,7 +182,7 @@ function LibraryPage() {
               {isLoading ? <p className={styles.message}>서재를 불러오는 중이에요.</p> : stories.map((story) => {
                 const group = libraryGroup(story);
                 const storyTitle = story.title || '제목을 준비하고 있어요';
-                const meta = [story.childDisplayName, formatStoryDate(story.updatedAt || story.createdAt)]
+                const meta = [story.categoryLabel, story.childDisplayName, formatStoryDate(story.updatedAt || story.createdAt)]
                   .filter(Boolean).join(' · ');
                 return (
                   <article className={styles.storyCard} key={story.id}>
