@@ -9,17 +9,17 @@ import { useSceneScale } from '../../features/story/hooks/useSceneScale';
 import { useStoryGeneration } from '../../features/story/generation/useStoryGeneration';
 import RemakeDialog from '../../features/story/components/RemakeDialog';
 import StoryReader from '../../features/story/components/StoryReader';
+import SafeImage from '../../features/story/components/SafeImage';
+import StoryText from '../../features/story/components/StoryText';
 import PageTurnOverlay from '../../features/story/components/PageTurnOverlay';
 import { usePageTurn } from '../../features/story/hooks/usePageTurn';
 import { guideFor } from '../../features/story/guideContent';
 import { approveStory, getGuide, getPreview, getStoryDetail, regenerateStory } from '../../services/storiesApi';
 
-const REGENERATE_LIMIT = 1;
-
 // 화면의 '다시 만들 부분'을 API의 scope로 바꿔요.
 const REMAKE_SCOPES = { all: 'CHARACTER_STORY', text: 'TEXT', image: 'IMAGES' };
 
-// 만든 동화를 확정하기 전에 8쪽을 넘겨 보는 화면이에요. (GET /api/stories/{id}/preview)
+// 만든 동화를 확정하기 전에 쪽마다 넘겨 보는 화면이에요. (GET /api/stories/{id}/preview)
 // initialRemakeOpen: '다시 만들기' 팝업을 연 채로 시작해요. 이때 팝업을 닫으면 서재로 돌아가요.
 function StoryPreviewPage({ initialRemakeOpen = false }) {
   const location = useLocation();
@@ -29,9 +29,10 @@ function StoryPreviewPage({ initialRemakeOpen = false }) {
   const { startGeneration } = useStoryGeneration();
   const scale = useSceneScale();
   const [preview, setPreview] = useState(null);
-  // 동화 줄거리(상세)와 대화 가이드예요. 가이드는 서버가 확정 전에는 주지 않을 수 있어요.
+  // 동화 줄거리(상세)와 대화 가이드예요. 가이드는 확정 전(REVIEWING)에도 받을 수 있어요.
   const [summary, setSummary] = useState('');
   const [guide, setGuide] = useState(null);
+  const [guideFailed, setGuideFailed] = useState(false);
   const [loadError, setLoadError] = useState('');
   const [currentPage, setCurrentPage] = useState(1);
   const [isReaderOpen, setIsReaderOpen] = useState(false);
@@ -49,7 +50,7 @@ function StoryPreviewPage({ initialRemakeOpen = false }) {
       .catch(() => {});
     getGuide(storyId)
       .then((result) => active && setGuide(result))
-      .catch(() => {});
+      .catch(() => active && setGuideFailed(true));
     return () => {
       active = false;
     };
@@ -57,10 +58,8 @@ function StoryPreviewPage({ initialRemakeOpen = false }) {
 
   const pages = preview?.pages ?? [];
   const title = preview?.version?.title ?? story.title ?? '';
-  // 다시 만들기는 동화당 1회만 할 수 있어요. 서버가 더 많이 남았다고 알려줘도 1회까지만 보여주고,
-  // 이미 다시 만든 동화(2번째 버전부터)는 더 이상 할 수 없어요.
-  const alreadyRemade = (preview?.version?.versionNo ?? 1) > 1;
-  const remaining = alreadyRemade ? 0 : Math.min(preview?.regenerateRemaining ?? 0, REGENERATE_LIMIT);
+  // 다시 만들기 횟수는 서버가 알려주는 값(regenerateRemaining)을 그대로 써요.
+  const remaining = preview?.regenerateRemaining ?? 0;
   const canRemake = remaining > 0;
   const turn = usePageTurn(currentPage, pages.map((item) => item.imageUrl));
 
@@ -156,7 +155,7 @@ function StoryPreviewPage({ initialRemakeOpen = false }) {
                 aria-label={`${item.pageNo}쪽 미리보기`}
                 aria-current={selected ? 'page' : undefined}
               >
-                {item.imageUrl ? <img src={item.imageUrl} alt="" /> : <div className={styles.noImage} aria-hidden="true" />}
+                <SafeImage src={item.imageUrl} alt="" fallback={<div className={styles.noImage} aria-hidden="true" />} />
                 <span>{item.pageNo}</span>
               </button>
             );
@@ -177,15 +176,21 @@ function StoryPreviewPage({ initialRemakeOpen = false }) {
               }
             }}
           >
-            {page.imageUrl ? (
-              <img src={page.imageUrl} alt={`${currentPage}쪽 동화 삽화`} />
-            ) : (
-              <p className={styles.noImageText}>
-                {page.imageStatus === 'FAILED' ? '이 쪽의 그림을 만들지 못했어요.' : '그림을 준비하는 중이에요.'}
-              </p>
-            )}
+            <SafeImage
+              src={page.imageUrl}
+              alt={`${currentPage}쪽 동화 삽화`}
+              fallback={(
+                <p className={styles.noImageText}>
+                  {page.imageStatus === 'FAILED'
+                    ? '이 쪽의 그림을 만들지 못했어요.'
+                    : page.imageStatus === 'PENDING'
+                      ? '그림을 준비하는 중이에요.'
+                      : '그림을 불러오지 못했어요.'}
+                </p>
+              )}
+            />
             <div className={styles.pageCopy}>
-              {lines.map((line) => <p key={line}>{line}</p>)}
+              {lines.map((line) => <p key={line}><StoryText text={line} /></p>)}
             </div>
             <PageTurnOverlay turn={turn} />
           </div>
@@ -207,7 +212,7 @@ function StoryPreviewPage({ initialRemakeOpen = false }) {
           </section>
           <section>
             <h2>부모를 위한 가이드</h2>
-            <p>{pageGuide ? pageGuide.talk : '대화 가이드를 아직 받지 못했어요. 확정하면 쪽마다 볼 수 있어요.'}</p>
+            <p>{pageGuide ? pageGuide.talk : guideFailed ? '대화 가이드를 불러오지 못했어요.' : '대화 가이드를 불러오는 중이에요.'}</p>
           </section>
           <p className={styles.remakeNote}>
             {canRemake ? `다시 만들기는 ${remaining}회 가능해요` : '다시 만들기를 사용했어요'}

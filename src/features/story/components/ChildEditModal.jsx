@@ -48,7 +48,7 @@ function ChildEditModal({ child, onSave, onClose }) {
     const pending = likeInput.trim();
     const nextLikes = pending && !likes.includes(pending) ? [...likes, pending] : likes;
 
-    onSave({
+    return onSave({
       birthYear: String(birthYearForAge(Number(age), child.birthMonth)),
       traits: selectedTraits,
       customTrait: customTrait.trim(),

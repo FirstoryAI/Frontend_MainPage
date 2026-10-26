@@ -5,6 +5,8 @@ import readerArrowRight from '../../../assets/story-reader/arrow-right.svg';
 import readerClose from '../../../assets/story-reader/close.svg';
 import { usePageTurn } from '../hooks/usePageTurn';
 import PageTurnOverlay from './PageTurnOverlay';
+import SafeImage from './SafeImage';
+import StoryText from './StoryText';
 import styles from './StoryReader.module.css';
 
 // 동화를 화면 가득 크게 읽는 화면이에요. 미리보기(확정 전)와 아이와 읽기(확정 후)가 함께 써요.
@@ -54,13 +56,13 @@ function StoryReader({ title, pages, page, onPage, onClose, closeLabel = '돌아
           <img className={styles.readerFrame} src={readerFrame} alt="" />
           <div className={styles.readerPage}>
             <div className={styles.readerPageContent}>
-              {current.imageUrl ? (
-                <img src={current.imageUrl} alt={`${page}쪽 동화 삽화`} />
-              ) : (
-                <p role="img" aria-label="그림 없음">그림을 아직 준비하지 못했어요.</p>
-              )}
+              <SafeImage
+                src={current.imageUrl}
+                alt={`${page}쪽 동화 삽화`}
+                fallback={<p role="img" aria-label="그림 없음">그림을 아직 준비하지 못했어요.</p>}
+              />
               <div className={styles.readerCopy}>
-                {lines.map((line, index) => <p key={`${page}-${index}`}>{line}</p>)}
+                {lines.map((line, index) => <p key={`${page}-${index}`}><StoryText text={line} /></p>)}
               </div>
               <PageTurnOverlay turn={turn} />
             </div>

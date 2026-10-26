@@ -6,6 +6,7 @@ import StorySavedModal from '../../features/library/components/StorySavedModal';
 import avatarCircle from '../../assets/icons/avatar-circle.svg';
 import avatarPerson from '../../assets/icons/avatar-person.svg';
 import bookCover from '../../assets/images/library-book-cover.png';
+import SafeImage from '../../features/story/components/SafeImage';
 import { getHome } from '../../services/homeApi';
 import { getStories } from '../../services/libraryApi';
 import { retryStory } from '../../services/storiesApi';
@@ -181,14 +182,19 @@ function LibraryPage() {
               {isLoading ? <p className={styles.message}>서재를 불러오는 중이에요.</p> : stories.map((story) => {
                 const group = libraryGroup(story);
                 const storyTitle = story.title || '제목을 준비하고 있어요';
-                const meta = [story.childDisplayName, formatStoryDate(story.updatedAt || story.createdAt)]
+                const meta = [story.categoryLabel, story.childDisplayName, formatStoryDate(story.updatedAt || story.createdAt)]
                   .filter(Boolean).join(' · ');
                 return (
                   <article className={styles.storyCard} key={story.id}>
                     <span className={`${styles.badge} ${styles[groupClasses[group]] || ''}`}>
                       {story.label || groupLabels[group] || '동화'}
                     </span>
-                    <img className={styles.cover} src={story.coverUrl || bookCover} alt={story.title ? `${story.title} 표지` : '동화 표지'} />
+                    <SafeImage
+                      className={styles.cover}
+                      src={story.coverUrl}
+                      alt={story.title ? `${story.title} 표지` : '동화 표지'}
+                      fallback={<img className={styles.cover} src={bookCover} alt={story.title ? `${story.title} 표지` : '동화 표지'} />}
+                    />
                     <h2 className={styles.storyTitle}>
                       {group !== 'FAILED' ? (
                         <button className={styles.storyOpen} type="button" onClick={() => openStory(story)}>

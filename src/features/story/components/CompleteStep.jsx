@@ -1,11 +1,11 @@
 import { useNavigate } from 'react-router-dom';
-import bookCover from '../../../assets/images/story-complete-cover.webp';
+import SafeImage from './SafeImage';
 import styles from './CompleteStep.module.css';
 
 // '○○을 위한 동화'의 ○○ 자리에는 아이 이름이 들어갈 수 있지만, 서비스는 아이 이름을 받지 않아서 '우리 아이'로 보여줘요.
 const CHILD_LABEL = '우리 아이';
 
-function CompleteStep({ title }) {
+function CompleteStep({ title, coverUrl }) {
   const navigate = useNavigate();
 
   return (
@@ -13,7 +13,12 @@ function CompleteStep({ title }) {
       <figure className={styles.book}>
         <div className={styles.cover}>
           <div className={styles.crop}>
-            <img className={styles.image} src={bookCover} alt={`${title} 동화책 표지`} />
+            <SafeImage
+              className={styles.image}
+              src={coverUrl}
+              alt={`${title} 동화책 표지`}
+              fallback={<div className={styles.placeholder} aria-hidden="true" />}
+            />
           </div>
         </div>
         <figcaption className={styles.bookTitle}>{title}</figcaption>

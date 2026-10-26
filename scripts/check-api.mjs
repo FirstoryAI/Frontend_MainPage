@@ -150,12 +150,20 @@ async function errorChecks() {
   check('확정 전 대화 가이드 → 409', await call('GET', `/api/stories/${id}/guide`), 409);
   check('확정 전 읽기 시작 → 409', await call('POST', `/api/stories/${id}/reading-sessions`), [403, 404, 409]);
 
+  console.log(' (그 밖의 일 분류)');
+  const otherId = await newStory('그 밖의 일 점검');
+  if (otherId) {
+    check('기타(OTHER)인데 분류 직접 입력 없음 → 400', await call('PUT', `/api/stories/${otherId}/situation`, { timing: 'PAST', category: 'OTHER', description: '친구와 다퉜어요', reactions: [], emotions: [] }), 400);
+    check('기타(OTHER) + 분류 직접 입력 → 200 (화면이 보내는 방식)', await call('PUT', `/api/stories/${otherId}/situation`, { timing: 'PAST', category: 'OTHER', customCategory: '친구와 다퉜어요', description: '친구와 다퉜어요', reactions: ['OTHER'], customReaction: '울었어요', emotions: [] }), 200);
+    await call('DELETE', `/api/stories/${otherId}`);
+  }
+
   console.log(' (위기 신호 — 서버가 어떤 글을 어떻게 판단하는지 보여줘요)');
   for (const probe of SAFETY_PROBES) {
     const probeId = await newStory(`위기 신호 점검 "${probe.name}"`);
     if (!probeId) continue;
     const response = await call('PUT', `/api/stories/${probeId}/situation`, {
-      timing: 'PAST', category: 'OTHER', description: probe.text, reactions: [], emotions: [],
+      timing: 'PAST', category: 'FRIEND_CONFLICT', description: probe.text, reactions: [], emotions: [],
     });
     check(`"${probe.text}" → 상황 저장`, response, 200, (r) => `safety.action=${r.data?.safety?.action}, saved=${r.data?.saved}, status=${r.data?.status}`);
     await call('DELETE', `/api/stories/${probeId}`);
@@ -169,7 +177,20 @@ async function errorChecks() {
     await call('PUT', `/api/stories/${editId}/message`, { message: '' });
     const start = await call('POST', `/api/stories/${editId}/interview/start`);
     check('인터뷰 시작', start, 200, (r) => `status=${r.data?.status}, type=${r.data?.type}, 첫 질문="${short(r.data?.question)}"`);
-    check('인터뷰 시작 뒤 상황 수정 → 409(지금 명세)', await call('PUT', `/api/stories/${editId}/situation`, { timing: 'PAST', category: 'OTHER', description: '수정', reactions: [], emotions: [] }), [200, 409]);
+    check('인터뷰 중(INTERVIEWING) 상황 수정 → 409', await call('PUT', `/api/stories/${editId}/situation`, { timing: 'PAST', category: 'FRIEND_CONFLICT', description: '수정', reactions: [], emotions: [] }), 409);
+
+    // 질문을 모두 넘겨 생성 전 확인(CONFIRMING)까지 간 뒤에는 수정할 수 있어요. (백엔드 10/27 배포분부터)
+    let step = start;
+    for (let count = 0; step.data?.type === 'QUESTION' && count < 8; count += 1) {
+      step = await call('POST', `/api/stories/${editId}/interview/answer`, { skip: true });
+    }
+    check('질문을 모두 넘기면 마무리(CONFIRM)', step, 200, (r) => `type=${r.data?.type}, 요약="${short(r.data?.summary, 60)}"`);
+    const put = (path, body) => call('PUT', `/api/stories/${editId}/${path}`, body);
+    check('확인 단계(CONFIRMING)에서 상황 수정 → 200', await put('situation', { timing: 'PAST', category: 'FRIEND_CONFLICT', description: '수정한 상황', reactions: [], emotions: [] }), 200);
+    check('확인 단계에서 아이 수정 → 200', await put('child', { profile: { birthYm: '2021-05', gender: 'FEMALE' }, saveForNextTime: false }), 200);
+    check('확인 단계에서 전하고 싶은 말 수정 → 200', await put('message', { message: '수정한 말' }), 200);
+    check('나누고 싶은 것 수정(PUT /summary) → 200', await put('summary', { summary: '친구와 마음을 나누는 이야기를 하고 싶어요.' }), 200);
+    check('나누고 싶은 것이 비어 있으면 → 400', await put('summary', { summary: '' }), 400);
     await call('DELETE', `/api/stories/${editId}`);
   }
 
@@ -236,8 +257,14 @@ async function flowCheck() {
     }
     const list = (await call('GET', '/api/stories?filter=REVIEWING&size=50')).data?.items ?? [];
     const card = list.find((item) => item.id === id);
-    results.push({ label: '서재 표지(coverUrl)', ok: Boolean(card?.coverUrl) });
-    console.log(`  ${card?.coverUrl ? '[OK]  ' : '[실패]'} 서재 표지 주소: ${card?.coverUrl ?? '없음'}`);
+    const cover = card?.coverUrl ? await call('GET', card.coverUrl) : null;
+    const coverOk = Boolean(cover && cover.status === 200 && (cover.headers?.get('content-type') ?? '').startsWith('image/'));
+    results.push({ label: '서재 표지(coverUrl)', ok: coverOk });
+    console.log(`  ${coverOk ? '[OK]  ' : '[실패]'} 서재 표지: ${card?.coverUrl ?? '주소 없음'} → ${cover?.status ?? '-'}`);
+    const marked = (preview.data?.pages ?? []).filter((page) => page.text?.includes('**')).length;
+    if (marked) console.log(`  [참고] ${marked}쪽의 글에 **강조** 표시가 들어 있어요 (화면에서는 굵게 보여줘요)`);
+    console.log(`  [참고] 쪽 수 ${preview.data?.pages?.length}쪽 (화면은 응답의 쪽 수를 그대로 써요)`);
+    check('확정 전(REVIEWING) 대화 가이드 → 200', await call('GET', `/api/stories/${id}/guide`), 200, (r) => `질문 ${r.data?.prompts?.length}개`);
   }
 
   if (!KEEP) {

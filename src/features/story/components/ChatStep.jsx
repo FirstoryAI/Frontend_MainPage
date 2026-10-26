@@ -25,9 +25,8 @@ function turnsToMessages(turns, recap) {
 
 // FIRSTORY AI의 인터뷰예요. 질문에 답하면 서버가 다음 질문을 주고, 충분해지면 요약(summary)을 줘요.
 // onFinish(summary): 인터뷰가 끝났을 때, onSafety(safety): 차단(BLOCK)일 때
-// onAnswered(answer): 서버가 받아들인 답(건너뛰면 null)이에요. 수정 후 다시 만들 때 같은 답을 다시 보내려고 모아 둬요.
 // recap: 앞에서 적은 상황, initialChoices: 첫 질문의 답변 카드(없으면 빈 목록)
-function ChatStep({ storyId, turns, recap = '', initialChoices = [], onFinish, onSafety, onAnswered }) {
+function ChatStep({ storyId, turns, recap = '', initialChoices = [], onFinish, onSafety }) {
   const [messages, setMessages] = useState(() => turnsToMessages(turns, recap));
   const [choices, setChoices] = useState(initialChoices);
   const [draft, setDraft] = useState('');
@@ -85,7 +84,6 @@ function ChatStep({ storyId, turns, recap = '', initialChoices = [], onFinish, o
     setBusy(true);
     try {
       const response = await answerInterview(storyId, trimmed);
-      if (response.safety?.action !== 'ASK_REVISE') onAnswered(trimmed);
       handleResponse(response);
     } catch {
       if (!mounted.current) return;
@@ -109,7 +107,6 @@ function ChatStep({ storyId, turns, recap = '', initialChoices = [], onFinish, o
     try {
       for (let count = 0; count < MAX_SKIPS; count += 1) {
         const response = await answerInterview(storyId, null);
-        onAnswered(null);
         if (handleResponse(response)) return;
       }
     } catch {

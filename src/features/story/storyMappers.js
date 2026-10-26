@@ -40,13 +40,20 @@ const DEFAULT_INTERESTS = [
 
 export const SITUATION_TIMING = { past: 'PAST', upcoming: 'UPCOMING', proactive: 'UPCOMING' };
 
+// '그 밖의 일'(OTHER)을 고르면 서버가 분류를 직접 적어 달라고 해요(customCategory 필수).
+// 화면에는 분류를 적는 칸이 없어서, 적어 준 상황의 앞부분을 분류로 보내요.
+const CUSTOM_CATEGORY_MAX = 30;
+
 export function toSituationRequest(situation, detail) {
   const reaction = detail.reaction.trim();
+  const description = detail.event.trim();
+  const category = CATEGORY_CODES[detail.category] ?? 'OTHER';
   return {
     // API에는 '먼저 알려주고 싶은 일'이 따로 없어서 '앞으로 겪을 일'과 같이 보내요.
     timing: SITUATION_TIMING[situation] ?? 'PAST',
-    category: CATEGORY_CODES[detail.category] ?? 'OTHER',
-    description: detail.event.trim(),
+    category,
+    ...(category === 'OTHER' ? { customCategory: description.slice(0, CUSTOM_CATEGORY_MAX) } : {}),
+    description,
     reactions: reaction ? ['OTHER'] : [],
     ...(reaction ? { customReaction: reaction } : {}),
     emotions: [],
