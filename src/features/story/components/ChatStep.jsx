@@ -1,4 +1,5 @@
 import { useEffect, useRef, useState } from 'react';
+import CtaButton from '../../../components/ui/CtaButton';
 import { CHAT_INTRO } from '../categoryContent';
 import { answerInterview } from '../../../services/storiesApi';
 import { extractChoices } from '../interviewChoices';
@@ -25,15 +26,35 @@ function turnsToMessages(turns, recap) {
 
 // FIRSTORY AI의 인터뷰예요. 질문에 답하면 서버가 다음 질문을 주고, 충분해지면 요약(summary)을 줘요.
 // onFinish(summary): 인터뷰가 끝났을 때, onSafety(safety): 차단(BLOCK)일 때
-// recap: 앞에서 적은 상황, initialChoices: 첫 질문의 답변 카드(없으면 빈 목록)
-function ChatStep({ storyId, turns, recap = '', initialChoices = [], onFinish, onSafety }) {
-  const [messages, setMessages] = useState(() => turnsToMessages(turns, recap));
+// recap: 앞에서 적은 상황, initialChoices: 지금 질문의 답변 카드(없으면 빈 목록)
+// initialMessages: 뒤로 갔다 돌아왔을 때 이어서 보여줄 이전 대화, onLog({ messages, choices }): 대화가 바뀔 때마다 알려줘요.
+// readOnly: 이미 끝난 인터뷰라 대화를 보기만 해요. 아래 '다음'을 누르면 onContinue로 마무리 화면에 가요.
+function ChatStep({
+  storyId,
+  turns,
+  recap = '',
+  initialMessages = null,
+  initialChoices = [],
+  readOnly = false,
+  onLog,
+  onContinue,
+  onFinish,
+  onSafety,
+}) {
+  const [messages, setMessages] = useState(() =>
+    initialMessages?.length ? initialMessages : turnsToMessages(turns, recap),
+  );
   const [choices, setChoices] = useState(initialChoices);
   const [draft, setDraft] = useState('');
   const [busy, setBusy] = useState(false);
   const endRef = useRef(null);
-  const counter = useRef(0);
+  // 이전 대화를 이어받으면 말풍선 id가 겹치지 않게 그 개수부터 세요.
+  const counter = useRef(initialMessages?.length ?? 0);
   const mounted = useRef(true);
+
+  useEffect(() => {
+    onLog?.({ messages, choices });
+  }, [messages, choices, onLog]);
 
   useEffect(() => {
     mounted.current = true;
@@ -153,6 +174,13 @@ function ChatStep({ storyId, turns, recap = '', initialChoices = [], onFinish, o
       </ol>
       <div ref={endRef} />
 
+      {readOnly ? (
+        <div className={`${styles.composer} ${styles.continue}`}>
+          <CtaButton pill onClick={onContinue}>
+            다음
+          </CtaButton>
+        </div>
+      ) : (
       <div className={styles.composer}>
         {choices.length > 0 && (
           <div className={styles.quickReplies} role="group" aria-label="답변 후보">
@@ -197,6 +225,7 @@ function ChatStep({ storyId, turns, recap = '', initialChoices = [], onFinish, o
           여기까지 답하고 넘어가기
         </button>
       </div>
+      )}
     </div>
   );
 }
