@@ -1,4 +1,4 @@
-import { useCallback, useEffect, useRef, useState } from 'react';
+import { useCallback, useEffect, useState } from 'react';
 import { useLocation, useNavigate } from 'react-router-dom';
 import Sidebar from '../../components/layout/Sidebar';
 import NotificationBell from '../../components/layout/NotificationBell';
@@ -6,6 +6,7 @@ import OnboardingModal from '../../features/onboarding/components/OnboardingModa
 import StoryDraftModal from '../../features/story/components/StoryDraftModal';
 import HomeScenarioModal from '../../features/home/components/HomeScenarioModal';
 import { scenarios } from '../../features/home/scenarios';
+import { SET_COUNT, useConveyor } from '../../features/home/hooks/useConveyor';
 import { hasSeenOnboarding, markOnboardingSeen } from '../../features/onboarding/onboardingSeen';
 import { useStoryGeneration } from '../../features/story/generation/useStoryGeneration';
 import { getDraft } from '../../services/storiesApi';
@@ -42,7 +43,6 @@ function DashboardPage() {
   const location = useLocation();
   const navigate = useNavigate();
   const onboardingKey = location.state?.onboardingKey;
-  const cardDrag = useRef({ pointerId: null, startX: 0, startScrollLeft: 0, moved: false });
   const [onboardingOpen, setOnboardingOpen] = useState(
     () => Boolean(location.state?.onboarding) && !hasSeenOnboarding(onboardingKey),
   );
@@ -83,56 +83,14 @@ function DashboardPage() {
     startStory();
   };
 
-  const handleCardPointerDown = (event) => {
-    if (event.pointerType !== 'mouse' || event.button !== 0) return;
-
-    const viewport = event.currentTarget;
-    cardDrag.current = {
-      pointerId: event.pointerId,
-      startX: event.clientX,
-      startScrollLeft: viewport.scrollLeft,
-      moved: false,
-      pressedScenarioId: event.target.closest('[data-scenario-id]')?.dataset.scenarioId ?? null,
-    };
-    viewport.setPointerCapture(event.pointerId);
-  };
-
-  const handleCardPointerMove = (event) => {
-    const drag = cardDrag.current;
-    if (drag.pointerId !== event.pointerId) return;
-
-    const distance = event.clientX - drag.startX;
-    if (Math.abs(distance) > 4) {
-      drag.moved = true;
-      event.currentTarget.classList.add(styles.dragging);
-    }
-    if (drag.moved) {
-      event.preventDefault();
-      event.currentTarget.scrollLeft = drag.startScrollLeft - distance;
-    }
-  };
-
-  const handleCardPointerUp = (event) => {
-    const drag = cardDrag.current;
-    if (drag.pointerId !== event.pointerId) return;
-
-    cardDrag.current.pointerId = null;
-    event.currentTarget.classList.remove(styles.dragging);
-    if (event.currentTarget.hasPointerCapture(event.pointerId)) {
-      event.currentTarget.releasePointerCapture(event.pointerId);
-    }
-    window.setTimeout(() => {
-      cardDrag.current.moved = false;
-    }, 0);
-  };
-
-  const handleCardClick = (event) => {
-    const scenarioId = event.target.closest('[data-scenario-id]')?.dataset.scenarioId
-      ?? cardDrag.current.pressedScenarioId;
-    const scenario = scenarios.find((item) => item.id === scenarioId);
-    cardDrag.current.pressedScenarioId = null;
-    if (!cardDrag.current.moved && scenario) setSelectedScenario(scenario);
-  };
+  const { viewportRef, trackRef, handlers: conveyorHandlers } = useConveyor({
+    setSize: scenarios.length,
+    paused: selectedScenario !== null || storyModal !== null || onboardingOpen,
+    onCardClick: (scenarioId) => {
+      const scenario = scenarios.find((item) => item.id === scenarioId);
+      if (scenario) setSelectedScenario(scenario);
+    },
+  });
 
   return (
     <div className={styles.page}>
@@ -180,28 +138,28 @@ function DashboardPage() {
 
               <div
                 className={styles.cardViewport}
-                onPointerDown={handleCardPointerDown}
-                onPointerMove={handleCardPointerMove}
-                onPointerUp={handleCardPointerUp}
-                onPointerCancel={handleCardPointerUp}
-                onClick={handleCardClick}
+                ref={viewportRef}
+                {...conveyorHandlers}
               >
-                <div className={styles.cards}>
-                  {scenarios.map((scenario) => (
+                <div className={styles.cards} ref={trackRef}>
+                  {Array.from({ length: SET_COUNT }, (_, copy) => scenarios.map((scenario) => (
                     <button
                       className={`${styles.card} ${styles[scenario.color]}`}
                       type="button"
-                      key={scenario.category}
+                      key={`${copy}-${scenario.category}`}
                       data-scenario-id={scenario.id}
                       aria-haspopup="dialog"
                       aria-label={`${scenario.category}: ${scenario.accessibleTitle}`}
+                      // 이어 붙인 카드는 모양만 같고 읽거나 포커스를 받지 않아요.
+                      aria-hidden={copy > 0 ? 'true' : undefined}
+                      tabIndex={copy > 0 ? -1 : undefined}
                     >
                       <span className={styles.category}>{scenario.category}</span>
                       <span className={styles.cardTitle}>{scenario.title}</span>
                       <span className={styles.cardDescription}>{scenario.description}</span>
                       <img className={styles.cardImage} src={scenario.image} alt="" />
                     </button>
-                  ))}
+                  )))}
                 </div>
               </div>
             </section>

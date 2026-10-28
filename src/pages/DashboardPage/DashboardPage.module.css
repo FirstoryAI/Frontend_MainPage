@@ -138,22 +138,18 @@
   font-size: 20px;
 }
 
+/* 카드는 회전초밥처럼 저절로 흘러가요. 위치는 스크립트가 .cards의 transform으로 움직여요. */
 .cardViewport {
   margin-top: 39px;
-  overflow-x: auto;
-  overflow-y: hidden;
+  overflow: hidden;
   overscroll-behavior-x: contain;
   cursor: grab;
   user-select: none;
-  scrollbar-width: none;
+  touch-action: pan-y;
 }
 
-.cardViewport::-webkit-scrollbar {
-  display: none;
-}
-
-.cardViewport.dragging,
-.cardViewport.dragging * {
+.cardViewport[data-dragging='true'],
+.cardViewport[data-dragging='true'] * {
   cursor: grabbing !important;
 }
 
@@ -161,6 +157,7 @@
   display: flex;
   gap: 40px;
   width: max-content;
+  will-change: transform;
 }
 
 .card {
@@ -457,18 +454,10 @@
 
   .cardViewport {
     margin-top: 24px;
-    padding-right: 22px;
-    overflow-x: auto;
-    scrollbar-width: none;
-  }
-
-  .cardViewport::-webkit-scrollbar {
-    display: none;
   }
 
   .cards {
     gap: 16px;
-    padding-right: 22px;
   }
 
   .card {
