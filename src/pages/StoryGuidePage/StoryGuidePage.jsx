@@ -11,6 +11,7 @@ import { usePageTurn } from '../../features/story/hooks/usePageTurn';
 import { useSceneScale } from '../../features/story/hooks/useSceneScale';
 import { getBook, getGuide } from '../../services/storiesApi';
 import styles from './StoryGuidePage.module.css';
+import ErrorText from '../../components/ui/ErrorText';
 
 // 동화 상세에서 '대화 가이드 보기'를 누르면 보이는, 쪽마다 부모를 위한 대화 가이드를 함께 읽는 화면이에요.
 // (GET /api/stories/{id}/book, /guide — 확정한 동화만 볼 수 있어요)
@@ -59,7 +60,7 @@ function StoryGuidePage() {
 
         {!data ? (
           <p className={styles.status} role={loadError ? 'alert' : 'status'}>
-            {loadError || '대화 가이드를 불러오는 중이에요.'}
+            {loadError ? <ErrorText message={loadError} /> : '대화 가이드를 불러오는 중이에요.'}
           </p>
         ) : (
           <>

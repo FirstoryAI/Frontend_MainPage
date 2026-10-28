@@ -1,0 +1,18 @@
+/* 문장처럼 보이되 눌러서 이동할 수 있다는 걸 밑줄과 손가락 커서로 알려줘요. */
+.link {
+  padding: 0;
+  color: inherit;
+  background: none;
+  border: 0;
+  font: inherit;
+  text-align: inherit;
+  text-decoration: underline;
+  text-underline-offset: 3px;
+  cursor: pointer;
+}
+
+.link:focus-visible {
+  outline: 2px solid currentcolor;
+  outline-offset: 3px;
+  border-radius: 4px;
+}
