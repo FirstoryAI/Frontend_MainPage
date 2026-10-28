@@ -1,5 +1,6 @@
 import { useEffect, useState } from 'react';
 import { useLocation, useNavigate } from 'react-router-dom';
+import ErrorText from '../../components/ui/ErrorText';
 import Sidebar from '../../components/layout/Sidebar';
 import NotificationBell from '../../components/layout/NotificationBell';
 import StorySavedModal from '../../features/library/components/StorySavedModal';
@@ -177,7 +178,7 @@ function LibraryPage() {
               ))}
             </div>
 
-            {error && <p className={styles.error} role="alert">{error}</p>}
+            {error && <p className={styles.error} role="alert"><ErrorText message={error} /></p>}
             <section className={styles.storyGrid} aria-live="polite" aria-busy={isLoading}>
               {isLoading ? <p className={styles.message}>서재를 불러오는 중이에요.</p> : stories.map((story) => {
                 const group = libraryGroup(story);

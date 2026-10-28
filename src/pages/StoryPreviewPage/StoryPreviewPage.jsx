@@ -15,6 +15,7 @@ import PageTurnOverlay from '../../features/story/components/PageTurnOverlay';
 import { usePageTurn } from '../../features/story/hooks/usePageTurn';
 import { guideFor } from '../../features/story/guideContent';
 import { approveStory, getGuide, getPreview, getStoryDetail, regenerateStory } from '../../services/storiesApi';
+import ErrorText from '../../components/ui/ErrorText';
 
 // 화면의 '다시 만들 부분'을 API의 scope로 바꿔요.
 const REMAKE_SCOPES = { all: 'CHARACTER_STORY', text: 'TEXT', image: 'IMAGES' };
@@ -129,7 +130,7 @@ function StoryPreviewPage({ initialRemakeOpen = false }) {
         <div className={styles.canvas} style={{ '--scene-scale': scale }}>
           {header}
           <p className={styles.status} role={loadError ? 'alert' : 'status'}>
-            {loadError || '미리보기를 불러오는 중이에요.'}
+            {loadError ? <ErrorText message={loadError} /> : '미리보기를 불러오는 중이에요.'}
           </p>
         </div>
       </div>
@@ -230,7 +231,7 @@ function StoryPreviewPage({ initialRemakeOpen = false }) {
           </button>
           {notice && (
             <p className={styles.actionError} role="alert">
-              {notice}
+              <ErrorText message={notice} />
             </p>
           )}
         </div>

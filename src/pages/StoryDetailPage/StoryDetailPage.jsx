@@ -19,6 +19,7 @@ import {
   startReading,
 } from '../../services/readingApi';
 import styles from './StoryDetailPage.module.css';
+import ErrorText from '../../components/ui/ErrorText';
 
 // 읽기 가이드를 아직 못 받았을 때 대신 보여주는 기본 안내예요.
 const FALLBACK_BEFORE = [
@@ -188,7 +189,7 @@ function StoryDetailPage() {
 
           {(loadError || notice) && (
             <p className={styles.notice} role="alert">
-              {loadError || notice}
+              <ErrorText message={loadError || notice} />
             </p>
           )}
 

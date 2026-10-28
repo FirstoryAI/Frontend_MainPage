@@ -1,11 +1,15 @@
 import { useState } from 'react';
-import { Link, useNavigate } from 'react-router-dom';
+import { Link, useLocation, useNavigate } from 'react-router-dom';
 import Header from '../../components/layout/Header';
 import { login } from '../../services/authApi';
 import styles from './EmailLoginPage.module.css';
 
 function EmailLoginPage() {
   const navigate = useNavigate();
+  const location = useLocation();
+  // '로그인이 필요해요'를 눌러 왔다면 그 화면으로 돌아가요. 사이트 안의 경로만 받아요.
+  const from = location.state?.from;
+  const returnTo = typeof from === 'string' && /^\/(?!\/|auth\/)/.test(from) && from !== '/' ? from : null;
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [error, setError] = useState('');
 
@@ -23,7 +27,7 @@ function EmailLoginPage() {
         rememberMe: formData.get('rememberMe') === 'on',
       });
 
-      navigate('/home', {
+      navigate(returnTo ?? '/home', {
         replace: true,
         state: {
           onboarding: !account?.onboardingSeen,
