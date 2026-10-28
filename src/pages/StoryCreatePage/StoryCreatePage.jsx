@@ -114,6 +114,8 @@ function StoryCreatePage() {
 
   // 서버에 만들고 있는 동화. 화면 곳곳의 async 함수가 같은 값을 보도록 ref에 두고, id만 화면용으로 따로 보관해요.
   const session = useRef(emptySession());
+  // '동화 만들기'(또는 다시 만들기)를 누른 동안에만 true예요. 아이 안전 안내 화면은 이때만 보여줘요.
+  const startingGeneration = useRef(false);
   // 마지막으로 인터뷰한 때의 입력(상황·아이·전하고 싶은 말)이에요. 뒤로 가서 이 입력이 바뀌면 인터뷰를 새로 해요.
   const interviewedKey = useRef(null);
   const [storyId, setStoryId] = useState(generationStoryId);
@@ -292,7 +294,7 @@ function StoryCreatePage() {
       return await task();
     } catch (error) {
       // 동화 만들기를 눌렀을 때 서버가 이 내용으로는 만들 수 없다고 하면(검토 기준에 어긋남) 안내 화면을 보여줘요.
-      if (error.code === 'STORY_BLOCKED') {
+      if (error.code === 'STORY_BLOCKED' && startingGeneration.current) {
         updateSession({ status: 'BLOCKED' });
         setBlocked({});
         return null;
@@ -326,7 +328,10 @@ function StoryCreatePage() {
   };
 
   // 위기 신호 검사 결과를 처리해요. 계속 진행해도 되면 true예요.
-  const checkSafety = async (response, { allowToneDialog = true } = {}) => {
+  // 입력을 저장할 때 서버는 막는 경우(BLOCK)에도 동화를 막힌 상태로 둬요. 이때 아이 안전 안내 화면은 '동화 만들기'를 눌렀을 때만 보여주고,
+  // 입력 단계에서는 안내 문구로 알리고 머물러요. 막힌 동화는 다음에 저장할 때 새로 만들어요.
+  // 분위기 선택(CHOOSE_TONE)은 서버 판단으로 띄우지 않아요. 이별·죽음 상황에서만 따로 물어봐요.
+  const checkSafety = (response) => {
     if (response.toneRequired) updateSession({ toneRequired: true });
 
     const safety = response.safety;
@@ -334,18 +339,23 @@ function StoryCreatePage() {
 
     if (safety.action === 'BLOCK') {
       updateSession({ status: 'BLOCKED' });
-      setBlocked(safety);
+      if (startingGeneration.current) setBlocked(safety);
+      else setNotice(safety.reason || '이 내용으로는 동화를 만들 수 없어요. 표현을 바꿔서 다시 써 주세요.');
       return false;
     }
     if (safety.action === 'ASK_REVISE') {
       setNotice(safety.reason || '표현을 조금 바꿔서 다시 써 주세요.');
       return false;
     }
-    if (safety.action === 'CHOOSE_TONE') {
-      updateSession({ toneRequired: true });
-      if (allowToneDialog && !(await pickTone())) return false;
-    }
+    if (safety.action === 'CHOOSE_TONE') updateSession({ toneRequired: true });
     return true;
+  };
+
+  // 서버가 분위기를 꼭 골라야 한다고 하는데 이 화면에서는 고르지 않았다면, '아직 잘 모르겠어요'(부드럽게 만들기)로 정해 둬요.
+  const ensureTone = async () => {
+    if (session.current.tone) return;
+    await saveTone(session.current.id, 'UNDECIDED');
+    updateSession({ tone: 'UNDECIDED' });
   };
 
   // 서버에 이 단계까지 입력한 동화가 DRAFT로 있게 해요. 새로 만들었으면 true예요.
@@ -406,7 +416,7 @@ function StoryCreatePage() {
     updateSession({ status: response.status });
     setChatLog(null);
     setInterviewDone(false);
-    if (!(await checkSafety(response, { allowToneDialog: false }))) return null;
+    if (!checkSafety(response)) return null;
 
     if (mode === 'chat' && response.type === 'QUESTION') {
       setInterviewTurns([{ question: response.question }]);
@@ -416,7 +426,7 @@ function StoryCreatePage() {
 
     for (let count = 0; response.type === 'QUESTION' && count < MAX_AUTO_SKIPS; count += 1) {
       response = await answerInterview(id, null);
-      if (!(await checkSafety(response, { allowToneDialog: false }))) return null;
+      if (!checkSafety(response)) return null;
     }
     if (response.type !== 'CONFIRM') throw new Error('이야기를 정리하지 못했어요. 다시 시도해 주세요.');
 
@@ -472,6 +482,19 @@ function StoryCreatePage() {
     goTo(step + 1);
   };
 
+  // 인터뷰 답이 막혔을 때: 안내 화면 대신 안내 문구를 보여주고 직전 입력 단계로 돌아가요. 막힌 동화는 다음에 저장할 때 새로 만들어요.
+  const handleChatBlocked = (safety) => {
+    updateSession({ status: 'BLOCKED' });
+    setChatLog(null);
+    setInterviewDone(false);
+    const previous = history[history.length - 1];
+    if (previous !== undefined) {
+      setHistory(history.slice(0, -1));
+      setStep(previous);
+    }
+    setNotice(safety?.reason || '이 내용으로는 동화를 만들 수 없어요. 표현을 바꿔서 다시 써 주세요.');
+  };
+
   const handleChatFinish = (summary) => {
     updateSession({ status: 'CONFIRMING' });
     setInterviewDone(true);
@@ -499,6 +522,7 @@ function StoryCreatePage() {
   const handleStartGeneration = async () => {
     if (busy) return;
 
+    startingGeneration.current = true;
     const started = await run(async () => {
       if (needsRecreate) {
         if (!(await recreateStory())) return false;
@@ -507,17 +531,18 @@ function StoryCreatePage() {
       }
 
       const id = session.current.id;
-      if (session.current.toneRequired && !session.current.tone && !(await pickTone())) return false;
+      if (session.current.toneRequired) await ensureTone();
 
       try {
         await confirmStory(id);
       } catch (error) {
         if (error.code !== 'TONE_REQUIRED') throw error;
-        if (!(await pickTone())) return false;
+        await ensureTone();
         await confirmStory(id);
       }
       return true;
     });
+    startingGeneration.current = false;
 
     if (started) {
       startGeneration(session.current.id);
@@ -529,7 +554,9 @@ function StoryCreatePage() {
     const id = session.current.id ?? storyId;
     if (!id || busy) return;
 
+    startingGeneration.current = true;
     const retried = await run(() => retryStory(id));
+    startingGeneration.current = false;
     if (retried) startGeneration(id);
   };
 
@@ -560,9 +587,11 @@ function StoryCreatePage() {
     closeEditing();
     // 서버에 저장한 수정은 인터뷰한 입력으로 쳐요. 뒤로 가도 채팅을 다시 하지 않아요.
     if (response) interviewedKey.current = currentKey(changed);
+    // 막혀서 서버 동화를 더 고칠 수 없으면, 동화 만들기를 누를 때 화면의 내용으로 새로 만들어 보내요.
+    if (response?.safety?.action === 'BLOCK') setNeedsRecreate(true);
     if (response) {
       try {
-        await checkSafety(response);
+        checkSafety(response);
       } catch (error) {
         setNotice(error.message || '잠시 문제가 생겼어요. 다시 시도해 주세요.');
       }
@@ -673,7 +702,7 @@ function StoryCreatePage() {
             onLog={setChatLog}
             onContinue={() => goTo(STEP.SUMMARY)}
             onFinish={handleChatFinish}
-            onSafety={setBlocked}
+            onSafety={handleChatBlocked}
           />
         )}
         {!toneOpen && step === STEP.SUMMARY && (
