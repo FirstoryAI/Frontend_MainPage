@@ -23,7 +23,13 @@ function WithdrawModal({ onConfirm, onClose }) {
   return (
     <StoryNoticeDialog
       title="정말 탈퇴하시겠어요?"
-      description="탈퇴하면 모든 기기에서 로그아웃되고 만든 동화도 볼 수 없어요. 계속하려면 현재 비밀번호를 입력해 주세요."
+      description={(
+        <>
+          탈퇴하면 모든 기기에서 로그아웃되고 만든 동화도 볼 수 없어요.
+          <br />
+          계속하려면 현재 비밀번호를 입력해 주세요.
+        </>
+      )}
       labelId="withdraw-title"
     >
       <form onSubmit={handleSubmit}>
