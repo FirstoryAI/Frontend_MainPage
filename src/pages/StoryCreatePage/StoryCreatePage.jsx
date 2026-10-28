@@ -116,6 +116,9 @@ function StoryCreatePage() {
   const session = useRef(emptySession());
   // '동화 만들기'(또는 다시 만들기)를 누른 동안에만 true예요. 아이 안전 안내 화면은 이때만 보여줘요.
   const startingGeneration = useRef(false);
+  // 입력을 저장할 때 서버가 막았다고(BLOCK) 알려 주면, 그때의 입력을 기억해 둬요. 화면에는 아무것도 보여주지 않고,
+  // 같은 입력으로 '동화 만들기'를 눌렀을 때 비로소 안내 화면을 보여줘요. 입력이 바뀌면 다시 서버에 보내 새로 판단해요.
+  const blockedKey = useRef(null);
   // 마지막으로 인터뷰한 때의 입력(상황·아이·전하고 싶은 말)이에요. 뒤로 가서 이 입력이 바뀌면 인터뷰를 새로 해요.
   const interviewedKey = useRef(null);
   const [storyId, setStoryId] = useState(generationStoryId);
@@ -322,16 +325,16 @@ function StoryCreatePage() {
     const tone = await askTone();
     if (!tone) return false;
 
-    await saveTone(session.current.id, tone);
+    if (!isHiddenBlocked()) await saveTone(session.current.id, tone);
     updateSession({ tone });
     return true;
   };
 
   // 위기 신호 검사 결과를 처리해요. 계속 진행해도 되면 true예요.
-  // 입력을 저장할 때 서버는 막는 경우(BLOCK)에도 동화를 막힌 상태로 둬요. 이때 아이 안전 안내 화면은 '동화 만들기'를 눌렀을 때만 보여주고,
-  // 입력 단계에서는 안내 문구로 알리고 머물러요. 막힌 동화는 다음에 저장할 때 새로 만들어요.
+  // 입력을 저장할 때 서버가 막아도(BLOCK) 입력 단계에서는 아무것도 보여주지 않아요. 아이 안전 안내 화면은 '동화 만들기'를 눌렀을 때만 보여줘요.
+  // 막힌 동화는 서버에 더 보낼 수 없어서, 입력이 그대로인 동안은 서버 호출 없이 화면만 이어가요(isHiddenBlocked).
   // 분위기 선택(CHOOSE_TONE)은 서버 판단으로 띄우지 않아요. 이별·죽음 상황에서만 따로 물어봐요.
-  const checkSafety = (response) => {
+  const checkSafety = (response, changed = {}) => {
     if (response.toneRequired) updateSession({ toneRequired: true });
 
     const safety = response.safety;
@@ -339,9 +342,12 @@ function StoryCreatePage() {
 
     if (safety.action === 'BLOCK') {
       updateSession({ status: 'BLOCKED' });
-      if (startingGeneration.current) setBlocked(safety);
-      else setNotice(safety.reason || '이 내용으로는 동화를 만들 수 없어요. 표현을 바꿔서 다시 써 주세요.');
-      return false;
+      if (startingGeneration.current) {
+        setBlocked(safety);
+        return false;
+      }
+      // 입력 단계에서는 아무것도 보여주지 않고 이어가요. 안내 화면은 '동화 만들기'를 눌렀을 때만 보여줘요.
+      blockedKey.current = currentKey(changed);
     }
     if (safety.action === 'ASK_REVISE') {
       setNotice(safety.reason || '표현을 조금 바꿔서 다시 써 주세요.');
@@ -373,6 +379,8 @@ function StoryCreatePage() {
   const currentKey = (changed = {}) =>
     inputsKey({ situation, detail, child, undecided: topic.undecided, message: topic.message, ...changed });
 
+  const isHiddenBlocked = () => blockedKey.current !== null && blockedKey.current === currentKey();
+
   const messageText = topic.undecided ? '' : topic.message.trim();
 
   const putStep = (name) => {
@@ -390,11 +398,15 @@ function StoryCreatePage() {
 
   // upto 단계까지 서버에 저장해요. 새로 만든 동화면 앞 단계도 모두 보내요.
   const syncStory = async (upto, retried = false) => {
+    if (isHiddenBlocked()) return true;
+
     try {
+      blockedKey.current = null;
       const fresh = await ensureDraftStory();
       for (const name of FLOW_STEPS.slice(0, FLOW_STEPS.indexOf(upto) + 1)) {
         if (!fresh && name !== upto) continue;
         if (!(await checkSafety(await putStep(name)))) return false;
+        if (isHiddenBlocked()) return true;
       }
       return true;
     } catch (error) {
@@ -411,6 +423,13 @@ function StoryCreatePage() {
   // mode: 'chat' 채팅으로 답하기 / 'skip' 질문을 모두 건너뛰고 요약까지
   // 서버는 질문 없이 바로 CONFIRM을 줄 수도 있어요(질문은 0~5개). 그때는 채팅을 열지 않고 마무리 화면으로 가요.
   const runInterview = async ({ mode }) => {
+    // 입력 단계에서 막힌 동화는 AI 인터뷰 없이 마무리 화면으로 가요. 여기서 '동화 만들기'를 누르면 안내 화면이 나와요.
+    if (isHiddenBlocked()) {
+      setChatGoal('');
+      setInterviewDone(true);
+      return 'summary';
+    }
+
     const id = session.current.id;
     let response = await startInterview(id);
     updateSession({ status: response.status });
@@ -482,17 +501,14 @@ function StoryCreatePage() {
     goTo(step + 1);
   };
 
-  // 인터뷰 답이 막혔을 때: 안내 화면 대신 안내 문구를 보여주고 직전 입력 단계로 돌아가요. 막힌 동화는 다음에 저장할 때 새로 만들어요.
-  const handleChatBlocked = (safety) => {
+  // 인터뷰 답이 막혔을 때: 아무것도 보여주지 않고 인터뷰를 마친 것처럼 마무리 화면으로 가요. '동화 만들기'를 누르면 안내 화면이 나와요.
+  const handleChatBlocked = () => {
     updateSession({ status: 'BLOCKED' });
-    setChatLog(null);
-    setInterviewDone(false);
-    const previous = history[history.length - 1];
-    if (previous !== undefined) {
-      setHistory(history.slice(0, -1));
-      setStep(previous);
-    }
-    setNotice(safety?.reason || '이 내용으로는 동화를 만들 수 없어요. 표현을 바꿔서 다시 써 주세요.');
+    blockedKey.current = currentKey();
+    setChatGoal('');
+    setInterviewDone(true);
+    setNeedsRecreate(false);
+    goTo(STEP.SUMMARY);
   };
 
   const handleChatFinish = (summary) => {
@@ -521,6 +537,12 @@ function StoryCreatePage() {
 
   const handleStartGeneration = async () => {
     if (busy) return;
+
+    // 입력 단계에서 서버가 막은 내용 그대로라면, 여기서 안내 화면을 보여줘요.
+    if (isHiddenBlocked() && !needsRecreate) {
+      setBlocked({});
+      return;
+    }
 
     startingGeneration.current = true;
     const started = await run(async () => {
@@ -572,7 +594,9 @@ function StoryCreatePage() {
   // 만들지 못한 동화를 이어 고치는 중이면 서버에는 아직 보내지 않고, 동화 만들기를 누를 때 새 동화로 한꺼번에 보내요.
   const saveEdit = async (put, commit, changed = {}) => {
     let response = null;
-    if (!needsRecreate) {
+    // 막힌 동화는 서버에 더 고쳐 보낼 수 없어서 화면만 고치고, 동화 만들기를 누를 때 새로 만들어 보내요.
+    const localOnly = needsRecreate || isHiddenBlocked();
+    if (!localOnly) {
       try {
         response = await put(session.current.id);
       } catch (error) {
@@ -587,11 +611,10 @@ function StoryCreatePage() {
     closeEditing();
     // 서버에 저장한 수정은 인터뷰한 입력으로 쳐요. 뒤로 가도 채팅을 다시 하지 않아요.
     if (response) interviewedKey.current = currentKey(changed);
-    // 막혀서 서버 동화를 더 고칠 수 없으면, 동화 만들기를 누를 때 화면의 내용으로 새로 만들어 보내요.
-    if (response?.safety?.action === 'BLOCK') setNeedsRecreate(true);
+    if (localOnly) setNeedsRecreate(true);
     if (response) {
       try {
-        checkSafety(response);
+        checkSafety(response, changed);
       } catch (error) {
         setNotice(error.message || '잠시 문제가 생겼어요. 다시 시도해 주세요.');
       }
