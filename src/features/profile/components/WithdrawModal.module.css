@@ -1,3 +1,11 @@
+/* 설명은 두 문장이에요. 어느 화면 너비에서도 문장마다 새 줄에서 시작하고, 좁은 화면에서 한 문장이 길어지면 단어 단위로 고르게 접혀요. */
+.sentence {
+  display: block;
+  word-break: keep-all;
+  overflow-wrap: break-word;
+  text-wrap: balance;
+}
+
 .input {
   display: block;
   width: 100%;
