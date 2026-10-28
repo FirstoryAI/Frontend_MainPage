@@ -9,8 +9,10 @@
 // - 데이터는 메모리에만 있어서 서버를 끄면 사라져요.
 // - 휴대폰 인증번호는 항상 000000이고, 이메일·비밀번호는 아무 값이나 돼요.
 // - 동화 만들기는 약 11초(단계당 3초)만에 끝나요. MOCK_STAGE_MS로 바꿀 수 있어요.
-// - 글에 "이별"이 들어가면 분위기 선택(CHOOSE_TONE), "위기"가 들어가면 다시 쓰기 안내(ASK_REVISE), "자해"가 들어가면 차단(BLOCK),
-//   상황 설명에 "실패테스트"가 들어가면 동화 만들기가 실패해요.
+// - 글에 "이별"이 들어가면 분위기 선택 요구(CHOOSE_TONE), "위기"가 들어가면 다시 쓰기 안내(ASK_REVISE), "자해"가 들어가면 차단(BLOCK, 입력 단계),
+//   상황 설명에 "실패테스트"가 들어가면 만드는 중에 실패해요(화면 없이 서재로 가요).
+// - 상황 설명에 "유사테스트"가 들어가면 동화 만들기를 처음 누를 때 409 DUPLICATE_STORY(이전 동화와 비슷)가 오고, 다시 누르면 진행돼요.
+// - 상황 설명에 "검토차단"이 들어가면 동화 만들기를 누르는 순간 409 STORY_BLOCKED, "생성차단"이 들어가면 만드는 중에 BLOCKED가 돼요.
 import http from 'node:http';
 import { randomUUID } from 'node:crypto';
 import { fileURLToPath } from 'node:url';
@@ -178,6 +180,11 @@ function generationOf(story) {
 function tick(story) {
   if (!GENERATING.includes(story.status) || !story.gen) return story;
   const { stage, elapsed } = generationOf(story);
+  if (story.gen.blockAt && elapsed >= story.gen.blockAt) {
+    story.status = 'BLOCKED';
+    story.updatedAt = now();
+    return story;
+  }
   if (story.gen.failAt && elapsed >= story.gen.failAt) {
     story.status = 'FAILED';
     story.gen.error = '동화를 만드는 중 문제가 생겼어요.';
@@ -215,6 +222,7 @@ function startGeneration(story, { scope = 'ALL', parentVersionNo = null, failAt 
     scope,
     parentVersionNo,
     failAt: failAt ?? (story.situation?.description?.includes('실패테스트') ? STAGE_MS * 2 : null),
+    blockAt: story.situation?.description?.includes('생성차단') ? STAGE_MS * 2 : null,
     holdStage,
     error: null,
   };
@@ -840,6 +848,14 @@ export function startMockApi({ port = Number(process.env.MOCK_API_PORT) || 8787,
     if (method === 'POST' && section === 'confirm') {
       if (story.status !== 'CONFIRMING') return conflict();
       if (story.toneRequired && !story.tone) return error(res, 400, 'TONE_REQUIRED', '이야기 분위기를 골라 주세요.');
+      if (story.situation?.description?.includes('유사테스트') && !story.similarOnce) {
+        story.similarOnce = true;
+        return error(res, 409, 'DUPLICATE_STORY', '이전 동화와 입력 내용이 거의 같아요.');
+      }
+      if (story.situation?.description?.includes('검토차단')) {
+        story.status = 'BLOCKED';
+        return error(res, 409, 'STORY_BLOCKED', '이 내용으로는 동화를 만들 수 없어요.');
+      }
       startGeneration(story);
       return json(res, 202, generationResponse(story));
     }

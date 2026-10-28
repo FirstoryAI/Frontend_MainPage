@@ -11,7 +11,7 @@ import { StoryGenerationContext } from './storyGenerationContext';
 const POLL_INTERVAL = 3000;
 
 // 진행 중인 동화는 하나만 따라가요. 새로 시작하면 이전 것은 더 이상 따라가지 않아요.
-// job: { storyId, stage(0~2), status: 'running' | 'done' | 'failed', title, coverUrl, error, notificationId }
+// job: { storyId, stage(0~2), status: 'running' | 'done' | 'failed' | 'blocked', title, coverUrl, error, notificationId }
 export function StoryGenerationProvider({ children }) {
   const { addNotification } = useNotifications();
   const [job, setJob] = useState(null);
@@ -45,6 +45,12 @@ export function StoryGenerationProvider({ children }) {
         }
 
         stopPolling();
+
+        // 만드는 중에 검토 기준에 어긋나 막히면 완성이 아니라 안내 화면으로 가요.
+        if (generation.status === 'BLOCKED') {
+          setJob({ storyId, stage: 2, status: 'blocked' });
+          return;
+        }
 
         if (generation.status === 'FAILED') {
           const notificationId = `story-${storyId}-${generation.runNo}-failed`;
