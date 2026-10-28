@@ -20,6 +20,8 @@
   max-width: 80vw;
   height: auto;
   aspect-ratio: 352 / 235;
+  /* 디자인(912:1057)은 그림이 가운데보다 12px 왼쪽(x 532)에 있어요. */
+  margin-right: 24px;
 }
 
 .title {
@@ -33,7 +35,7 @@
 }
 
 .description {
-  margin: 32px 0 0;
+  margin: 24px 0 0;
   color: var(--color-text);
   font-size: 18px;
   line-height: 27px;

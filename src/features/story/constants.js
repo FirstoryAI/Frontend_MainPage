@@ -62,4 +62,9 @@ export const progressByStep = [160, 291, 460, 600, 715, 862].map(
   (width) => width / PROGRESS_TRACK,
 );
 
+// 분위기 선택 단계(ST-04)는 지금 단계와 다음 단계 사이에 끼어들어요. 디자인(628:1624)의 바는 첫 단계 값 그대로라서,
+// 실제 위치인 두 단계의 가운데로 채워요. (예: 상황 입력 다음이면 상황 입력과 아이 정보 사이)
+export const toneProgress = (step) =>
+  (progressByStep[step] + (progressByStep[step + 1] ?? progressByStep[step])) / 2;
+
 export const SUMMARY_FALLBACK_GOAL = 'FIRSTORY AI와 함께 이야기를 정리해 볼게요.';

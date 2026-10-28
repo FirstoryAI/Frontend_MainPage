@@ -17,7 +17,7 @@ import StoryDraftModal from '../../features/story/components/StoryDraftModal';
 import ToneStep from '../../features/story/components/ToneStep';
 import BlockedStep from '../../features/story/components/BlockedStep';
 import GenerationFailedStep from '../../features/story/components/GenerationFailedStep';
-import { STEP, SUMMARY_FALLBACK_GOAL, progressByStep } from '../../features/story/constants';
+import { STEP, SUMMARY_FALLBACK_GOAL, progressByStep, toneProgress } from '../../features/story/constants';
 import {
   GENERATING_STATUSES,
   fromCategory,
@@ -97,6 +97,8 @@ function StoryCreatePage() {
   // 뒤로 갔다 돌아와도 같은 대화가 보이도록 채팅 화면이 보낸 대화 기록을 담아 둬요. 인터뷰가 끝났으면 보기만 해요.
   const [chatLog, setChatLog] = useState(null);
   const [interviewDone, setInterviewDone] = useState(false);
+  // AI 인터뷰를 거친 동화인지예요. 만들지 못했을 때 안내 문구가 달라져요. (이어 만드는 동화는 서버에 남은 답으로 알아요)
+  const [hadInterview, setHadInterview] = useState(true);
   // 만들지 못한 동화를 이어 고칠 때처럼 서버 동화가 더 이상 고칠 수 없는 상태면, 확정할 때 새로 만들어 보내요.
   const [needsRecreate, setNeedsRecreate] = useState(false);
   // 마무리 화면에서 열려 있는 수정 모달: 'child' | 'situation' | 'goal' | null
@@ -194,6 +196,7 @@ function StoryCreatePage() {
         setChatGoal(draft.interview?.summary ?? '');
         setInterviewTurns(draft.interview?.turns ?? []);
         setInterviewDone(draft.status === 'CONFIRMING');
+        setHadInterview(Boolean(draft.interview?.turns?.some((turn) => turn.answer)));
         if (draft.status === 'INTERVIEWING' || draft.status === 'CONFIRMING') {
           interviewedKey.current = inputsKey({
             situation: draft.situation ? fromSituationTiming(draft.situation.timing) : '',
@@ -288,6 +291,12 @@ function StoryCreatePage() {
     try {
       return await task();
     } catch (error) {
+      // 동화 만들기를 눌렀을 때 서버가 이 내용으로는 만들 수 없다고 하면(검토 기준에 어긋남) 안내 화면을 보여줘요.
+      if (error.code === 'STORY_BLOCKED') {
+        updateSession({ status: 'BLOCKED' });
+        setBlocked({});
+        return null;
+      }
       setNotice(error.message || '잠시 문제가 생겼어요. 다시 시도해 주세요.');
       return null;
     } finally {
@@ -425,7 +434,15 @@ function StoryCreatePage() {
       ['INTERVIEWING', 'CONFIRMING'].includes(session.current.status) && interviewedKey.current === currentKey();
 
     if (step === STEP.DETAIL) {
-      if (interviewKept || (await run(() => syncStory('situation')))) goTo(STEP.CHILD);
+      const saved =
+        interviewKept ||
+        (await run(async () => {
+          if (!(await syncStory('situation'))) return false;
+          // 이별·죽음 이야기는 서버가 분위기 선택을 따로 요구하지 않아도, 부모가 먼저 분위기를 고르고 다음으로 가요.
+          if (detail.category === '이별 · 죽음' && !session.current.tone && !(await pickTone())) return false;
+          return true;
+        }));
+      if (saved) goTo(STEP.CHILD);
       return;
     }
     if (step === STEP.CHILD) {
@@ -445,6 +462,7 @@ function StoryCreatePage() {
       });
       if (next) {
         interviewedKey.current = currentKey();
+        setHadInterview(topic.undecided);
         setNeedsRecreate(false);
       }
       if (next === 'chat') goTo(STEP.CHAT);
@@ -599,11 +617,11 @@ function StoryCreatePage() {
   const toneOpen = Boolean(toneResolver);
 
   // 만드는 중·제작 완료 화면은 진행 바와 아래 버튼 없이 로고만 있는 헤더를 써요.
-  const progress = visibleStep >= STEP.GENERATING ? null : progressByStep[toneOpen ? STEP.SITUATION : step];
+  const progress = visibleStep >= STEP.GENERATING ? null : (toneOpen ? toneProgress(step) : progressByStep[step]);
   const showFooter = step !== STEP.CHAT && step < STEP.GENERATING;
 
   // 위기 신호가 있어 동화를 만들 수 없을 때는 안내 화면만 보여줘요.
-  if (blocked) {
+  if (blocked || activeJob?.status === 'blocked') {
     return <BlockedStep onHome={handleDiscard} />;
   }
 
@@ -669,7 +687,7 @@ function StoryCreatePage() {
           />
         )}
         {!toneOpen && visibleStep === STEP.GENERATING && activeJob?.status === 'failed' && (
-          <GenerationFailedStep onRetry={handleRetry} onEdit={handleEditInputs} busy={busy} />
+          <GenerationFailedStep onRetry={handleRetry} onEdit={handleEditInputs} busy={busy} hasInterview={hadInterview} />
         )}
         {!toneOpen && visibleStep === STEP.GENERATING && activeJob?.status !== 'failed' && (
           <GeneratingStep stage={activeJob?.stage ?? 0} />
