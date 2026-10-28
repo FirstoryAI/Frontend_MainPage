@@ -36,7 +36,6 @@ import {
   createStory,
   deleteStory,
   getDraft,
-  retryStory,
   saveChild as saveChildInfo,
   saveMessage,
   saveSituation,
@@ -60,6 +59,9 @@ const initialChild = {
 const initialTopic = { message: '', undecided: false };
 
 const FLOW_STEPS = ['situation', 'child', 'message'];
+// 서버가 '입력 내용·AI 인터뷰가 이전 동화와 거의 같다'고 알려 줄 때의 오류 코드예요. (백엔드와 정해야 하는 값이라, 정해지면 여기만 바꿔요.)
+// 동화 만들기를 눌렀을 때 이 코드가 오면 '동화를 만들지 못했어요' 화면을 보여줘요. 글·그림을 만들다 실패한 경우에는 이 화면을 쓰지 않아요.
+const SIMILAR_STORY_CODES = ['DUPLICATE_STORY'];
 // 서버가 '넘어가기'를 계속 받아 줄 때 무한히 돌지 않도록 두는 한도예요.
 const MAX_AUTO_SKIPS = 8;
 // '이번 이야기에서 나누고 싶은 것'은 서버가 1~300자만 받아요.
@@ -108,6 +110,8 @@ function StoryCreatePage() {
   const [busy, setBusy] = useState(false);
   const [notice, setNotice] = useState('');
   const [blocked, setBlocked] = useState(null);
+  // 이전 동화와 거의 같은 내용이라 만들지 못했을 때 true예요.
+  const [similarStory, setSimilarStory] = useState(false);
   // 분위기 선택 단계가 열려 있으면 고른 값을 돌려줄 resolve 함수예요. 닫으면 null이에요.
   const [toneResolver, setToneResolver] = useState(null);
   const [selectedTone, setSelectedTone] = useState('');
@@ -297,6 +301,10 @@ function StoryCreatePage() {
       return await task();
     } catch (error) {
       // 동화 만들기를 눌렀을 때 서버가 이 내용으로는 만들 수 없다고 하면(검토 기준에 어긋남) 안내 화면을 보여줘요.
+      if (SIMILAR_STORY_CODES.includes(error.code) && startingGeneration.current) {
+        setSimilarStory(true);
+        return null;
+      }
       if (error.code === 'STORY_BLOCKED' && startingGeneration.current) {
         updateSession({ status: 'BLOCKED' });
         setBlocked({});
@@ -572,16 +580,6 @@ function StoryCreatePage() {
     }
   };
 
-  const handleRetry = async () => {
-    const id = session.current.id ?? storyId;
-    if (!id || busy) return;
-
-    startingGeneration.current = true;
-    const retried = await run(() => retryStory(id));
-    startingGeneration.current = false;
-    if (retried) startGeneration(id);
-  };
-
   // 만들지 못한 동화는 입력 내용을 불러와 마무리 화면에서 고친 뒤 다시 만들어요.
   const handleEditInputs = () => {
     const id = session.current.id ?? storyId;
@@ -661,6 +659,12 @@ function StoryCreatePage() {
   const visibleStep = step === STEP.GENERATING && activeJob?.status === 'done' ? STEP.COMPLETE : step;
   const completedNotificationId = visibleStep === STEP.COMPLETE ? activeJob.notificationId : null;
 
+  // 글·그림을 만들다 실패하면 실패 화면 없이 서재로 보내요. 실패 알림이 남고, 서재의 '만들지 못했어요' 카드에서 다시 만들 수 있어요.
+  const generationFailed = activeJob?.status === 'failed';
+  useEffect(() => {
+    if (generationFailed) navigate('/library', { replace: true });
+  }, [generationFailed, navigate]);
+
   // 완료 화면을 직접 봤다면 같은 내용의 알림은 읽은 것으로 해요.
   useEffect(() => {
     if (completedNotificationId) markRead(completedNotificationId);
@@ -675,6 +679,26 @@ function StoryCreatePage() {
   // 위기 신호가 있어 동화를 만들 수 없을 때는 안내 화면만 보여줘요.
   if (blocked || activeJob?.status === 'blocked') {
     return <BlockedStep onHome={handleDiscard} />;
+  }
+
+  // 입력 내용·AI 인터뷰가 이전 동화와 거의 같아 만들지 못했을 때의 안내 화면이에요. (같은 내용으로 다시 만들기 / 입력내용 고치기)
+  if (similarStory) {
+    return (
+      <div className={styles.page}>
+        <StoryHeader progress={null} onExit={() => navigate('/home')} />
+        <main className={styles.main}>
+          <GenerationFailedStep
+            onRetry={() => {
+              setSimilarStory(false);
+              handleStartGeneration();
+            }}
+            onEdit={handleEditInputs}
+            busy={busy}
+            hasInterview={hadInterview}
+          />
+        </main>
+      </div>
+    );
   }
 
   if (loadingDraft) {
@@ -738,10 +762,7 @@ function StoryCreatePage() {
             onEditGoal={() => setEditing('goal')}
           />
         )}
-        {!toneOpen && visibleStep === STEP.GENERATING && activeJob?.status === 'failed' && (
-          <GenerationFailedStep onRetry={handleRetry} onEdit={handleEditInputs} busy={busy} hasInterview={hadInterview} />
-        )}
-        {!toneOpen && visibleStep === STEP.GENERATING && activeJob?.status !== 'failed' && (
+        {!toneOpen && visibleStep === STEP.GENERATING && (
           <GeneratingStep stage={activeJob?.stage ?? 0} />
         )}
         {!toneOpen && visibleStep === STEP.COMPLETE && <CompleteStep title={activeJob.title} coverUrl={activeJob.coverUrl} />}
