@@ -17,7 +17,13 @@ import StoryDraftModal from '../../features/story/components/StoryDraftModal';
 import ToneStep from '../../features/story/components/ToneStep';
 import BlockedStep from '../../features/story/components/BlockedStep';
 import GenerationFailedStep from '../../features/story/components/GenerationFailedStep';
-import { STEP, SUMMARY_FALLBACK_GOAL, progressByStep, toneProgress } from '../../features/story/constants';
+import {
+  INTERVIEW_QUESTION_LIMIT,
+  STEP,
+  SUMMARY_FALLBACK_GOAL,
+  progressByStep,
+  toneProgress,
+} from '../../features/story/constants';
 import {
   GENERATING_STATUSES,
   fromCategory,
@@ -63,7 +69,7 @@ const FLOW_STEPS = ['situation', 'child', 'message'];
 // 동화 만들기를 눌렀을 때 이 코드가 오면 '동화를 만들지 못했어요' 화면을 보여줘요. 글·그림을 만들다 실패한 경우에는 이 화면을 쓰지 않아요.
 const SIMILAR_STORY_CODES = ['DUPLICATE_STORY'];
 // 서버가 '넘어가기'를 계속 받아 줄 때 무한히 돌지 않도록 두는 한도예요.
-const MAX_AUTO_SKIPS = 8;
+const MAX_AUTO_SKIPS = INTERVIEW_QUESTION_LIMIT + 5;
 // '이번 이야기에서 나누고 싶은 것'은 서버가 1~300자만 받아요.
 const GOAL_MAX_LENGTH = 300;
 const emptySession = () => ({ id: null, status: null, toneRequired: false, tone: null });
@@ -86,9 +92,10 @@ function StoryCreatePage() {
   const [situation, setSituation] = useState('');
   const [detail, setDetail] = useState(initialDetail);
   const [child, setChild] = useState(initialChild);
-  // 서버에 저장된 아이 프로필을 불러왔으면 그 id예요. 다음에도 쓰고 싶으면 saveChild를 켜요.
+  // 서버에 저장된 아이 프로필 id예요. 불러왔거나, 이 화면에서 처음 저장했을 때 알아 두면 고칠 때 같은 프로필을 갱신해요.
   const [savedChildId, setSavedChildId] = useState(null);
-  const [saveChild, setSaveChild] = useState(false);
+  // '다음에도 이 아이 정보로 만들기'는 기본으로 켜 둬요. 켜져 있으면 동화 만들기에서 고친 아이 정보가 마이페이지 프로필에도 반영돼요.
+  const [saveChild, setSaveChild] = useState(true);
   const [interests, setInterests] = useState(() => interestPairs(null));
   const [topic, setTopic] = useState(initialTopic);
   // 서버가 정리한 '이번 이야기에서 나누고 싶은 것'(부모에게 그대로 보여 주는 문장)
@@ -392,15 +399,29 @@ function StoryCreatePage() {
 
   const messageText = topic.undecided ? '' : topic.message.trim();
 
-  const putStep = (name) => {
+  // 프로필로 처음 저장했다면(응답에는 id가 없어서) 동화 정보에서 프로필 id를 알아 둬요. 그래야 다음에 고칠 때 새 프로필이 또 생기지 않고 같은 프로필이 갱신돼요.
+  const rememberChildId = async (storyId) => {
+    if (!saveChild || savedChildId) return;
+
+    try {
+      const draft = await getDraft(storyId);
+      if (draft.child?.childId) setSavedChildId(draft.child.childId);
+    } catch {
+      // 못 알아내도 동화는 그대로 만들 수 있어요.
+    }
+  };
+
+  const putStep = async (name) => {
     const id = session.current.id;
     if (name === 'situation') return saveSituation(id, toSituationRequest(situation, detail));
     if (name === 'child') {
-      return saveChildInfo(id, {
+      const response = await saveChildInfo(id, {
         ...(savedChildId ? { childId: savedChildId } : {}),
         profile: toChildProfile(child, interests),
         saveForNextTime: saveChild,
       });
+      await rememberChildId(id);
+      return response;
     }
     return saveMessage(id, messageText);
   };
@@ -430,7 +451,7 @@ function StoryCreatePage() {
 
   // 인터뷰를 시작해요. 'chat' | 'summary' | null을 돌려줘요.
   // mode: 'chat' 채팅으로 답하기 / 'skip' 질문을 모두 건너뛰고 요약까지
-  // 서버는 질문 없이 바로 CONFIRM을 줄 수도 있어요(질문은 0~5개). 그때는 채팅을 열지 않고 마무리 화면으로 가요.
+  // 서버는 질문 없이 바로 CONFIRM을 줄 수도 있어요(질문은 0~15개). 그때는 채팅을 열지 않고 마무리 화면으로 가요.
   const runInterview = async ({ mode }) => {
     // 입력 단계에서 막힌 동화는 AI 인터뷰 없이 마무리 화면으로 가요. 여기서 '동화 만들기'를 누르면 안내 화면이 나와요.
     if (isHiddenBlocked()) {
@@ -624,11 +645,15 @@ function StoryCreatePage() {
   const handleSaveChild = (changes) => {
     const nextChild = { ...child, ...changes };
     return saveEdit(
-      (id) => saveChildInfo(id, {
-        ...(savedChildId ? { childId: savedChildId } : {}),
-        profile: toChildProfile(nextChild, interests),
-        saveForNextTime: saveChild,
-      }),
+      async (id) => {
+        const response = await saveChildInfo(id, {
+          ...(savedChildId ? { childId: savedChildId } : {}),
+          profile: toChildProfile(nextChild, interests),
+          saveForNextTime: saveChild,
+        });
+        await rememberChildId(id);
+        return response;
+      },
       () => setChild(nextChild),
       { child: nextChild },
     );

@@ -49,7 +49,7 @@ function TopicStep({ category, topic, onChange }) {
         </span>
         <span className={styles.optionTitle}>아직 잘 모르겠어요</span>
         <span className={styles.optionDescription}>
-          AI가 질문하면서 나눌 수 있는 방향을 2~3개 함께 찾아요.
+          AI와 대화하며 이야기 방향을 함께 찾아요. 언제든 넘어갈 수 있어요.
         </span>
       </label>
     </div>
