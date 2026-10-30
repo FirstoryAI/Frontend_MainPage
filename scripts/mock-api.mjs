@@ -162,7 +162,8 @@ function currentVersion(story) {
 const imageUrl = (story, version, pageNo) => `/api/stories/${story.id}/versions/${version.id}/pages/${pageNo}/image`;
 
 function pageView(story, version) {
-  return version.pages.map((page) => ({ ...page, imageStatus: 'DONE', imageUrl: imageUrl(story, version, page.pageNo) }));
+  // 그림 위 글 자리: 3쪽마다 위(TOP), 나머지는 아래(BOTTOM)로 번갈아 줘요. (서버는 그림 위나 아래 30%를 비워서 그려요)
+  return version.pages.map((page) => ({ ...page, imageStatus: 'DONE', imageUrl: imageUrl(story, version, page.pageNo), textPosition: page.pageNo % 3 === 0 ? 'TOP' : 'BOTTOM' }));
 }
 
 const STAGE_LABELS = ['', '이야기 짜는 중', '글 쓰는 중', '그림 그리는 중', '책으로 묶는 중'];
@@ -701,8 +702,15 @@ export function startMockApi({ port = Number(process.env.MOCK_API_PORT) || 8787,
     if (path.endsWith('/image') || path.endsWith('/character-sheet')) {
       const version = story.versions.find((candidate) => candidate.id === Number(params.versionId));
       if (!version) return error(res, 404, 'IMAGE_NOT_FOUND', '그림을 찾을 수 없어요.');
-      res.writeHead(200, { 'Content-Type': 'image/svg+xml', 'Cache-Control': 'no-store' });
-      return res.end(path.endsWith('/image') ? pageSvg(version.title, Number(params.pageNo), version.hue) : coverSvg(version.title, version.hue));
+      // MOCK_IMAGE_DELAY_MS로 그림이 느리게 오는 상황을 흉내 낼 수 있어요. (서버처럼 캐시하지 않는다고 응답해요)
+      const send = () => {
+        res.writeHead(200, { 'Content-Type': 'image/svg+xml', 'Cache-Control': 'no-store' });
+        res.end(path.endsWith('/image') ? pageSvg(version.title, Number(params.pageNo), version.hue) : coverSvg(version.title, version.hue));
+      };
+      const delay = Number(process.env.MOCK_IMAGE_DELAY_MS) || 0;
+      if (delay > 0) setTimeout(send, delay);
+      else send();
+      return;
     }
 
     if (!section) {
