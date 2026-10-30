@@ -737,6 +737,7 @@ export function startMockApi({ port = Number(process.env.MOCK_API_PORT) || 8787,
       const fields = [];
       if (!CATEGORY_LABELS[body.category]) fields.push(['category', '어떤 일인지 골라 주세요.']);
       if (!['PAST', 'UPCOMING'].includes(body.timing)) fields.push(['timing', '언제 일인지 골라 주세요.']);
+      if (body.timing === 'UPCOMING' && ((body.reactions?.length ?? 0) > 0 || (body.emotions?.length ?? 0) > 0 || body.customReaction)) return json(res, 400, { code: 'MOMENT_ONLY_FOR_PAST', message: '아이의 반응과 감정은 있었던 일에서만 고를 수 있어요.' });
       if (body.category === 'OTHER' && !body.customCategory?.trim()) return json(res, 400, { code: 'VALIDATION_FAILED', message: '기타를 고르면 내용을 직접 입력해 주세요.' });
       if (fields.length) return invalid(res, fields);
       const safety = safetyCheck(body.description, body.customCategory, body.customReaction);
@@ -811,9 +812,9 @@ export function startMockApi({ port = Number(process.env.MOCK_API_PORT) || 8787,
         status: story.status,
         tone: story.tone,
         toneRequired: story.toneRequired,
-        situation: story.situation ? { category: story.situation.category, categoryLabel: story.situation.categoryLabel, timing: story.situation.timing } : null,
+        situation: story.situation ? { category: story.situation.category, categoryLabel: story.situation.categoryLabel, timing: story.situation.timing, description: story.situation.description } : null,
         child: story.child,
-        parent: story.message || story.situation ? { response: story.situation?.customReaction ?? null, concern: story.situation?.description ?? null, message: story.message, messageDirection: 'UNDECIDED' } : null,
+        parent: story.message || story.situation ? { response: story.situation?.customReaction ?? null, concern: story.interview.summary ?? '아이가 불안해하는 것 같아요.', message: story.message, messageDirection: 'UNDECIDED' } : null,
         interview: { turns: story.interview.turns, summary: story.interview.summary, endReason: story.interview.endReason },
       });
     }

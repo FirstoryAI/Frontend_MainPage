@@ -1,4 +1,4 @@
-import { useCallback, useEffect, useState } from 'react';
+import { useCallback, useEffect, useRef, useState } from 'react';
 import { Link, useLocation, useNavigate, useParams } from 'react-router-dom';
 import Sidebar from '../../components/layout/Sidebar';
 import NotificationBell from '../../components/layout/NotificationBell';
@@ -118,7 +118,7 @@ function StoryDetailPage() {
   };
 
   // 끝나지 않은 읽기가 있으면 마지막으로 읽던 쪽부터 이어서, 없으면 새로 시작해요.
-  const handleStartReading = async () => {
+  const handleStartReading = useCallback(async () => {
     if (busy) return;
 
     setBusy(true);
@@ -132,7 +132,18 @@ function StoryDetailPage() {
     } finally {
       setBusy(false);
     }
-  };
+  }, [busy, storyId]);
+
+  // 확정한 직후 '아이와 바로 읽기'로 들어왔으면 상세에서 멈추지 않고 바로 읽기를 시작해요. (새로고침해도 다시 시작하지 않게 표시를 지워요)
+  const autoStartDone = useRef(false);
+  const shouldStartReading = Boolean(location.state?.startReading);
+  useEffect(() => {
+    if (!shouldStartReading || autoStartDone.current) return;
+
+    autoStartDone.current = true;
+    navigate(location.pathname, { replace: true, state: { story } });
+    handleStartReading();
+  }, [shouldStartReading, handleStartReading, navigate, location.pathname, story]);
 
   const handlePage = (page) => {
     setReading((current) => ({ ...current, page }));

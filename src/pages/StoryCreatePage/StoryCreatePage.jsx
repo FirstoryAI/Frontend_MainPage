@@ -190,7 +190,8 @@ function StoryCreatePage() {
           setSituation(fromSituationTiming(draft.situation.timing));
           setDetail({
             category: fromCategory(draft.situation.category),
-            event: draft.parent?.concern ?? '',
+            // 상황 설명은 situation.description이에요. parent.concern은 인터뷰가 정리한 부모의 고민이라 상황이 아니에요.
+            event: draft.situation.description ?? draft.parent?.concern ?? '',
             reaction: draft.parent?.response ?? '',
           });
         }
@@ -212,7 +213,7 @@ function StoryCreatePage() {
             detail: draft.situation
               ? {
                   category: fromCategory(draft.situation.category),
-                  event: draft.parent?.concern ?? '',
+                  event: draft.situation.description ?? draft.parent?.concern ?? '',
                   reaction: draft.parent?.response ?? '',
                 }
               : initialDetail,
@@ -718,7 +719,8 @@ function StoryCreatePage() {
 
       <main className={styles.main} inert={editing !== null}>
         {toneOpen && <BackButton onClick={() => closeTone(null)} />}
-        {!toneOpen && step > STEP.SITUATION && step < STEP.GENERATING && <BackButton onClick={goBack} />}
+        {/* AI 인터뷰부터(채팅, 생성 전 확인)는 뒤로가기가 없어요. 확인 화면은 '수정하기'로 고쳐요. */}
+        {!toneOpen && step > STEP.SITUATION && step < STEP.CHAT && <BackButton onClick={goBack} />}
 
         {toneOpen && <ToneStep category={detail.category} selected={selectedTone} onSelect={setSelectedTone} />}
 
@@ -726,7 +728,7 @@ function StoryCreatePage() {
           <SituationStep selected={situation} onSelect={setSituation} />
         )}
         {!toneOpen && step === STEP.DETAIL && (
-          <DetailStep detail={detail} onChange={merge(setDetail)} />
+          <DetailStep situation={situation} detail={detail} onChange={merge(setDetail)} />
         )}
         {!toneOpen && step === STEP.CHILD && (
           <ChildInfoStep child={child} onChange={merge(setChild)} />
@@ -765,7 +767,7 @@ function StoryCreatePage() {
         {!toneOpen && visibleStep === STEP.GENERATING && (
           <GeneratingStep stage={activeJob?.stage ?? 0} />
         )}
-        {!toneOpen && visibleStep === STEP.COMPLETE && <CompleteStep title={activeJob.title} coverUrl={activeJob.coverUrl} />}
+        {!toneOpen && visibleStep === STEP.COMPLETE && <CompleteStep storyId={activeJob.storyId} title={activeJob.title} coverUrl={activeJob.coverUrl} />}
       </main>
 
       {toneOpen && (
