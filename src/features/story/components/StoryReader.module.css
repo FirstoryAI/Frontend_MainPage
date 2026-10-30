@@ -136,16 +136,23 @@
   object-fit: cover;
 }
 
+/* 글 상자: 그림이 비워 둔 위(top) 또는 아래(bottom) 자리에 놓아요. */
 .readerCopy {
   position: absolute;
-  top: 3.28%;
-  left: 55.02%;
-  width: 43%;
+  right: 6%;
+  left: 6%;
+  padding: 0.8cqw 1.6cqw;
   color: #4a4a4a;
   font-family: var(--font-title);
   font-size: clamp(9px, 1.18cqw, 17px);
   line-height: 1.34;
+  text-align: center;
+  background: rgb(255 255 255 / 72%);
+  border-radius: 1.2cqw;
 }
+
+.readerCopy[data-position='top'] { top: 3.28%; }
+.readerCopy[data-position='bottom'] { bottom: 3.28%; }
 
 .readerCopy p { margin: 0 0 0.21cqw; }
 
@@ -227,7 +234,7 @@
   .readerBook { top: 40%; left: 2%; width: 96%; height: auto; aspect-ratio: 1304.2 / 793.102; }
   .readerFrame { width: 100%; height: 100%; }
   .readerPage { top: 5.48%; left: 3.11%; width: 93.78%; height: 88.88%; padding: 1.28vw 1.35vw 1.2vw; }
-  .readerCopy { top: 3.28%; font-size: clamp(8px, 2.4vw, 12px); }
+  .readerCopy { font-size: clamp(8px, 2.4vw, 12px); }
   .readerCopy p { margin-bottom: 2px; }
   .readerArrow { top: 52.6%; width: 60px; height: 61.54px; transform: translateY(-50%) scale(.7); }
   .readerArrow img { width: 60px; height: 61.5373px; }
