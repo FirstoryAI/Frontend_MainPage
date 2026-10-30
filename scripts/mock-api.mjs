@@ -20,6 +20,7 @@ import { fileURLToPath } from 'node:url';
 const STAGE_MS = Number(process.env.MOCK_STAGE_MS) || 3000;
 // 입력을 고칠 수 있는 상태예요. 인터뷰를 마친 뒤(생성 전 확인)에도 고칠 수 있어요.
 const EDITABLE = ['DRAFT', 'CONFIRMING'];
+const emailChecks = new Map(); // IP별 이메일 확인 시각
 const CREATING = ['DRAFT', 'INTERVIEWING', 'CONFIRMING', 'REQUESTED', 'GENERATING_TEXT', 'GENERATING_IMAGES'];
 const GENERATING = ['REQUESTED', 'GENERATING_TEXT', 'GENERATING_IMAGES'];
 const CATEGORY_LABELS = {
@@ -516,6 +517,18 @@ export function startMockApi({ port = Number(process.env.MOCK_API_PORT) || 8787,
       return json(res, status, meView(account), { 'Set-Cookie': `FSESSION=${sid}; Path=/; HttpOnly; SameSite=Lax` });
     };
 
+    // 이메일 중복 확인: 같은 IP에서 1분에 10번까지, 넘으면 429
+    if (method === 'POST' && path === '/api/auth/email/check') {
+      const key = req.socket.remoteAddress;
+      const nowMs = Date.now();
+      const recent = (emailChecks.get(key) ?? []).filter((time) => nowMs - time < 60_000);
+      if (recent.length >= 10) return error(res, 429, 'EMAIL_CHECK_RATE_LIMITED', '이메일 확인을 너무 많이 했어요. 1분 후 다시 시도해 주세요.');
+      emailChecks.set(key, [...recent, nowMs]);
+      if (!/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(body.email ?? '')) return invalid(res, [['email', '이메일 형식이 맞지 않아요.']]);
+      const taken = [...users.values()].some((account) => account.email.toLowerCase() === body.email.toLowerCase());
+      return json(res, 200, { available: !taken });
+    }
+
     if (method === 'POST' && path === '/api/auth/phone/send-code') {
       if (!body.phone) return invalid(res, [['phone', '휴대폰 번호를 입력해 주세요.']]);
       if (body.purpose === 'SIGNUP' && [...users.values()].some((account) => account.phone === body.phone)) {
@@ -717,6 +730,8 @@ export function startMockApi({ port = Number(process.env.MOCK_API_PORT) || 8787,
           childDisplayName: story.child?.displayName ?? null,
           situation: story.situation ? { category: story.situation.category, categoryLabel: story.situation.categoryLabel, timing: story.situation.timing } : null,
           summary: story.interview.summary ?? story.situation?.description ?? null,
+          // 줄거리는 동화 내용을 풀어 쓴 문장이에요. 옛 동화처럼 없을 수도 있어요(null). 상황 설명에 "줄거리없음"을 넣으면 없는 경우를 볼 수 있어요.
+          synopsis: version && !story.situation?.description?.includes('줄거리없음') ? '토리는 친구와 블록 놀이를 하고 싶었지만 친구가 빨간 블록을 가져가 속상했어요. 토리는 엄마에게 마음을 이야기했고, 다음 날 친구와 함께 집을 만들었어요.' : null,
           pageCount: version?.pages.length ?? 0,
           createdAt: story.createdAt,
           confirmedAt: story.confirmedAt,

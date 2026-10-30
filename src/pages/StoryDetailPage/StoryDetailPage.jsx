@@ -98,7 +98,8 @@ function StoryDetailPage() {
   }, [loadDetail, storyId]);
 
   const title = detail?.title ?? story?.title ?? '';
-  const summary = detail?.summary ?? '';
+  // 동화 줄거리는 synopsis예요. summary는 부모 고민(이번 이야기에서 나누고 싶은 것)이라 줄거리가 아니에요. synopsis가 없는 옛 동화는 카드를 숨겨요.
+  const synopsis = detail?.synopsis ?? '';
   const coverUrl = detail?.coverUrl ?? story?.coverUrl;
   const beforeLines = guide
     ? [guide.beforeReading?.intent, ...(guide.beforeReading?.tips ?? [])].filter(Boolean)
@@ -240,10 +241,12 @@ function StoryDetailPage() {
             </section>
 
             <div className={styles.cards}>
-              <section className={`${styles.card} ${styles.summaryCard}`}>
-                <h2>동화 줄거리</h2>
-                <p>{summary}</p>
-              </section>
+              {synopsis && (
+                <section className={`${styles.card} ${styles.summaryCard}`}>
+                  <h2>동화 줄거리</h2>
+                  <p>{synopsis}</p>
+                </section>
+              )}
               <section className={styles.card}>
                 <h2>읽기 전에</h2>
                 <p>
