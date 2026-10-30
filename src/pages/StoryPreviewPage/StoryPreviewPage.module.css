@@ -202,17 +202,24 @@
   border-radius: inherit;
 }
 
+/* 글 상자: 그림이 비워 둔 위(top) 또는 아래(bottom) 자리에 놓아요. 빈 자리 경계가 흐려서 반투명 배경을 깔았어요. */
 .pageCopy {
   position: absolute;
-  top: 18px;
-  left: 479px;
-  width: 340px;
+  right: 3%;
+  left: 3%;
+  padding: 8px 16px;
   color: #4a4a4a;
   font-family: var(--font-title);
   font-size: 13px;
   line-height: 1.34;
+  text-align: center;
   white-space: pre-line;
+  background: rgb(255 255 255 / 72%);
+  border-radius: 10px;
 }
+
+.pageCopy[data-position='top'] { top: 3%; }
+.pageCopy[data-position='bottom'] { bottom: 3%; }
 
 .pageCopy p { margin: 0 0 3px; }
 
@@ -344,7 +351,7 @@
   .thumbnail span { margin-top: 2px; font-size: 12px; }
   .book { position: relative; top: auto; left: auto; width: auto; min-width: 0; max-width: calc(100vw - 32px); height: auto; margin: 0 16px; padding: 12px; border-radius: 18px; }
   .illustration { width: 100%; height: auto; aspect-ratio: 868 / 491; }
-  .pageCopy { top: 3%; right: 3%; left: auto; width: 45%; font-size: clamp(7px, 2.5vw, 12px); }
+  .pageCopy { padding: 4px 8px; font-size: clamp(7px, 2.5vw, 12px); }
   .pagination { grid-template-columns: 78px auto 78px; gap: 12px; margin: 15px auto 2px; }
   .pagination button { width: 78px; height: 40px; font-size: 12px; }
   .pagination strong { font-size: 15px; }

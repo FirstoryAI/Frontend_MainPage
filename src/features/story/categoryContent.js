@@ -172,7 +172,7 @@ export function getCategoryContent(category) {
   return categoryContent[category] ?? categoryContent[DEFAULT_CATEGORY];
 }
 
-export const CHAT_INTRO = 'AI가 질문하면서 나눌 수 있는 방향을 2~3개 함께 찾아요.';
+export const CHAT_INTRO = 'AI가 몇 가지 질문을 드리면서 이야기 나눌 방향을 함께 찾아요. 답하기 어려우면 아래 \'여기까지 답하고 넘어가기\'로 언제든 마무리할 수 있어요.';
 
 // 카테고리 채팅의 처음 대화 3개: AI 안내 → (아이 정보를 바탕으로 한) 보호자 첫 답 → AI 질문
 export function buildInitialMessages(category) {

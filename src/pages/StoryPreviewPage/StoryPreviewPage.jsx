@@ -13,6 +13,8 @@ import SafeImage from '../../features/story/components/SafeImage';
 import StoryText from '../../features/story/components/StoryText';
 import PageTurnOverlay from '../../features/story/components/PageTurnOverlay';
 import { usePageTurn } from '../../features/story/hooks/usePageTurn';
+import { useImageQueue } from '../../features/story/hooks/useImageQueue';
+import { textPositionOf } from '../../features/story/textPosition';
 import { guideFor } from '../../features/story/guideContent';
 import { approveStory, getGuide, getPreview, getStoryDetail, regenerateStory } from '../../services/storiesApi';
 import ErrorText from '../../components/ui/ErrorText';
@@ -62,7 +64,17 @@ function StoryPreviewPage({ initialRemakeOpen = false }) {
   // 다시 만들기 횟수는 서버가 알려주는 값(regenerateRemaining)을 그대로 써요.
   const remaining = preview?.regenerateRemaining ?? 0;
   const canRemake = remaining > 0;
-  const turn = usePageTurn(currentPage, pages.map((item) => item.imageUrl));
+  // 그림 10장(수십 MB)을 한 번에 받지 않고, 지금 쪽에서 가까운 순서로 한 장씩 받아 메모리에 담아 두고 큰 그림·썸네일·크게 보기가 함께 써요.
+  const imageSources = useImageQueue(pages.map((item) => item.imageUrl), currentPage);
+  const sourceOf = (item) => imageSources.get(item.imageUrl);
+  // 그림이 안 보일 때 보여줄 안내예요. (받는 중 / 만들지 못함 / 준비 중 / 받지 못함)
+  const imageNote = (item) => {
+    if (item.imageStatus === 'FAILED') return '이 쪽의 그림을 만들지 못했어요.';
+    if (item.imageUrl && !imageSources.has(item.imageUrl)) return '그림을 불러오는 중이에요.';
+    if (item.imageStatus === 'PENDING') return '그림을 준비하는 중이에요.';
+    return '그림을 불러오지 못했어요.';
+  };
+  const turn = usePageTurn(currentPage, pages.map((item) => sourceOf(item) ?? null));
 
   const closeRemake = () => {
     if (initialRemakeOpen) {
@@ -156,7 +168,17 @@ function StoryPreviewPage({ initialRemakeOpen = false }) {
                 aria-label={`${item.pageNo}쪽 미리보기`}
                 aria-current={selected ? 'page' : undefined}
               >
-                <SafeImage src={item.imageUrl} alt="" fallback={<div className={styles.noImage} aria-hidden="true" />} />
+                {imageSources.has(item.imageUrl) ? (
+                  <SafeImage
+                    src={sourceOf(item)}
+                    alt=""
+                    loading="lazy"
+                    decoding="async"
+                    fallback={<div className={styles.noImage} aria-hidden="true" />}
+                  />
+                ) : (
+                  <div className={styles.noImage} aria-hidden="true" />
+                )}
                 <span>{item.pageNo}</span>
               </button>
             );
@@ -178,19 +200,15 @@ function StoryPreviewPage({ initialRemakeOpen = false }) {
             }}
           >
             <SafeImage
-              src={page.imageUrl}
+              src={sourceOf(page)}
               alt={`${currentPage}쪽 동화 삽화`}
               fallback={(
                 <p className={styles.noImageText}>
-                  {page.imageStatus === 'FAILED'
-                    ? '이 쪽의 그림을 만들지 못했어요.'
-                    : page.imageStatus === 'PENDING'
-                      ? '그림을 준비하는 중이에요.'
-                      : '그림을 불러오지 못했어요.'}
+                  {imageNote(page)}
                 </p>
               )}
             />
-            <div className={styles.pageCopy}>
+            <div className={styles.pageCopy} data-position={textPositionOf(page)}>
               {lines.map((line) => <p key={line}><StoryText text={line} /></p>)}
             </div>
             <PageTurnOverlay turn={turn} />
@@ -240,7 +258,7 @@ function StoryPreviewPage({ initialRemakeOpen = false }) {
       {isReaderOpen && (
         <StoryReader
           title={title}
-          pages={pages}
+          pages={pages.map((item) => ({ ...item, imageUrl: sourceOf(item) ?? '' }))}
           page={currentPage}
           onPage={setCurrentPage}
           onClose={() => setIsReaderOpen(false)}
