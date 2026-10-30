@@ -5,7 +5,8 @@ import styles from './CompleteStep.module.css';
 // '○○을 위한 동화'의 ○○ 자리에는 아이 이름이 들어갈 수 있지만, 서비스는 아이 이름을 받지 않아서 '우리 아이'로 보여줘요.
 const CHILD_LABEL = '우리 아이';
 
-function CompleteStep({ title, coverUrl }) {
+// storyId: 방금 만든 동화예요. 아래 버튼은 그 동화의 미리보기로 가요.
+function CompleteStep({ storyId, title, coverUrl }) {
   const navigate = useNavigate();
 
   return (
@@ -31,7 +32,7 @@ function CompleteStep({ title, coverUrl }) {
         {CHILD_LABEL}를 위한 동화가 완성되었어요. 서재에서 확인하실 수 있어요.
       </p>
 
-      <button className={styles.cta} type="button" onClick={() => navigate('/library')}>
+      <button className={styles.cta} type="button" onClick={() => navigate(`/story/${storyId}/preview`)}>
         서재에서 동화 바로 확인하기 →
       </button>
     </div>

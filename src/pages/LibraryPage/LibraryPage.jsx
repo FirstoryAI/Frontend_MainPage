@@ -101,7 +101,7 @@ function LibraryPage() {
   };
 
   const readSavedStory = () => {
-    navigate(`/library/${savedStory.id}`, { state: { story: savedStory } });
+    navigate(`/library/${savedStory.id}`, { state: { story: savedStory, startReading: true } });
   };
 
   // 동화 상태에 따라 열리는 화면이 달라요.

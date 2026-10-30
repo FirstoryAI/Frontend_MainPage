@@ -137,25 +137,7 @@
   line-height: 1.5;
 }
 
-.phone {
-  margin: 0 0 0 18.5px;
-  color: var(--color-phone);
-  font-size: 15px;
-  line-height: 1.5;
-}
 
-.changeButton {
-  margin-left: auto;
-  padding: 0;
-  color: var(--color-secondary-green);
-  background: transparent;
-  border: 0;
-  font-family: var(--font-body);
-  font-size: 16px;
-  font-weight: 600;
-  line-height: 1.5;
-  cursor: not-allowed;
-}
 
 .footer {
   display: flex;
@@ -194,13 +176,7 @@
     padding: 16px 20px;
   }
 
-  .phone {
-    margin-left: 0;
-  }
 
-  .changeButton {
-    margin-left: auto;
-  }
 }
 
 @media (max-width: 480px) {

@@ -48,14 +48,17 @@ export function toSituationRequest(situation, detail) {
   const reaction = detail.reaction.trim();
   const description = detail.event.trim();
   const category = CATEGORY_CODES[detail.category] ?? 'OTHER';
+  const timing = SITUATION_TIMING[situation] ?? 'PAST';
+  // 아이의 반응은 '있었던 일'에서만 받아요. 앞으로 겪을 일에 보내면 서버가 400(MOMENT_ONLY_FOR_PAST)으로 막아요.
+  const sendReaction = timing === 'PAST' && Boolean(reaction);
   return {
     // API에는 '먼저 알려주고 싶은 일'이 따로 없어서 '앞으로 겪을 일'과 같이 보내요.
-    timing: SITUATION_TIMING[situation] ?? 'PAST',
+    timing,
     category,
     ...(category === 'OTHER' ? { customCategory: description.slice(0, CUSTOM_CATEGORY_MAX) } : {}),
     description,
-    reactions: reaction ? ['OTHER'] : [],
-    ...(reaction ? { customReaction: reaction } : {}),
+    reactions: sendReaction ? ['OTHER'] : [],
+    ...(sendReaction ? { customReaction: reaction } : {}),
     emotions: [],
   };
 }

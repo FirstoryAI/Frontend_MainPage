@@ -28,7 +28,8 @@ async function loadDrafts() {
   return Promise.all(
     drafts.map(async (story) => {
       const draft = await getDraft(story.id).catch(() => null);
-      const concern = draft?.parent?.concern?.trim();
+      // 목록 제목은 알아보기 쉬운 상황 설명으로 해요. (없으면 인터뷰가 정리한 부모 고민)
+      const concern = (draft?.situation?.description || draft?.parent?.concern)?.trim();
       return {
         id: story.id,
         title: concern ? (concern.length > 28 ? `${concern.slice(0, 28)}…` : concern) : '새로운 동화',

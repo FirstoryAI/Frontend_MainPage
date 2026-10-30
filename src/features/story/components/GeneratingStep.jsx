@@ -1,4 +1,3 @@
-import { useEffect, useState } from 'react';
 import { useNavigate } from 'react-router-dom';
 import CtaButton from '../../../components/ui/CtaButton';
 import runner from '../../../assets/images/story-runner.png';
@@ -9,7 +8,6 @@ import glyphBook from '../../../assets/icons/step-book.svg';
 import glyphPencil from '../../../assets/icons/step-pencil.svg';
 import glyphBrush from '../../../assets/icons/step-brush.svg';
 import glyphCheck from '../../../assets/icons/step-check.svg';
-import { getCurrentMember } from '../../../services/homeApi';
 import iconHomeWhite from '../../../assets/icons/icon-home-white.svg';
 import styles from './GeneratingStep.module.css';
 
@@ -40,21 +38,6 @@ function lineClass(index, stage) {
 // stage: 지금 단계(0~2). 진행 상태는 StoryGenerationProvider가 앱 전체에서 관리해요.
 function GeneratingStep({ stage }) {
   const navigate = useNavigate();
-  const [phone, setPhone] = useState('');
-
-  // 알림 받을 번호는 가려진 형태(010-****-5678)로 내 정보에서 가져와요.
-  useEffect(() => {
-    let active = true;
-    getCurrentMember()
-      .then((member) => {
-        if (active) setPhone(member.phoneMasked ?? '');
-      })
-      .catch(() => {});
-    return () => {
-      active = false;
-    };
-  }, []);
-
   return (
     <div className={styles.step}>
       <div className={styles.stepper}>
@@ -102,15 +85,6 @@ function GeneratingStep({ stage }) {
 
       <div className={styles.card}>
         <p className={styles.cardText}>다 되면 카카오톡으로 알려드려요</p>
-        <p className={styles.phone}>{phone}</p>
-        <button
-          className={styles.changeButton}
-          type="button"
-          disabled
-          title="번호 변경 화면이 준비되면 연결됩니다"
-        >
-          번호 바꾸기
-        </button>
       </div>
 
       <div className={styles.footer}>
