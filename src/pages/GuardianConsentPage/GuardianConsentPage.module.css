@@ -14,7 +14,7 @@
   top: 89px;
   left: 50%;
   width: 785px;
-  height: 684px;
+  height: 596px;
   overflow: hidden;
   background: var(--color-surface);
   border-radius: 24px;
@@ -138,7 +138,7 @@
 
 .submitButton {
   position: absolute;
-  top: 583px;
+  top: 495px;
   left: 95px;
   width: 595px;
   height: 63px;
@@ -156,7 +156,7 @@
 
 .errorMessage {
   position: absolute;
-  top: 535px;
+  top: 566px;
   left: 95px;
   right: 95px;
   margin: 0;
