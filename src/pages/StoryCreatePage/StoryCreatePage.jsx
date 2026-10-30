@@ -719,10 +719,8 @@ function StoryCreatePage() {
 
       <main className={styles.main} inert={editing !== null}>
         {toneOpen && <BackButton onClick={() => closeTone(null)} />}
-        {/* AI 인터뷰가 진행되는 동안에는 뒤로가기가 없어요. 이미 끝난 인터뷰를 다시 볼 때만 앞 단계로 돌아갈 수 있어요. */}
-        {!toneOpen && step > STEP.SITUATION && step < STEP.GENERATING && !(step === STEP.CHAT && !interviewDone) && (
-          <BackButton onClick={goBack} />
-        )}
+        {/* AI 인터뷰부터(채팅, 생성 전 확인)는 뒤로가기가 없어요. 확인 화면은 '수정하기'로 고쳐요. */}
+        {!toneOpen && step > STEP.SITUATION && step < STEP.CHAT && <BackButton onClick={goBack} />}
 
         {toneOpen && <ToneStep category={detail.category} selected={selectedTone} onSelect={setSelectedTone} />}
 
