@@ -1,12 +1,13 @@
-import { useEffect, useState } from 'react';
+import { useEffect, useRef, useState } from 'react';
 import { Link, useNavigate } from 'react-router-dom';
 import Header from '../../components/layout/Header';
 import { useSignupDraft } from '../../features/auth/SignupDraftContext';
-import { sendPhoneVerificationCode, verifyPhoneCode } from '../../services/authApi';
+import { checkEmail, sendPhoneVerificationCode, verifyPhoneCode } from '../../services/authApi';
 import styles from './EmailSignUpPage.module.css';
 
 const EMAIL_PATTERN = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
 const PASSWORD_PATTERN = /^(?=.*[A-Za-z])(?=.*\d).{8,64}$/;
+const EMAIL_TAKEN_MESSAGE = '이미 가입된 이메일이에요.';
 
 const formatPhone = (value) => {
   const digits = value.replace(/\D/g, '').slice(0, 11);
@@ -27,6 +28,10 @@ function EmailSignUpPage() {
   const [email, setEmail] = useState(signupDraft?.email ?? '');
   const [password, setPassword] = useState(signupDraft?.password ?? '');
   const [accountError, setAccountError] = useState('');
+  const [checkingEmail, setCheckingEmail] = useState(false);
+  // 이메일마다 중복 확인 결과를 한 번만 받아 와요. (같은 이메일로 입력란을 벗어나고 다음을 눌러도 서버에는 한 번만 물어요)
+  const emailChecks = useRef(new Map());
+  const typedEmail = useRef(signupDraft?.email ?? '');
 
   const [phone, setPhone] = useState(signupDraft?.phone ?? '');
   const [code, setCode] = useState('');
@@ -56,8 +61,34 @@ function EmailSignUpPage() {
     return () => window.clearInterval(timer);
   }, [secondsLeft, resendWait]);
 
-  const handleAccountSubmit = (event) => {
+  // 가입된 이메일이면 false, 쓸 수 있으면 true예요. 확인하지 못하면(네트워크 오류, 너무 자주 확인 등) null이고,
+  // 그때는 막지 않아요. 마지막 가입 단계에서 서버가 한 번 더 확인해요.
+  const lookupEmail = (value) => {
+    const key = value.toLowerCase();
+    if (!emailChecks.current.has(key)) {
+      const request = checkEmail(value)
+        .then((result) => result.available)
+        .catch(() => {
+          emailChecks.current.delete(key);
+          return null;
+        });
+      emailChecks.current.set(key, request);
+    }
+    return emailChecks.current.get(key);
+  };
+
+  // 이메일 입력란을 벗어날 때 미리 알려줘요.
+  const handleEmailBlur = async () => {
+    const value = email.trim();
+    if (!EMAIL_PATTERN.test(value)) return;
+
+    const available = await lookupEmail(value);
+    if (available === false && typedEmail.current.trim() === value) setAccountError(EMAIL_TAKEN_MESSAGE);
+  };
+
+  const handleAccountSubmit = async (event) => {
     event.preventDefault();
+    if (checkingEmail) return;
 
     const trimmedEmail = email.trim();
     if (!trimmedEmail) {
@@ -74,6 +105,14 @@ function EmailSignUpPage() {
     }
     if (!PASSWORD_PATTERN.test(password)) {
       setAccountError('영문과 숫자를 포함해 8~64자로 입력해 주세요.');
+      return;
+    }
+
+    setCheckingEmail(true);
+    const available = await lookupEmail(trimmedEmail);
+    setCheckingEmail(false);
+    if (available === false) {
+      setAccountError(EMAIL_TAKEN_MESSAGE);
       return;
     }
 
@@ -226,9 +265,11 @@ function EmailSignUpPage() {
                 placeholder="name@example.com"
                 value={email}
                 onChange={(event) => {
+                  typedEmail.current = event.target.value;
                   setEmail(event.target.value);
                   setAccountError('');
                 }}
+                onBlur={handleEmailBlur}
               />
 
               <label className={styles.label} htmlFor="password">
@@ -256,8 +297,8 @@ function EmailSignUpPage() {
                 </p>
               )}
 
-              <button className={styles.submitButton} type="submit">
-                다음
+              <button className={styles.submitButton} type="submit" disabled={checkingEmail}>
+                {checkingEmail ? '확인하는 중…' : '다음'}
               </button>
             </form>
           ) : (

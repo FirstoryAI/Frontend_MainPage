@@ -33,7 +33,7 @@ function StoryPreviewPage({ initialRemakeOpen = false }) {
   const scale = useSceneScale();
   const [preview, setPreview] = useState(null);
   // 동화 줄거리(상세)와 대화 가이드예요. 가이드는 확정 전(REVIEWING)에도 받을 수 있어요.
-  const [summary, setSummary] = useState('');
+  const [synopsis, setSynopsis] = useState('');
   const [guide, setGuide] = useState(null);
   const [guideFailed, setGuideFailed] = useState(false);
   const [loadError, setLoadError] = useState('');
@@ -49,7 +49,7 @@ function StoryPreviewPage({ initialRemakeOpen = false }) {
       .then((result) => active && setPreview(result))
       .catch((error) => active && setLoadError(error.message || '미리보기를 불러오지 못했어요.'));
     getStoryDetail(storyId)
-      .then((detail) => active && setSummary(detail.summary ?? ''))
+      .then((detail) => active && setSynopsis(detail.synopsis ?? ''))
       .catch(() => {});
     getGuide(storyId)
       .then((result) => active && setGuide(result))
@@ -227,7 +227,7 @@ function StoryPreviewPage({ initialRemakeOpen = false }) {
         <aside className={styles.storyInfo} inert={isRemakeOpen}>
           <section>
             <h2>동화 설명</h2>
-            <p>{pageGuide?.description || summary || title}</p>
+            <p>{pageGuide?.description || synopsis || title}</p>
           </section>
           <section>
             <h2>부모를 위한 가이드</h2>
