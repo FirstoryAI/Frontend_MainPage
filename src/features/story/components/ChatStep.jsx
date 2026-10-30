@@ -3,13 +3,15 @@ import CtaButton from '../../../components/ui/CtaButton';
 import { CHAT_INTRO } from '../categoryContent';
 import { answerInterview } from '../../../services/storiesApi';
 import { extractChoices } from '../interviewChoices';
+import { INTERVIEW_QUESTION_LIMIT } from '../constants';
 import avatar from '../../../assets/images/chat-avatar.png';
 import sendCircle from '../../../assets/icons/send-circle.svg';
 import sendArrow from '../../../assets/icons/send-arrow.svg';
 import styles from './ChatStep.module.css';
 
 // 서버가 '넘어가기'를 계속 받아 줄 때 무한히 돌지 않도록 두는 한도예요.
-const MAX_SKIPS = 8;
+// 질문이 최대 15개라서 그보다 조금 넉넉하게 잡아요.
+const MAX_SKIPS = INTERVIEW_QUESTION_LIMIT + 5;
 const ERROR_TEXT = '잠시 문제가 생겼어요. 다시 보내 주세요.';
 
 // 만들던 인터뷰(turns: [{ question, answer }])를 대화 말풍선으로 바꿔요. 마지막 질문은 아직 답이 없어요.

@@ -55,6 +55,9 @@ export const STEP = {
   COMPLETE: 7,
 };
 
+// AI 인터뷰 질문은 최대 15개예요. 질문 수를 화면에 고정해서 보여주지 않고, 이 값은 '넘어가기'를 반복하는 한도를 정할 때만 써요.
+export const INTERVIEW_QUESTION_LIMIT = 15;
+
 // 헤더 진행 바 채움 길이(트랙 862px 기준). 상황·설명·아이 정보·마무리는 Figma 값이고,
 // 채팅(715)은 Figma 값이고, 이야기(600)는 디자인에 값이 없어 이전 단계보다 더 차게 잡았어요. 동화 만드는 중 화면은 진행 바가 없어요.
 const PROGRESS_TRACK = 862;
