@@ -6,7 +6,8 @@ import { checkEmail, sendPhoneVerificationCode, verifyPhoneCode } from '../../se
 import styles from './EmailSignUpPage.module.css';
 
 const EMAIL_PATTERN = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
-const PASSWORD_PATTERN = /^(?=.*[A-Za-z])(?=.*\d).{8,64}$/;
+const PASSWORD_PATTERN = /^(?=.*[A-Za-z])(?=.*\d)(?=.*[!@#$%^&*()_+\-=\[\]:;,.?\/\\])[A-Za-z\d!@#$%^&*()_+\-=\[\]:;,.?\/\\]{8,20}$/;
+const PASSWORD_ALLOWED_SPECIALS = '!@#$%^&*()_+-=[]:;,.?/\\';
 const EMAIL_TAKEN_MESSAGE = '이미 가입된 이메일이에요.';
 
 const formatPhone = (value) => {
@@ -103,8 +104,12 @@ function EmailSignUpPage() {
       setAccountError('비밀번호를 입력해 주세요.');
       return;
     }
+    if ([...password].some((character) => !/[A-Za-z0-9]/.test(character) && !PASSWORD_ALLOWED_SPECIALS.includes(character))) {
+      setAccountError('사용할 수 없는 문자가 포함되어 있습니다.');
+      return;
+    }
     if (!PASSWORD_PATTERN.test(password)) {
-      setAccountError('영문과 숫자를 포함해 8~64자로 입력해 주세요.');
+      setAccountError('8~20자 사이 / 영문·숫자·특수기호 1개 이상씩 포함해 주세요.');
       return;
     }
 
@@ -281,16 +286,14 @@ function EmailSignUpPage() {
                 name="password"
                 type="password"
                 autoComplete="new-password"
-                placeholder="비밀번호"
-                maxLength={64}
+                placeholder="8~20자 사이 / 영문·숫자·특수기호 1개 이상씩 포함"
+                maxLength={20}
                 value={password}
                 onChange={(event) => {
                   setPassword(event.target.value);
                   setAccountError('');
                 }}
               />
-              <p className={styles.hint}>영문과 숫자를 포함해 8~64자로 입력해 주세요.</p>
-
               {(accountError || signupFeedback) && (
                 <p className={styles.error} role="alert">
                   {accountError || signupFeedback.message}
