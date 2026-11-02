@@ -14,13 +14,15 @@
 
 /* 표지는 Figma(335×328) 크기에 맞춰 넣고, 주황빛 그림자를 둘러요. */
 .cover {
-  width: min(335px, 80vw);
-  aspect-ratio: 1;
+  width: min(calc(335px + 8px), calc(80vw + 8px));
+  height: min(335px, 80vw);
   overflow: hidden;
   box-shadow: 0 0 37.6px 2px rgb(232 146 111 / 36%);
 }
 .cover[data-cover-ratio='wide'] {
+  width: min(335px, 80vw);
   aspect-ratio: 16 / 9;
+  height: auto;
 }
 
 .crop {

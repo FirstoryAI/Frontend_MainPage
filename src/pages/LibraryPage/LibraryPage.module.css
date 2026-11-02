@@ -140,13 +140,24 @@
   background: #fff0ed;
 }
 
-.cover {
+.coverFrame {
   box-sizing: border-box;
   flex: none;
   display: block;
   width: 201px;
-  height: 201px;
+  height: 193px;
   margin: 12px 0 0 3.4px;
+}
+
+.coverFrame[data-cover-ratio='wide'] {
+  height: 201px;
+}
+
+.cover {
+  box-sizing: border-box;
+  display: block;
+  width: 100%;
+  height: 100%;
   object-fit: cover;
   pointer-events: none;
   user-select: none;
@@ -156,7 +167,7 @@
   box-sizing: border-box;
   flex: none;
   width: calc(100% - 14px);
-  margin: 8px 7px 0;
+  margin: 16px 7px 0;
   overflow: hidden;
   color: #484848;
   font-size: 18.672px;
