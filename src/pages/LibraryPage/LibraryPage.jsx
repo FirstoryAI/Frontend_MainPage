@@ -8,6 +8,8 @@ import avatarCircle from '../../assets/icons/avatar-circle.svg';
 import avatarPerson from '../../assets/icons/avatar-person.svg';
 import bookCover from '../../assets/images/library-cover-sample.png';
 import SafeImage from '../../features/story/components/SafeImage';
+import { setCoverFrameRatio } from '../../features/story/coverLayout';
+import bookCoverStyles from '../../features/story/components/BookCover.module.css';
 import { getHome } from '../../services/homeApi';
 import { getStories } from '../../services/libraryApi';
 import { retryStory } from '../../services/storiesApi';
@@ -190,12 +192,23 @@ function LibraryPage() {
                     <span className={`${styles.badge} ${styles[groupClasses[group]] || ''}`}>
                       {story.label || groupLabels[group] || '동화'}
                     </span>
-                    <SafeImage
-                      className={styles.cover}
-                      src={story.coverUrl}
-                      alt={story.title ? `${story.title} 표지` : '동화 표지'}
-                      fallback={<img className={styles.cover} src={bookCover} alt={story.title ? `${story.title} 표지` : '동화 표지'} />}
-                    />
+                    <div
+                      className={`${styles.coverFrame} ${bookCoverStyles.bookCover}`}
+                      data-cover-frame
+                      style={{ '--cover': `url(${JSON.stringify(story.coverUrl || bookCover)})` }}
+                    >
+                      <div className={bookCoverStyles.bookFace}>
+                        <div className={bookCoverStyles.bookArt}>
+                          <SafeImage
+                            className={styles.cover}
+                            onLoad={setCoverFrameRatio}
+                            src={story.coverUrl}
+                            alt={story.title ? `${story.title} 표지` : '동화 표지'}
+                            fallback={<img className={styles.cover} src={bookCover} alt={story.title ? `${story.title} 표지` : '동화 표지'} />}
+                          />
+                        </div>
+                      </div>
+                    </div>
                     <h2 className={styles.storyTitle}>
                       {group !== 'FAILED' ? (
                         <button className={styles.storyOpen} type="button" onClick={() => openStory(story)}>
