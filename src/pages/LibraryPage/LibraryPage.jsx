@@ -6,7 +6,7 @@ import NotificationBell from '../../components/layout/NotificationBell';
 import StorySavedModal from '../../features/library/components/StorySavedModal';
 import avatarCircle from '../../assets/icons/avatar-circle.svg';
 import avatarPerson from '../../assets/icons/avatar-person.svg';
-import bookCover from '../../assets/images/library-book-cover.png';
+import bookCover from '../../assets/images/library-cover-sample.png';
 import SafeImage from '../../features/story/components/SafeImage';
 import { getHome } from '../../services/homeApi';
 import { getStories } from '../../services/libraryApi';

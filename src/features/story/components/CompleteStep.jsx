@@ -1,5 +1,6 @@
 import { useNavigate } from 'react-router-dom';
 import SafeImage from './SafeImage';
+import { setCoverFrameRatio } from '../coverLayout';
 import styles from './CompleteStep.module.css';
 
 // '○○을 위한 동화'의 ○○ 자리에는 아이 이름이 들어갈 수 있지만, 서비스는 아이 이름을 받지 않아서 '우리 아이'로 보여줘요.
@@ -12,10 +13,11 @@ function CompleteStep({ storyId, title, coverUrl }) {
   return (
     <div className={styles.step}>
       <figure className={styles.book}>
-        <div className={styles.cover}>
+        <div className={styles.cover} data-cover-frame>
           <div className={styles.crop}>
             <SafeImage
               className={styles.image}
+              onLoad={setCoverFrameRatio}
               src={coverUrl}
               alt={`${title} 동화책 표지`}
               fallback={<div className={styles.placeholder} aria-hidden="true" />}

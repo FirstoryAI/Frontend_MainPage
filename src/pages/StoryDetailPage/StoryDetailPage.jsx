@@ -6,7 +6,7 @@ import avatarCircle from '../../assets/icons/avatar-circle.svg';
 import avatarPerson from '../../assets/icons/avatar-person.svg';
 import iconTrash from '../../assets/icons/icon-trash.svg';
 import iconClose from '../../assets/remake/header-close.svg';
-import bookCover from '../../assets/images/library-book-cover.png';
+import bookCover from '../../assets/images/library-cover-sample.png';
 import SafeImage from '../../features/story/components/SafeImage';
 import StoryReader from '../../features/story/components/StoryReader';
 import readerStyles from '../../features/story/components/StoryReader.module.css';
@@ -20,6 +20,7 @@ import {
 } from '../../services/readingApi';
 import styles from './StoryDetailPage.module.css';
 import ErrorText from '../../components/ui/ErrorText';
+import { setCoverFrameRatio } from '../../features/story/coverLayout';
 
 // 읽기 가이드를 아직 못 받았을 때 대신 보여주는 기본 안내예요.
 const FALLBACK_BEFORE = [
@@ -207,9 +208,10 @@ function StoryDetailPage() {
 
           <div className={styles.detail}>
             <section className={styles.bookColumn} aria-label="동화 표지">
-              <div className={styles.cover}>
+              <div className={styles.cover} data-cover-frame>
                 <SafeImage
                   className={styles.coverFull}
+                  onLoad={setCoverFrameRatio}
                   src={coverUrl}
                   alt={`${title} 표지`}
                   fallback={<img className={styles.coverCrop} src={bookCover} alt={`${title} 표지`} />}
