@@ -674,7 +674,11 @@ export function startMockApi({ port = Number(process.env.MOCK_API_PORT) || 8787,
       const session = user.readingSessions.get(Number(params.sessionId));
       if (!session) return error(res, 404, 'SESSION_NOT_FOUND', '읽기 세션을 찾을 수 없어요.');
       if (session.done) return error(res, 409, 'INVALID_STATUS_TRANSITION', '이미 끝난 읽기예요.');
-      if (!(body.page >= 1 && body.page <= 8)) return invalid(res, [['page', '1~8쪽 사이여야 해요.']]);
+      const story = user.stories.get(session.storyId);
+      const pageCount = currentVersion(story)?.pages.length ?? 0;
+      if (!Number.isInteger(body.page) || body.page < 1 || body.page > pageCount) {
+        return invalid(res, [['page', `1~${pageCount}쪽 사이여야 해요.`]]);
+      }
       session.lastPage = body.page;
       return empty(res);
     }
