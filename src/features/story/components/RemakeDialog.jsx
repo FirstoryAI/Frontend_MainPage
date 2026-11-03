@@ -14,7 +14,7 @@ const remakeOptions = [
   {
     value: 'text',
     title: '글',
-    description: '줄거리는 그대로 두고 문장을 다시 써요. 그림도 새로 그려요.',
+    description: '줄거리는 그대로 두고 문장을 다시 써요. 바뀐 장면의 그림만 새로 그려요.',
   },
   {
     value: 'image',
@@ -39,9 +39,10 @@ function RadioMark({ checked }) {
 // 미리보기 위에 뜨는 '어떤 부분을 다시 만들까요?' 팝업이에요.
 // 1440×960 미리보기 화면(캔버스) 안에 놓이도록 만들었어요. 좁은 화면에서는 화면 전체 기준으로 떠요.
 // onRemake({ type, request })는 다시 만들 수 없으면 이유(문장)를, 시작했으면 아무것도 돌려주지 않아요.
-function RemakeDialog({ onClose, onRemake }) {
+function RemakeDialog({ onClose, onRemake, pages = [] }) {
   const dialogRef = useRef(null);
   const [selectedOption, setSelectedOption] = useState('');
+  const [selectedPages, setSelectedPages] = useState([]);
   const [request, setRequest] = useState('');
   const [submitting, setSubmitting] = useState(false);
   const [error, setError] = useState('');
@@ -68,7 +69,11 @@ function RemakeDialog({ onClose, onRemake }) {
 
     setSubmitting(true);
     setError('');
-    const message = await onRemake({ type: selectedOption, request: request.trim() });
+    const message = await onRemake({
+      type: selectedOption,
+      request: request.trim(),
+      ...(selectedOption === 'image' ? { pages: selectedPages } : {}),
+    });
     setSubmitting(false);
     if (message) setError(message);
   };
@@ -78,7 +83,7 @@ function RemakeDialog({ onClose, onRemake }) {
       <div className={styles.backdrop} />
 
       <section
-        className={styles.dialog}
+        className={`${styles.dialog} ${selectedOption === 'image' ? styles.dialogWithPages : ''}`}
         ref={dialogRef}
         tabIndex={-1}
         role="dialog"
@@ -121,6 +126,31 @@ function RemakeDialog({ onClose, onRemake }) {
             );
           })}
         </fieldset>
+
+        {selectedOption === 'image' && (
+          <fieldset className={styles.pageSelection}>
+            <legend>다시 그릴 쪽 선택</legend>
+            <p className={styles.pageSelectionHint}>선택하지 않으면 전체 쪽을 다시 그려요.</p>
+            <div className={styles.pageGrid}>
+              {pages.map(({ pageNo }) => {
+                const checked = selectedPages.includes(pageNo);
+                return (
+                  <label className={styles.pageOption} key={pageNo}>
+                    <input
+                      type="checkbox"
+                      value={pageNo}
+                      checked={checked}
+                      onChange={() => setSelectedPages((current) => (
+                        checked ? current.filter((item) => item !== pageNo) : [...current, pageNo]
+                      ))}
+                    />
+                    <span>{pageNo}쪽</span>
+                  </label>
+                );
+              })}
+            </div>
+          </fieldset>
+        )}
 
         <div className={styles.requestField}>
           <label htmlFor="remake-request">
