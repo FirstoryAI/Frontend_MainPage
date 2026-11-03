@@ -130,7 +130,7 @@ function StoryCreatePage() {
   // 입력을 저장할 때 서버가 막았다고(BLOCK) 알려 주면, 그때의 입력을 기억해 둬요. 화면에는 아무것도 보여주지 않고,
   // 같은 입력으로 '동화 만들기'를 눌렀을 때 비로소 안내 화면을 보여줘요. 입력이 바뀌면 다시 서버에 보내 새로 판단해요.
   const blockedKey = useRef(null);
-  // 마지막으로 인터뷰한 때의 입력(상황·아이·전하고 싶은 말)이에요. 뒤로 가서 이 입력이 바뀌면 인터뷰를 새로 해요.
+  // 마지막으로 인터뷰한 때의 입력(상황·아이·전하고 싶은 말)이에요. 수정 후 같은 인터뷰를 유지할지 확인할 때 써요.
   const interviewedKey = useRef(null);
   const [storyId, setStoryId] = useState(generationStoryId);
 
@@ -349,7 +349,7 @@ function StoryCreatePage() {
   // 위기 신호 검사 결과를 처리해요. 계속 진행해도 되면 true예요.
   // 입력을 저장할 때 서버가 막아도(BLOCK) 입력 단계에서는 아무것도 보여주지 않아요. 아이 안전 안내 화면은 '동화 만들기'를 눌렀을 때만 보여줘요.
   // 막힌 동화는 서버에 더 보낼 수 없어서, 입력이 그대로인 동안은 서버 호출 없이 화면만 이어가요(isHiddenBlocked).
-  // 분위기 선택(CHOOSE_TONE)은 서버 판단으로 띄우지 않아요. 이별·죽음 상황에서만 따로 물어봐요.
+  // 서버가 분위기를 골라 달라고 하면 동화 만들기 전에 분위기 선택 단계를 열어요.
   const checkSafety = (response, changed = {}) => {
     if (response.toneRequired) updateSession({ toneRequired: true });
 
@@ -369,22 +369,15 @@ function StoryCreatePage() {
       setNotice(safety.reason || '표현을 조금 바꿔서 다시 써 주세요.');
       return false;
     }
-    if (safety.action === 'CHOOSE_TONE') updateSession({ toneRequired: true });
+    if (safety.action === 'CHOOSE_TONE') updateSession({ toneRequired: true, tone: null });
     return true;
   };
 
-  // 서버가 분위기를 꼭 골라야 한다고 하는데 이 화면에서는 고르지 않았다면, '아직 잘 모르겠어요'(부드럽게 만들기)로 정해 둬요.
-  const ensureTone = async () => {
-    if (session.current.tone) return;
-    await saveTone(session.current.id, 'UNDECIDED');
-    updateSession({ tone: 'UNDECIDED' });
-  };
-
-  // 서버에 이 단계까지 입력한 동화가 DRAFT로 있게 해요. 새로 만들었으면 true예요.
-  // 인터뷰를 시작한 동화는 뒤로 가서 입력이 바뀌면 인터뷰도 다시 해야 해서, 지우고 새로 만들어요.
-  const ensureDraftStory = async () => {
+  // 서버에 이 단계까지 입력한 동화가 DRAFT 또는 CONFIRMING 상태로 있게 해요. 새로 만들었으면 true예요.
+  // CONFIRMING 상태에서도 입력 수정 API를 사용할 수 있으므로, 인터뷰를 다시 시작하지 않고 기존 동화를 고쳐요.
+  const ensureEditableStory = async () => {
     const current = session.current;
-    if (current.id && current.status === 'DRAFT') return false;
+    if (current.id && ['DRAFT', 'CONFIRMING'].includes(current.status)) return false;
 
     if (current.id) await deleteStory(current.id).catch(() => {});
     const created = await createStory();
@@ -432,7 +425,7 @@ function StoryCreatePage() {
 
     try {
       blockedKey.current = null;
-      const fresh = await ensureDraftStory();
+      const fresh = await ensureEditableStory();
       for (const name of FLOW_STEPS.slice(0, FLOW_STEPS.indexOf(upto) + 1)) {
         if (!fresh && name !== upto) continue;
         if (!(await checkSafety(await putStep(name)))) return false;
@@ -441,7 +434,8 @@ function StoryCreatePage() {
       return true;
     } catch (error) {
       // 다른 곳에서 지워졌거나 상태가 바뀐 동화면 새로 만들어서 한 번 더 시도해요.
-      if (!retried && (error.status === 404 || error.status === 409)) {
+      // 단, 인터뷰가 끝난 동화는 수정 API가 실패해도 삭제·재생성하거나 인터뷰를 다시 하지 않아요.
+      if (session.current.status !== 'CONFIRMING' && !retried && (error.status === 404 || error.status === 409)) {
         updateSession(emptySession());
         return syncStory(upto, true);
       }
@@ -488,7 +482,7 @@ function StoryCreatePage() {
   const handleNext = async () => {
     if (busy) return;
 
-    // 인터뷰를 한 뒤 뒤로 와서 입력을 하나도 안 바꿨다면 서버에 다시 저장하지 않고 그대로 이어가요.
+    // 인터뷰가 끝난 뒤에는 수정한 입력만 저장하고, 인터뷰는 다시 시작하지 않아요.
     const interviewKept =
       ['INTERVIEWING', 'CONFIRMING'].includes(session.current.status) && interviewedKey.current === currentKey();
 
@@ -512,6 +506,15 @@ function StoryCreatePage() {
       if (interviewKept) {
         // 채팅으로 정리한 동화는 그 대화를 다시 보여주고, 직접 적은 동화는 바로 마무리 화면으로 가요.
         goTo(topic.undecided ? STEP.CHAT : STEP.SUMMARY);
+        return;
+      }
+      if (session.current.status === 'CONFIRMING') {
+        // 인터뷰가 끝난 뒤 입력을 고쳤다면 기존 요약을 유지하고, 바뀐 입력만 저장해요.
+        const saved = await run(() => syncStory('message'));
+        if (saved) {
+          interviewedKey.current = currentKey();
+          goTo(STEP.SUMMARY);
+        }
         return;
       }
       // 입력이 새로 바뀌었으면 인터뷰를 새로 해요. '아직 잘 모르겠어요'는 AI 채팅으로, 직접 적었다면 바로 마무리 화면으로 가요.
@@ -583,13 +586,13 @@ function StoryCreatePage() {
       }
 
       const id = session.current.id;
-      if (session.current.toneRequired) await ensureTone();
+      if (session.current.toneRequired && !session.current.tone && !(await pickTone())) return false;
 
       try {
         await confirmStory(id);
       } catch (error) {
         if (error.code !== 'TONE_REQUIRED') throw error;
-        await ensureTone();
+        if (!(await pickTone())) return false;
         await confirmStory(id);
       }
       return true;
