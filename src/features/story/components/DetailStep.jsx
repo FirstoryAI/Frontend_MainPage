@@ -1,6 +1,6 @@
 import MascotBubble from './MascotBubble';
 import Chip from './Chip';
-import { EVENT_MAX_LENGTH, REACTION_MAX_LENGTH, categories } from '../constants';
+import { EVENT_MAX_LENGTH, REACTION_MAX_LENGTH, categories, lockedCategories } from '../constants';
 import { getCategoryContent } from '../categoryContent';
 import detailMascot from '../../../assets/images/story-detail-mascot.png';
 import form from './FormControls.module.css';
@@ -45,17 +45,23 @@ function DetailStep({ situation, detail, onChange }) {
           어떤 일인가요?
         </p>
         <div className={styles.chips} role="radiogroup" aria-labelledby="category-label">
-          {categories.map((category) => (
-            <Chip
-              key={category}
-              name="category"
-              value={category}
-              checked={detail.category === category}
-              onChange={() => onChange({ category })}
-            >
-              {category}
-            </Chip>
-          ))}
+          {categories.map((category) => {
+            const locked = lockedCategories.includes(category);
+
+            return (
+              <Chip
+                key={category}
+                name="category"
+                value={category}
+                checked={detail.category === category}
+                disabled={locked}
+                onChange={() => onChange({ category })}
+              >
+                {category}
+                {locked && <span className={styles.soon}>준비 중</span>}
+              </Chip>
+            );
+          })}
         </div>
       </div>
 

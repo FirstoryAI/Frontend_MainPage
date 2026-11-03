@@ -46,6 +46,13 @@
   gap: 20px;
 }
 
+/* 잠긴 주제(준비 중) 옆에 붙는 표시예요. */
+.soon {
+  margin-left: 8px;
+  font-size: 13px;
+  letter-spacing: 0;
+}
+
 .textarea {
   height: 87px;
 }
