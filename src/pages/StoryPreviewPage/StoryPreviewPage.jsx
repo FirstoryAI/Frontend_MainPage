@@ -85,10 +85,11 @@ function StoryPreviewPage({ initialRemakeOpen = false }) {
   };
 
   // 다시 만들기를 시작하면 만드는 중 화면으로 가요. 못 하면 이유를 팝업에 돌려줘요.
-  const remake = async ({ type, request }) => {
+  const remake = async ({ type, request, pages: selectedPages = [] }) => {
     try {
       const response = await regenerateStory(storyId, {
         scope: REMAKE_SCOPES[type],
+        ...(type === 'image' ? { pages: selectedPages } : {}),
         ...(request ? { feedback: request } : {}),
       });
       const safety = response.safety;
@@ -253,7 +254,7 @@ function StoryPreviewPage({ initialRemakeOpen = false }) {
             </p>
           )}
         </div>
-        {isRemakeOpen && <RemakeDialog onClose={closeRemake} onRemake={remake} />}
+        {isRemakeOpen && <RemakeDialog pages={pages} onClose={closeRemake} onRemake={remake} />}
       </div>
       {isReaderOpen && (
         <StoryReader

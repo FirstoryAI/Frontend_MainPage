@@ -35,6 +35,12 @@
   box-shadow: 0 0 8.2px rgb(0 0 0 / 10%);
 }
 
+.dialogWithPages {
+  min-height: 0;
+  max-height: calc(100vh - 170px);
+  overflow-y: auto;
+}
+
 .dialogClose {
   position: absolute;
   top: 26px;
@@ -153,6 +159,69 @@
 .optionCardSelected .optionCopy strong,
 .optionCardSelected .optionCopy > span {
   color: var(--color-brand-light);
+}
+
+.pageSelection {
+  width: min(498px, 100%);
+  margin: 18px auto 0;
+  padding: 0;
+  border: 0;
+}
+
+.pageSelection legend {
+  padding: 0;
+  font-size: 17px;
+  font-weight: 600;
+}
+
+.pageSelectionHint {
+  margin: 5px 0 0;
+  color: var(--color-field-placeholder);
+  font-size: 14px;
+}
+
+.pageGrid {
+  display: grid;
+  grid-template-columns: repeat(5, minmax(0, 1fr));
+  gap: 8px;
+  margin-top: 11px;
+}
+
+.pageOption {
+  position: relative;
+  cursor: pointer;
+}
+
+.pageOption input {
+  position: absolute;
+  width: 1px;
+  height: 1px;
+  overflow: hidden;
+  clip: rect(0 0 0 0);
+  clip-path: inset(50%);
+  white-space: nowrap;
+}
+
+.pageOption span {
+  display: grid;
+  min-height: 38px;
+  color: var(--color-text);
+  background: #fff;
+  border: 1px solid var(--color-field-border-strong);
+  border-radius: 9px;
+  font-size: 14px;
+  place-items: center;
+}
+
+.pageOption input:checked + span {
+  color: var(--color-brand-light);
+  background: rgb(255 138 91 / 8%);
+  border-color: var(--color-brand-light);
+}
+
+.pageOption input:focus-visible + span {
+  outline: 3px solid rgb(255 138 91 / 35%);
+  outline-offset: 2px;
 }
 
 .requestField {
@@ -281,6 +350,10 @@
     border-radius: 20px;
   }
 
+  .dialogWithPages {
+    max-height: calc(100vh - 100px);
+  }
+
   .dialogClose {
     top: 16px;
     right: 16px;
@@ -317,6 +390,20 @@
   .optionCopy > span,
   .requestField textarea {
     font-size: 14px;
+  }
+
+  .pageSelection legend {
+    font-size: 15px;
+  }
+
+  .pageGrid {
+    grid-template-columns: repeat(5, minmax(0, 1fr));
+    gap: 6px;
+  }
+
+  .pageOption span {
+    min-height: 36px;
+    font-size: 13px;
   }
 
   .requestField {

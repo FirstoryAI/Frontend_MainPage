@@ -138,18 +138,29 @@ function coverSvg(title, hue) {
 
 const coverUrl = (story, version) => `/api/stories/${story.id}/versions/${version.id}/character-sheet`;
 
-function makeVersion(story, { scope = 'ALL', parent = null } = {}) {
+function makeVersion(story, { scope = 'ALL', parent = null, selectedPages = [] } = {}) {
   const versionNo = story.versions.length + 1;
+  const versionId = id();
+  const parentVersion = parent ? story.versions.find((version) => version.versionNo === parent) : null;
   const base = STORY_TITLES[story.situation?.category] ?? STORY_TITLES.OTHER;
+  const selectedPageNumbers = new Set(selectedPages);
+  const pages = scope === 'IMAGES' && parentVersion
+    ? parentVersion.pages.map((page) => ({
+        ...page,
+        imageVersionId: selectedPages.length === 0 || selectedPageNumbers.has(page.pageNo)
+          ? versionId
+          : page.imageVersionId ?? parentVersion.id,
+      }))
+    : PAGE_LINES.map((lines, index) => ({ pageNo: index + 1, text: lines.join('\n') }));
   const version = {
-    id: id(),
+    id: versionId,
     versionNo,
     parentVersionNo: parent,
     title: base,
     scope,
     createdAt: now(),
     hue: (versionNo * 47 + story.id * 29) % 360,
-    pages: PAGE_LINES.map((lines, index) => ({ pageNo: index + 1, text: lines.join('\n') })),
+    pages,
   };
   story.versions.push(version);
   story.currentVersionId = version.id;
@@ -160,11 +171,19 @@ function currentVersion(story) {
   return story.versions.find((version) => version.id === story.currentVersionId) ?? story.versions.at(-1);
 }
 
-const imageUrl = (story, version, pageNo) => `/api/stories/${story.id}/versions/${version.id}/pages/${pageNo}/image`;
+const imageUrl = (story, versionId, pageNo) => `/api/stories/${story.id}/versions/${versionId}/pages/${pageNo}/image`;
 
 function pageView(story, version) {
   // 그림 위 글 자리: 3쪽마다 위(TOP), 나머지는 아래(BOTTOM)로 번갈아 줘요. (서버는 그림 위나 아래 30%를 비워서 그려요)
-  return version.pages.map((page) => ({ ...page, imageStatus: 'DONE', imageUrl: imageUrl(story, version, page.pageNo), textPosition: page.pageNo % 3 === 0 ? 'TOP' : 'BOTTOM' }));
+  return version.pages.map((page) => {
+    const { imageVersionId, ...pageData } = page;
+    return {
+      ...pageData,
+      imageStatus: 'DONE',
+      imageUrl: imageUrl(story, imageVersionId ?? version.id, page.pageNo),
+      textPosition: page.pageNo % 3 === 0 ? 'TOP' : 'BOTTOM',
+    };
+  });
 }
 
 const STAGE_LABELS = ['', '이야기 짜는 중', '글 쓰는 중', '그림 그리는 중', '책으로 묶는 중'];
@@ -195,7 +214,11 @@ function tick(story) {
   }
   if (!story.gen.holdStage && elapsed >= STAGE_MS * 4) {
     story.status = 'REVIEWING';
-    makeVersion(story, { scope: story.gen.scope, parent: story.gen.parentVersionNo ?? null });
+    makeVersion(story, {
+      scope: story.gen.scope,
+      parent: story.gen.parentVersionNo ?? null,
+      selectedPages: story.gen.pages,
+    });
     story.updatedAt = now();
     return story;
   }
@@ -217,11 +240,12 @@ function generationResponse(story) {
   };
 }
 
-function startGeneration(story, { scope = 'ALL', parentVersionNo = null, failAt = null, holdStage = null } = {}) {
+function startGeneration(story, { scope = 'ALL', pages = [], parentVersionNo = null, failAt = null, holdStage = null } = {}) {
   story.gen = {
     runNo: (story.gen?.runNo ?? 0) + 1,
     startedAt: Date.now(),
     scope,
+    pages,
     parentVersionNo,
     failAt: failAt ?? (story.situation?.description?.includes('실패테스트') ? STAGE_MS * 2 : null),
     blockAt: story.situation?.description?.includes('생성차단') ? STAGE_MS * 2 : null,
@@ -909,12 +933,24 @@ export function startMockApi({ port = Number(process.env.MOCK_API_PORT) || 8787,
     if (method === 'POST' && section === 'regenerate') {
       if (story.status !== 'REVIEWING') return conflict();
       if (!['CHARACTER_STORY', 'TEXT', 'IMAGES'].includes(body.scope)) return invalid(res, [['scope', '다시 만들 부분을 골라 주세요.']]);
+      const pageCount = currentVersion(story).pages.length;
+      const pages = body.pages;
+      if (
+        body.scope === 'IMAGES' &&
+        (!Array.isArray(pages) || pages.some((page) => !Number.isInteger(page) || page < 1 || page > pageCount) || new Set(pages).size !== pages.length)
+      ) {
+        return error(res, 400, 'INVALID_PAGE_SELECTION', `다시 그릴 쪽을 1~${pageCount}쪽에서 골라 주세요.`);
+      }
       if (story.regenerateUsed >= 1) return error(res, 409, 'REGENERATE_LIMIT', '다시 만들기는 1회만 가능해요.');
       const safety = safetyCheck(body.feedback);
       if (safety.action === 'ASK_REVISE') return json(res, 202, step(story, safety, false));
       if (safety.action === 'BLOCK') { story.status = 'BLOCKED'; return json(res, 202, step(story, safety, false)); }
       story.regenerateUsed += 1;
-      startGeneration(story, { scope: body.scope, parentVersionNo: currentVersion(story).versionNo });
+      startGeneration(story, {
+        scope: body.scope,
+        pages: body.scope === 'IMAGES' ? pages : [],
+        parentVersionNo: currentVersion(story).versionNo,
+      });
       return json(res, 202, step(story, safety));
     }
     if (method === 'GET' && section === 'versions') {
