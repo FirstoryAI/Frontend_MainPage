@@ -25,6 +25,9 @@ export const categories = [
   '그 밖의 일',
 ];
 
+// 이야기 품질을 맞출 때까지 고를 수 없게 잠근 주제예요. 서버도 SEPARATION 저장을 막아요. 풀 때는 이 목록에서 빼면 돼요.
+export const lockedCategories = ['이별 · 죽음'];
+
 export const genders = ['남자아이', '여자아이', '밝히지 않을래요'];
 
 export const traits = [

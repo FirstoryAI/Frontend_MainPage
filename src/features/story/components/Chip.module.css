@@ -21,6 +21,13 @@
   outline-offset: 3px;
 }
 
+/* 잠긴(고를 수 없는) 칩이에요. */
+.chip:has(:disabled) {
+  color: var(--color-text-muted);
+  background: #f4f2f0;
+  cursor: not-allowed;
+}
+
 .selected {
   color: var(--color-surface);
   background: var(--color-chip-selected);

@@ -794,6 +794,8 @@ export function startMockApi({ port = Number(process.env.MOCK_API_PORT) || 8787,
     if (method === 'PUT' && section === 'situation') {
       if (!EDITABLE.includes(story.status)) return conflict();
       const fields = [];
+      // 이별·죽음 이야기는 품질을 맞출 때까지 서버가 막아요. (에러 코드는 백엔드가 정하는 대로 바꾸면 돼요)
+      if (body.category === 'SEPARATION') return error(res, 400, 'CATEGORY_NOT_AVAILABLE', '이 주제는 아직 준비 중이에요.');
       if (!CATEGORY_LABELS[body.category]) fields.push(['category', '어떤 일인지 골라 주세요.']);
       if (!['PAST', 'UPCOMING'].includes(body.timing)) fields.push(['timing', '언제 일인지 골라 주세요.']);
       if (body.timing === 'UPCOMING' && ((body.reactions?.length ?? 0) > 0 || (body.emotions?.length ?? 0) > 0 || body.customReaction)) return json(res, 400, { code: 'MOMENT_ONLY_FOR_PAST', message: '아이의 반응과 감정은 있었던 일에서만 고를 수 있어요.' });
