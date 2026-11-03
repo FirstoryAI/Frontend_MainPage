@@ -40,14 +40,14 @@ function ChildInfoModal({ child, onSave, onClose }) {
 
   useEffect(() => {
     const updateScale = () => {
-      const headerHeight = window.innerWidth <= 760
-        ? 76
-        : window.innerHeight <= 850 ? 88 : 109;
-      const widthScale = window.innerWidth <= 760
-        ? (window.innerWidth - 32) / 560
-        : window.innerWidth / 1440;
-      const heightScale = (window.innerHeight - headerHeight - 32) / 694;
-      setDialogScale(Math.max(0.4, Math.min(1, widthScale, heightScale)));
+      const isMobile = window.innerWidth <= 760;
+      const headerHeight = isMobile ? 76 : window.innerHeight <= 850 ? 88 : 109;
+      const horizontalMargin = isMobile ? 32 : 64;
+      const verticalMargin = 64;
+      const widthScale = (window.innerWidth - horizontalMargin) / 560;
+      const heightScale = (window.innerHeight - headerHeight - verticalMargin) / 694;
+      const maxScale = isMobile ? 1 : 0.86;
+      setDialogScale(Math.max(0.4, Math.min(maxScale, widthScale, heightScale)));
     };
     updateScale();
     window.addEventListener('resize', updateScale);
