@@ -15,5 +15,6 @@
 }
 
 .textarea:focus {
-  border-color: var(--color-secondary-green);
+  border: 3px solid var(--color-secondary-green);
+  outline: none;
 }
