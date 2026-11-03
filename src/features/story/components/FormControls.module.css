@@ -27,7 +27,8 @@
 }
 
 .control:focus {
-  border-color: var(--color-brand);
+  border: 3px solid var(--color-brand);
+  outline: none;
 }
 
 .textarea {

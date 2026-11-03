@@ -13,9 +13,22 @@ const traitRows = [
   ['고집이 있어요', '호기심이 많아요'],
 ];
 
+function getDialogScale() {
+  if (typeof window === 'undefined') return 1;
+
+  const isMobile = window.innerWidth <= 760;
+  const headerHeight = isMobile ? 76 : window.innerHeight <= 850 ? 88 : 109;
+  const horizontalMargin = isMobile ? 32 : 64;
+  const verticalMargin = 64;
+  const widthScale = (window.innerWidth - horizontalMargin) / 560;
+  const heightScale = (window.innerHeight - headerHeight - verticalMargin) / 694;
+  const maxScale = isMobile ? 1 : 0.86;
+  return Math.max(0.4, Math.min(maxScale, widthScale, heightScale));
+}
+
 function ChildInfoModal({ child, onSave, onClose }) {
   const closeButton = useRef(null);
-  const [dialogScale, setDialogScale] = useState(1);
+  const [dialogScale, setDialogScale] = useState(getDialogScale);
   const currentAge = calcAge(child?.birthYear, child?.birthMonth);
   const [age, setAge] = useState(currentAge === null ? '' : `만 ${currentAge}세`);
   const [selectedTraits, setSelectedTraits] = useState(child?.traits ?? []);
@@ -39,16 +52,7 @@ function ChildInfoModal({ child, onSave, onClose }) {
   }, [onClose]);
 
   useEffect(() => {
-    const updateScale = () => {
-      const headerHeight = window.innerWidth <= 760
-        ? 76
-        : window.innerHeight <= 850 ? 88 : 109;
-      const widthScale = window.innerWidth <= 760
-        ? (window.innerWidth - 32) / 560
-        : window.innerWidth / 1440;
-      const heightScale = (window.innerHeight - headerHeight - 32) / 694;
-      setDialogScale(Math.max(0.4, Math.min(1, widthScale, heightScale)));
-    };
+    const updateScale = () => setDialogScale(getDialogScale());
     updateScale();
     window.addEventListener('resize', updateScale);
     return () => window.removeEventListener('resize', updateScale);

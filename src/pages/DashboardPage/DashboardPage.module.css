@@ -22,7 +22,7 @@
   justify-content: flex-end;
   gap: 39.6px;
   height: 58.8px;
-  margin: 0 75.6px 0 0;
+  margin: 0 75px 0 0;
 }
 
 .avatar {
@@ -265,24 +265,12 @@
   }
 
   .main {
-    padding-top: clamp(16px, 5vh, 46px);
+    padding-top: 58.6px;
     padding-bottom: clamp(20px, 7vh, 62px);
   }
 
   .topbar {
-    height: clamp(40px, 6.2vh, 55px);
-  }
-
-  .avatar {
-    flex-basis: clamp(40px, 6.2vh, 58.8px);
-    width: clamp(40px, 6.2vh, 58.8px);
-    height: clamp(40px, 6.2vh, 58.8px);
-  }
-
-  .avatarButton {
-    flex-basis: clamp(40px, 6.2vh, 58.8px);
-    width: clamp(40px, 6.2vh, 58.8px);
-    height: clamp(40px, 6.2vh, 58.8px);
+    height: 58.8px;
   }
 
   .content {
