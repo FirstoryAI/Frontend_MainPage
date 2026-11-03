@@ -8,6 +8,7 @@
 
 .main {
   position: relative;
+  margin-top: var(--story-header-offset);
   display: flex;
   flex: 1 0 auto;
   flex-direction: column;

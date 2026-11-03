@@ -83,8 +83,18 @@
   --color-kakao-text: #381f1e;
   --header-height: 109px;
   --header-height-mobile: 76px;
+  /* 동화 만들기 화면의 상단바예요. 상단바가 줄어도 본문은 제자리에 있도록, 줄어든 만큼(offset)을 본문 위에 비워요. */
+  --story-header-height: 85.5px;
+  --story-header-offset: 29.5px;
   --z-content: 1;
   --z-header: 10;
+}
+
+@media (max-width: 900px) {
+  :root {
+    --story-header-height: 71px;
+    --story-header-offset: 0px;
+  }
 }
 
 @media (min-width: 761px) and (max-height: 850px) {
