@@ -96,7 +96,7 @@ function StoryPreviewPage({ initialRemakeOpen = false }) {
       if (safety?.action === 'ASK_REVISE') return safety.reason || '요청을 조금 바꿔서 다시 써 주세요.';
       if (safety?.action === 'BLOCK') return safety.reason || '이 요청으로는 다시 만들 수 없어요.';
 
-      startGeneration(Number(storyId));
+      startGeneration(Number(storyId), { scope: REMAKE_SCOPES[type] });
       navigate('/story/new', { state: { generation: { storyId: Number(storyId) } } });
       return '';
     } catch (error) {

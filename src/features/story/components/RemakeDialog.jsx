@@ -97,7 +97,7 @@ function RemakeDialog({ onClose, onRemake, pages = [] }) {
 
         <h2 id="remake-dialog-title">어떤 부분을 다시 만들까요?</h2>
         <p className={styles.dialogDescription} id="remake-dialog-description">
-          다시 만드는데 3~4분쯤 걸려요
+          {selectedOption === 'image' ? '그림만 다시 그리는 데 1분 안쪽 걸려요' : '다시 만드는데 3~4분쯤 걸려요'}
         </p>
 
         <fieldset className={styles.optionList}>

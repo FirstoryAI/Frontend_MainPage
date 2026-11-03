@@ -793,7 +793,7 @@ function StoryCreatePage() {
           />
         )}
         {!toneOpen && visibleStep === STEP.GENERATING && (
-          <GeneratingStep stage={activeJob?.stage ?? 0} />
+          <GeneratingStep stage={activeJob?.stage ?? 0} scope={activeJob?.scope} />
         )}
         {!toneOpen && visibleStep === STEP.COMPLETE && <CompleteStep storyId={activeJob.storyId} title={activeJob.title} coverUrl={activeJob.coverUrl} />}
       </main>
