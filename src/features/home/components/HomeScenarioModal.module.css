@@ -125,6 +125,10 @@
 
 .prompt {
   position: relative;
+  display: grid;
+  grid-template-columns: 26px minmax(0, 1fr);
+  align-content: center;
+  row-gap: 5px;
   min-height: 84px;
   padding: 12px 27px;
   border: 1px solid #c2c2c2;
@@ -133,9 +137,8 @@
 }
 
 .prompt::before {
-  position: absolute;
-  top: 13px;
-  left: 27px;
+  grid-column: 1;
+  grid-row: 1;
   color: #575757;
   content: counter(prompt) ".";
   font-size: 19px;
@@ -145,8 +148,7 @@
 }
 
 .prompt strong {
-  display: block;
-  padding-left: 26px;
+  grid-column: 2;
   color: #575757;
   font-size: 19px;
   font-weight: 600;
@@ -155,7 +157,8 @@
 }
 
 .prompt p {
-  margin: 5px 0 0;
+  grid-column: 1 / -1;
+  margin: 0;
   color: #989491;
   font-size: 16px;
   line-height: 1.5;
