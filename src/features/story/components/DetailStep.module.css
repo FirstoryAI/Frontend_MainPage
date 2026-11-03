@@ -17,7 +17,19 @@
 }
 
 .field {
+  position: relative;
   margin-top: 62px;
+}
+
+/* 글자 수는 칸 아래 오른쪽에 두고, 다른 칸의 자리는 밀지 않아요. */
+.count {
+  position: absolute;
+  top: 100%;
+  right: 4px;
+  margin: 5px 0 0;
+  color: var(--color-text-muted);
+  font-size: 14px;
+  line-height: 1.3;
 }
 
 .categoryField {
