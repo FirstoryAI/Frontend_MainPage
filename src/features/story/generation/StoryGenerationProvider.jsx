@@ -11,7 +11,7 @@ import { StoryGenerationContext } from './storyGenerationContext';
 const POLL_INTERVAL = 3000;
 
 // 진행 중인 동화는 하나만 따라가요. 새로 시작하면 이전 것은 더 이상 따라가지 않아요.
-// job: { storyId, stage(0~2), status: 'running' | 'done' | 'failed' | 'blocked', title, coverUrl, error, notificationId }
+// job: { storyId, scope, stage(0~2), status: 'running' | 'done' | 'failed' | 'blocked', title, coverUrl, error, notificationId }
 export function StoryGenerationProvider({ children }) {
   const { addNotification } = useNotifications();
   const [job, setJob] = useState(null);
@@ -38,7 +38,12 @@ export function StoryGenerationProvider({ children }) {
 
         if (GENERATING_STATUSES.includes(generation.status)) {
           setJob((current) =>
-            current?.storyId === storyId ? { ...current, stage: toLoadingStage(generation.stage) } : current,
+            current?.storyId === storyId
+              ? {
+                  ...current,
+                  stage: current.scope === 'IMAGES' ? 2 : toLoadingStage(generation.stage),
+                }
+              : current,
           );
           timer.current = setTimeout(() => pollRef.current(storyId), POLL_INTERVAL);
           return;
@@ -94,12 +99,12 @@ export function StoryGenerationProvider({ children }) {
   }, [poll]);
 
   const startGeneration = useCallback(
-    (storyId) => {
+    (storyId, { scope = null } = {}) => {
       if (activeStory.current === storyId) return;
 
       stopPolling();
       activeStory.current = storyId;
-      setJob({ storyId, stage: 0, status: 'running' });
+      setJob({ storyId, scope, stage: scope === 'IMAGES' ? 2 : 0, status: 'running' });
       poll(storyId);
     },
     [poll, stopPolling],

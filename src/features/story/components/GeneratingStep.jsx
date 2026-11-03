@@ -36,7 +36,7 @@ function lineClass(index, stage) {
 }
 
 // stage: 지금 단계(0~2). 진행 상태는 StoryGenerationProvider가 앱 전체에서 관리해요.
-function GeneratingStep({ stage }) {
+function GeneratingStep({ stage, scope }) {
   const navigate = useNavigate();
   return (
     <div className={styles.step}>
@@ -80,7 +80,7 @@ function GeneratingStep({ stage }) {
         {stages[stage].title}
       </h1>
       <p className={styles.notice}>
-        보통 3~4분 정도 걸려요. 화면을 나가도 동화는 계속 만들어져요.
+        {scope === 'IMAGES' ? '그림만 다시 만드는 데는 1분 안쪽으로 걸려요.' : '보통 3~4분 정도 걸려요.'} 화면을 나가도 동화는 계속 만들어져요.
       </p>
 
       <div className={styles.card}>
