@@ -1,8 +1,8 @@
 .header {
   position: relative;
   z-index: var(--z-header);
-  height: 115px;
-  padding: 29px 46px 0;
+  height: var(--story-header-height);
+  padding: 16.1px 50.3px 0;
   background: var(--color-surface);
   box-shadow: 0 2px 10.4px rgb(0 0 0 / 5%);
 }
@@ -11,10 +11,10 @@
   display: inline-block;
   color: var(--color-brand);
   font-family: var(--font-brand);
-  font-size: 37.959px;
+  font-size: 34.04px;
   font-weight: 400;
   line-height: 0.90025;
-  letter-spacing: -1.1388px;
+  letter-spacing: -1.021px;
   text-decoration: none;
   transform: translateY(8px);
   white-space: nowrap;
@@ -22,10 +22,10 @@
 
 .progress {
   position: absolute;
-  top: 98px;
+  top: 74.8px;
   left: 50%;
   width: 862px;
-  height: 17px;
+  height: 10.6px;
   overflow: hidden;
   background: rgb(226 226 226 / 77%);
   border-radius: 32px;
@@ -41,7 +41,7 @@
 
 .exit {
   position: absolute;
-  top: 43px;
+  top: 28px;
   right: 61px;
   display: block;
   width: 27px;
@@ -54,22 +54,21 @@
 
 @media (max-width: 900px) {
   .header {
-    height: 96px;
-    padding: 22px 24px 0;
+    padding: 16px 24px 0;
   }
 
   .logo {
-    font-size: 32px;
+    font-size: 26px;
   }
 
   .progress {
-    top: 70px;
+    top: 56px;
     width: calc(100% - 48px);
-    height: 14px;
+    height: 10px;
   }
 
   .exit {
-    top: 26px;
+    top: 19px;
     right: 24px;
   }
 }

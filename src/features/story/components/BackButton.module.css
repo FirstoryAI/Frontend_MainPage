@@ -1,14 +1,20 @@
 /* 본문 영역(마무리 화면의 position: relative 등)이 이 버튼을 덮지 않도록 항상 위에 둬요. */
 .button {
   position: absolute;
-  top: 46.2px;
-  left: 64.2px;
+  top: 28.6px;
+  left: 88.8px;
   z-index: 1;
   display: block;
   padding: 0;
   background: transparent;
   border: 0;
   cursor: pointer;
+}
+
+.button img {
+  display: block;
+  width: 14.88px;
+  height: 26.12px;
 }
 
 @media (max-width: 900px) {

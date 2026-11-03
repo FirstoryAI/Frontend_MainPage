@@ -11,6 +11,8 @@
   flex: 1 0 auto;
   flex-direction: column;
   align-items: center;
+  /* 상단바가 줄어든 만큼 본문을 내려서 디자인의 자리를 지켜요. */
+  margin-top: var(--story-header-offset);
   padding: 77px 16px 0;
 }
 
