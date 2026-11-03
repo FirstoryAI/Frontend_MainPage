@@ -68,8 +68,8 @@ function StoryDraftModal({
           </>
         ) : (
           <>
-            <h2 id="story-draft-title" className={styles.title}>어떤 동화를 만들까요?</h2>
-            <p className={styles.description}>새롭게 시작하거나, 저장해 둔 이야기를 이어 만들 수 있어요.</p>
+            <h2 id="story-draft-title" className={`${styles.title} ${styles.choiceIntro}`}>어떤 동화를 만들까요?</h2>
+            <p className={`${styles.description} ${styles.choiceIntro}`}>새롭게 시작하거나, 저장해 둔 이야기를 이어 만들 수 있어요.</p>
             <div className={styles.choiceList}>
               <button className={styles.choice} type="button" onClick={onStartNew}>
                 <span className={styles.choiceIcon} aria-hidden="true">＋</span>
