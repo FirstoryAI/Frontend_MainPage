@@ -101,6 +101,12 @@
   font-size: 15px;
 }
 
+/* '어떤 동화를 만들까요?'의 두 줄 글은 아래 카드는 그대로 두고 조금 위로 올려요. */
+.choiceIntro {
+  position: relative;
+  top: -14px;
+}
+
 .choiceList,
 .draftList {
   display: grid;
