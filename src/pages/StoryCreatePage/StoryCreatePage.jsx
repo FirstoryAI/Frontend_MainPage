@@ -18,6 +18,7 @@ import ToneStep from '../../features/story/components/ToneStep';
 import BlockedStep from '../../features/story/components/BlockedStep';
 import GenerationFailedStep from '../../features/story/components/GenerationFailedStep';
 import {
+  EVENT_MAX_LENGTH,
   INTERVIEW_QUESTION_LIMIT,
   STEP,
   SUMMARY_FALLBACK_GOAL,
@@ -100,6 +101,8 @@ function StoryCreatePage() {
   const [topic, setTopic] = useState(initialTopic);
   // 서버가 정리한 '이번 이야기에서 나누고 싶은 것'(부모에게 그대로 보여 주는 문장)
   const [chatGoal, setChatGoal] = useState('');
+  // AI가 인터뷰 끝에 상황을 정리한 문장이에요. 있으면 생성 전 확인의 '상황'에 원문 대신 보여줘요.
+  const [situationSummary, setSituationSummary] = useState('');
   // 인터뷰 질문·답변(채팅 화면에 보여줄 것)
   const [interviewTurns, setInterviewTurns] = useState([]);
   const [interviewChoices, setInterviewChoices] = useState([]);
@@ -211,6 +214,7 @@ function StoryCreatePage() {
         const undecided = !message && draft.status !== 'DRAFT';
         setTopic({ message, undecided });
         setChatGoal(draft.interview?.summary ?? '');
+        setSituationSummary(draft.interview?.situationSummary ?? '');
         setInterviewTurns(draft.interview?.turns ?? []);
         setInterviewDone(draft.status === 'CONFIRMING');
         setHadInterview(Boolean(draft.interview?.turns?.some((turn) => turn.answer)));
@@ -443,6 +447,16 @@ function StoryCreatePage() {
     }
   };
 
+  // 인터뷰가 끝난 동화의 상황 정리 문장을 서버에서 받아 와요. (CONFIRM 응답에는 없고 GET /draft에 있어요) 못 받으면 원문을 그대로 보여줘요.
+  const loadSituationSummary = async (storyId) => {
+    try {
+      const draft = await getDraft(storyId);
+      setSituationSummary(draft.interview?.situationSummary ?? '');
+    } catch {
+      setSituationSummary('');
+    }
+  };
+
   // 인터뷰를 시작해요. 'chat' | 'summary' | null을 돌려줘요.
   // mode: 'chat' 채팅으로 답하기 / 'skip' 질문을 모두 건너뛰고 요약까지
   // 서버는 질문 없이 바로 CONFIRM을 줄 수도 있어요(질문은 0~15개). 그때는 채팅을 열지 않고 마무리 화면으로 가요.
@@ -450,6 +464,7 @@ function StoryCreatePage() {
     // 입력 단계에서 막힌 동화는 AI 인터뷰 없이 마무리 화면으로 가요. 여기서 '동화 만들기'를 누르면 안내 화면이 나와요.
     if (isHiddenBlocked()) {
       setChatGoal('');
+      setSituationSummary('');
       setInterviewDone(true);
       return 'summary';
     }
@@ -475,6 +490,7 @@ function StoryCreatePage() {
 
     updateSession({ status: response.status });
     setChatGoal(response.summary ?? '');
+    await loadSituationSummary(id);
     setInterviewDone(true);
     return 'summary';
   };
@@ -539,13 +555,16 @@ function StoryCreatePage() {
     updateSession({ status: 'BLOCKED' });
     blockedKey.current = currentKey();
     setChatGoal('');
+    setSituationSummary('');
     setInterviewDone(true);
     setNeedsRecreate(false);
     goTo(STEP.SUMMARY);
   };
 
-  const handleChatFinish = (summary) => {
+  const handleChatFinish = async (summary) => {
     updateSession({ status: 'CONFIRMING' });
+    // 확인 화면에 처음부터 정리 문장이 보이도록, 화면을 넘기기 전에 받아 와요.
+    await loadSituationSummary(session.current.id);
     setInterviewDone(true);
     setChatGoal(summary);
     setNeedsRecreate(false);
@@ -666,7 +685,11 @@ function StoryCreatePage() {
     const nextDetail = { ...detail, event };
     return saveEdit(
       (id) => saveSituation(id, toSituationRequest(situation, nextDetail)),
-      () => setDetail(nextDetail),
+      () => {
+        setDetail(nextDetail);
+        // 상황을 고치면 서버가 AI 정리 문장을 비워요. 고친 원문이 보이게 해요.
+        setSituationSummary('');
+      },
       { detail: nextDetail },
     );
   };
@@ -785,7 +808,7 @@ function StoryCreatePage() {
         {!toneOpen && step === STEP.SUMMARY && (
           <SummaryStep
             child={child}
-            situation={detail.event.trim()}
+            situation={situationSummary || detail.event.trim()}
             goal={summaryGoal}
             onEditChild={() => setEditing('child')}
             onEditSituation={() => setEditing('situation')}
@@ -853,6 +876,7 @@ function StoryCreatePage() {
           titleId="situation-edit-title"
           label="상황"
           initialValue={detail.event.trim()}
+          maxLength={EVENT_MAX_LENGTH}
           onSave={handleSaveSituation}
           onClose={closeEditing}
         />

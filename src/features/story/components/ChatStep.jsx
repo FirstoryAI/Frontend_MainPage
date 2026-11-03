@@ -27,7 +27,7 @@ function turnsToMessages(turns, recap) {
 }
 
 // FIRSTORY AI의 인터뷰예요. 질문에 답하면 서버가 다음 질문을 주고, 충분해지면 요약(summary)을 줘요.
-// onFinish(summary): 인터뷰가 끝났을 때, onSafety(safety): 차단(BLOCK)일 때
+// onFinish(summary): 인터뷰가 끝났을 때(Promise를 돌려주면 끝날 때까지 기다려요), onSafety(safety): 차단(BLOCK)일 때
 // recap: 앞에서 적은 상황, initialChoices: 지금 질문의 답변 카드(없으면 빈 목록)
 // initialMessages: 뒤로 갔다 돌아왔을 때 이어서 보여줄 이전 대화, onLog({ messages, choices }): 대화가 바뀔 때마다 알려줘요.
 // readOnly: 이미 끝난 인터뷰라 대화를 보기만 해요. 아래 '다음'을 누르면 onContinue로 마무리 화면에 가요.
@@ -77,7 +77,7 @@ function ChatStep({
   };
 
   // 서버 응답 하나를 처리해요. 끝났으면 true를 돌려줘요.
-  const handleResponse = (response) => {
+  const handleResponse = async (response) => {
     setChoices(extractChoices(response));
     const action = response.safety?.action;
     if (action === 'BLOCK') {
@@ -90,7 +90,8 @@ function ChatStep({
       return false;
     }
     if (response.type === 'CONFIRM') {
-      onFinish(response.summary ?? '');
+      // 부모가 확인 화면을 준비하는 동안(상황 정리 문장 받기) 입력은 잠가 둬요.
+      await onFinish(response.summary ?? '');
       return true;
     }
     if (response.question) addMessage('ai', response.question);
@@ -107,7 +108,7 @@ function ChatStep({
     setBusy(true);
     try {
       const response = await answerInterview(storyId, trimmed);
-      handleResponse(response);
+      await handleResponse(response);
     } catch {
       if (!mounted.current) return;
       addMessage('ai', ERROR_TEXT);
@@ -130,7 +131,7 @@ function ChatStep({
     try {
       for (let count = 0; count < MAX_SKIPS; count += 1) {
         const response = await answerInterview(storyId, null);
-        if (handleResponse(response)) return;
+        if (await handleResponse(response)) return;
       }
     } catch {
       if (mounted.current) addMessage('ai', ERROR_TEXT);

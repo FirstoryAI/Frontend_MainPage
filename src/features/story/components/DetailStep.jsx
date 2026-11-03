@@ -1,6 +1,6 @@
 import MascotBubble from './MascotBubble';
 import Chip from './Chip';
-import { categories } from '../constants';
+import { EVENT_MAX_LENGTH, REACTION_MAX_LENGTH, categories } from '../constants';
 import { getCategoryContent } from '../categoryContent';
 import detailMascot from '../../../assets/images/story-detail-mascot.png';
 import form from './FormControls.module.css';
@@ -68,9 +68,13 @@ function DetailStep({ situation, detail, onChange }) {
           id="story-event"
           name="event"
           placeholder={timing.eventExample ?? content.eventExample}
+          maxLength={EVENT_MAX_LENGTH}
           value={detail.event}
           onChange={(event) => onChange({ event: event.target.value })}
         />
+        <p className={styles.count} aria-live="off">
+          {detail.event.length}/{EVENT_MAX_LENGTH}
+        </p>
       </div>
 
       {isPast && (
@@ -84,9 +88,13 @@ function DetailStep({ situation, detail, onChange }) {
             name="reaction"
             type="text"
             placeholder={content.reactionExample}
+            maxLength={REACTION_MAX_LENGTH}
             value={detail.reaction}
             onChange={(event) => onChange({ reaction: event.target.value })}
           />
+          <p className={styles.count} aria-live="off">
+            {detail.reaction.length}/{REACTION_MAX_LENGTH}
+          </p>
         </div>
       )}
     </div>

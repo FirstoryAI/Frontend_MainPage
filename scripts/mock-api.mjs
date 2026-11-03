@@ -340,13 +340,21 @@ function handleSafety(story, safety) {
   return null;
 }
 
+// 질문이 충분해지면 서버는 바로 정리하지 않고 마지막 질문을 한 번 더 해요. ('더 이야기할래요'면 한 번 더 듣고 마지막 질문을 또 해요)
+const FINAL_QUESTION = '동화를 만들 준비가 다 됐어요. 이대로 만들러 갈까요, 아니면 더 나누고 싶은 이야기가 있나요?';
+const FINAL_CHOICES = ['네, 동화 만들러 갈게요', '더 이야기할래요'];
+const MORE_QUESTION = '어떤 이야기를 더 나누고 싶으세요? 편하게 들려주세요.';
+const GO_ON_ANSWER = /^(네|넘어|만들|괜찮|됐)/;
+
 function interviewResponse(story, extra = {}) {
   const asked = story.interview.turns.length;
-  const done = story.interview.turns.filter((turn) => turn.answer !== undefined).length;
-  const isConfirm = story.interview.noQuestions || done >= INTERVIEW_QUESTIONS.length;
+  const pending = story.interview.turns.find((turn) => turn.answer === undefined);
+  const isConfirm = story.interview.noQuestions || !pending;
   if (isConfirm) {
     story.status = 'CONFIRMING';
     story.interview.endReason = 'SUFFICIENT';
+    // 상황 정리 문장은 인터뷰가 끝날 때 만들어져요. 상황을 고치면 서버가 비워요.
+    story.interview.situationSummary = `부모님이 '${(story.situation?.description ?? '').slice(0, 24)}' 일로 아이가 마음이 많이 힘들었다고 들려주셨어요.`;
     story.interview.summary = story.message
       ? `${story.message} 이야기를 아이와 나누고 싶어요.`
       : '아이의 속상한 마음을 먼저 알아주고, 괜찮다는 걸 함께 느끼는 이야기를 나누고 싶어요.';
@@ -356,8 +364,8 @@ function interviewResponse(story, extra = {}) {
     status: story.status,
     type: isConfirm ? 'CONFIRM' : 'QUESTION',
     turn: asked,
-    question: isConfirm ? null : INTERVIEW_QUESTIONS[done],
-    choices: isConfirm ? [] : INTERVIEW_CHOICES[done],
+    question: isConfirm ? null : pending.question,
+    choices: isConfirm ? [] : pending.choices ?? [],
     summary: isConfirm ? story.interview.summary : null,
     contextUpdate: {},
     safety: extra.safety ?? { action: 'PROCEED', level: 'OK', category: null, reason: null, helpKind: null },
@@ -799,6 +807,7 @@ export function startMockApi({ port = Number(process.env.MOCK_API_PORT) || 8787,
         customCategory: body.customCategory ?? null, description: body.description ?? '',
         reactions: body.reactions ?? [], customReaction: body.customReaction ?? null, emotions: body.emotions ?? [],
       };
+      story.interview.situationSummary = null;
       story.updatedAt = now();
       return json(res, 200, step(story, safety));
     }
@@ -866,7 +875,7 @@ export function startMockApi({ port = Number(process.env.MOCK_API_PORT) || 8787,
         situation: story.situation ? { category: story.situation.category, categoryLabel: story.situation.categoryLabel, timing: story.situation.timing, description: story.situation.description } : null,
         child: story.child,
         parent: story.message || story.situation ? { response: story.situation?.customReaction ?? null, concern: story.interview.summary ?? '아이가 불안해하는 것 같아요.', message: story.message, messageDirection: 'UNDECIDED' } : null,
-        interview: { turns: story.interview.turns, summary: story.interview.summary, endReason: story.interview.endReason },
+        interview: { turns: story.interview.turns, summary: story.interview.summary, situationSummary: story.interview.situationSummary ?? null, endReason: story.interview.endReason },
       });
     }
     if (method === 'POST' && section === 'interview' && sub === 'start') {
@@ -874,7 +883,7 @@ export function startMockApi({ port = Number(process.env.MOCK_API_PORT) || 8787,
       if (!story.situation || !story.child) return error(res, 400, 'INCOMPLETE_STORY', '상황과 아이 정보를 먼저 입력해 주세요.');
       story.status = 'INTERVIEWING';
       story.interview.noQuestions = Boolean(story.situation.description?.includes('바로정리'));
-      if (!story.interview.noQuestions) story.interview.turns.push({ turnNo: 1, question: INTERVIEW_QUESTIONS[0] });
+      if (!story.interview.noQuestions) story.interview.turns.push({ turnNo: 1, question: INTERVIEW_QUESTIONS[0], choices: INTERVIEW_CHOICES[0] });
       story.updatedAt = now();
       return json(res, 200, interviewResponse(story));
     }
@@ -892,8 +901,21 @@ export function startMockApi({ port = Number(process.env.MOCK_API_PORT) || 8787,
         if (safety.action === 'ASK_REVISE') return json(res, 200, interviewResponse(story, { safety }));
       }
       turn.answer = body.skip ? '' : body.answer.trim();
-      const done = story.interview.turns.filter((candidate) => candidate.answer !== undefined).length;
-      if (done < INTERVIEW_QUESTIONS.length) story.interview.turns.push({ turnNo: done + 1, question: INTERVIEW_QUESTIONS[done] });
+      const next = (question, choices, kind = {}) => {
+        const added = { turnNo: story.interview.turns.length + 1, question, choices, ...kind };
+        story.interview.turns.push(added);
+        return added;
+      };
+      if (turn.final) {
+        // '네' 같은 답이나 건너뛰기는 넘어가기, 다른 말은 더 이야기한 걸로 봐요.
+        if (!(body.skip || GO_ON_ANSWER.test(turn.answer))) next(MORE_QUESTION, [], { more: true });
+      } else if (turn.more) {
+        next(FINAL_QUESTION, FINAL_CHOICES, { final: true });
+      } else {
+        const done = story.interview.turns.filter((candidate) => !candidate.final && !candidate.more && candidate.answer !== undefined).length;
+        if (done < INTERVIEW_QUESTIONS.length) next(INTERVIEW_QUESTIONS[done], INTERVIEW_CHOICES[done]);
+        else next(FINAL_QUESTION, FINAL_CHOICES, { final: true });
+      }
       story.updatedAt = now();
       return json(res, 200, interviewResponse(story));
     }
