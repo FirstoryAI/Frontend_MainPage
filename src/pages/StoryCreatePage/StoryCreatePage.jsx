@@ -1,4 +1,4 @@
-import { useEffect, useRef, useState } from 'react';
+import { useEffect, useLayoutEffect, useRef, useState } from 'react';
 import { useLocation, useNavigate } from 'react-router-dom';
 import CtaButton from '../../components/ui/CtaButton';
 import StoryHeader from '../../features/story/components/StoryHeader';
@@ -88,6 +88,9 @@ function StoryCreatePage() {
   const generationStoryId = location.state?.generation?.storyId ?? null;
 
   const [step, setStep] = useState(generationStoryId ? STEP.GENERATING : STEP.SITUATION);
+  const stageGroupRef = useRef(null);
+  const stageMainRef = useRef(null);
+  const [stageScale, setStageScale] = useState(1);
   // 지나온 단계 기록. 뒤로가기를 누르면 직전에 있던 단계로 돌아가요.
   const [history, setHistory] = useState([]);
   const [situation, setSituation] = useState('');
@@ -125,6 +128,43 @@ function StoryCreatePage() {
   // 분위기 선택 단계가 열려 있으면 고른 값을 돌려줄 resolve 함수예요. 닫으면 null이에요.
   const [toneResolver, setToneResolver] = useState(null);
   const [selectedTone, setSelectedTone] = useState('');
+
+  const fitStageToViewport = [STEP.CHILD, STEP.TOPIC, STEP.SUMMARY].includes(step);
+
+  useLayoutEffect(() => {
+    if (!fitStageToViewport) {
+      setStageScale(1);
+      return undefined;
+    }
+
+    const updateScale = () => {
+      const stageGroup = stageGroupRef.current;
+      const main = stageMainRef.current;
+      if (!stageGroup || !main) return;
+
+      const availableWidth = stageGroup.clientWidth;
+      const mainStyle = getComputedStyle(main);
+      const mainTop = (Number.parseFloat(mainStyle.top) || 0)
+        + (Number.parseFloat(mainStyle.marginTop) || 0);
+      const bottomMargin = [STEP.CHILD, STEP.TOPIC].includes(step) ? 4 : 16;
+      const availableHeight = stageGroup.clientHeight - mainTop - bottomMargin;
+      const widthScale = availableWidth / main.scrollWidth;
+      const heightScale = availableHeight / main.scrollHeight;
+
+      setStageScale(Math.max(0.1, Math.min(1, widthScale, heightScale)));
+    };
+
+    updateScale();
+    window.addEventListener('resize', updateScale);
+    const observer = new ResizeObserver(updateScale);
+    if (stageGroupRef.current) observer.observe(stageGroupRef.current);
+    if (stageMainRef.current) observer.observe(stageMainRef.current);
+
+    return () => {
+      window.removeEventListener('resize', updateScale);
+      observer.disconnect();
+    };
+  }, [fitStageToViewport, loadingDraft]);
 
   // 서버에 만들고 있는 동화. 화면 곳곳의 async 함수가 같은 값을 보도록 ref에 두고, id만 화면용으로 따로 보관해요.
   const session = useRef(emptySession());
@@ -765,13 +805,27 @@ function StoryCreatePage() {
   }
 
   return (
-    <div className={styles.page}>
+    <div className={`${styles.page} ${fitStageToViewport ? styles.fitPage : ''}`}>
       <StoryHeader progress={progress} onExit={() => setExitPromptOpen(true)} />
 
-      <main className={styles.main} inert={editing !== null}>
+      <div
+        className={styles.stageGroup}
+        ref={stageGroupRef}
+        style={{ '--stage-scale': stageScale }}
+      >
+      {fitStageToViewport && !toneOpen && step > STEP.SITUATION && step < STEP.CHAT && (
+        <div className={styles.backButtonAnchor}>
+          <BackButton onClick={goBack} />
+        </div>
+      )}
+      <main
+        className={`${styles.main} ${fitStageToViewport && !toneOpen && step > STEP.SITUATION && step < STEP.CHAT ? styles.withBackButton : ''}`}
+        ref={stageMainRef}
+        inert={editing !== null}
+      >
         {toneOpen && <BackButton onClick={() => closeTone(null)} />}
         {/* AI 인터뷰부터(채팅, 생성 전 확인)는 뒤로가기가 없어요. 확인 화면은 '수정하기'로 고쳐요. */}
-        {!toneOpen && step > STEP.SITUATION && step < STEP.CHAT && <BackButton onClick={goBack} />}
+        {!fitStageToViewport && !toneOpen && step > STEP.SITUATION && step < STEP.CHAT && <BackButton onClick={goBack} />}
 
         {toneOpen && <ToneStep category={detail.category} selected={selectedTone} onSelect={setSelectedTone} />}
 
@@ -820,6 +874,7 @@ function StoryCreatePage() {
         )}
         {!toneOpen && visibleStep === STEP.COMPLETE && <CompleteStep storyId={activeJob.storyId} title={activeJob.title} coverUrl={activeJob.coverUrl} />}
       </main>
+      </div>
 
       {toneOpen && (
         <footer className={styles.footer}>

@@ -196,3 +196,36 @@
     min-height: 0;
   }
 }
+
+@media (max-height: 850px) {
+  .step {
+    padding-top: 32px;
+  }
+
+  .cards {
+    margin-top: 28px;
+  }
+
+  .column {
+    row-gap: 12px;
+  }
+
+  .facts {
+    row-gap: 12px;
+    margin-top: 24px;
+  }
+
+  .text {
+    margin-top: 24px;
+  }
+}
+
+@media (max-width: 1160px) and (max-height: 850px) {
+  .step {
+    padding-top: 16px;
+  }
+
+  .cards {
+    margin-top: 20px;
+  }
+}

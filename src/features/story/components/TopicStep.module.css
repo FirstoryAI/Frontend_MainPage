@@ -127,3 +127,31 @@
     padding-bottom: 15px;
   }
 }
+
+@media (max-height: 850px) {
+  .step {
+    padding-top: 36px;
+  }
+
+  .storyField {
+    margin-top: 28px;
+  }
+
+  .option {
+    margin-top: 16px;
+  }
+}
+
+@media (max-width: 900px) and (max-height: 850px) {
+  .step {
+    padding-top: 12px;
+  }
+
+  .storyField {
+    margin-top: 24px;
+  }
+
+  .option {
+    margin-top: 14px;
+  }
+}
