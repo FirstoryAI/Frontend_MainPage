@@ -1,8 +1,12 @@
 .step {
   display: flex;
+  flex: 1 0 auto;
   flex-direction: column;
+  justify-content: center;
   align-items: center;
-  padding: 121px 16px 0;
+  box-sizing: border-box;
+  min-height: 100%;
+  padding: 24px 16px;
 }
 
 .book {
@@ -47,19 +51,8 @@
   background: linear-gradient(160deg, #f7e6d3, #e9c7a6);
 }
 
-/* 디자인에 없는 동화 제목이에요. 책 표지 아래, 안내 문구 사이의 여백에 넣었어요. */
-.bookTitle {
-  margin-top: 24px;
-  color: var(--color-text);
-  font-size: 18px;
-  font-weight: 600;
-  line-height: 31px;
-  letter-spacing: -0.54px;
-  text-align: center;
-}
-
 .title {
-  margin: 18px 0 0;
+  margin: 32px 0 0;
   color: var(--color-text);
   font-family: var(--font-title);
   font-size: 40px;
@@ -111,5 +104,11 @@
 
   .cta {
     margin-top: 48px;
+  }
+}
+
+@media (min-width: 901px) and (max-height: 850px) {
+  .cta {
+    margin-top: clamp(24px, 4.2vh, 79px);
   }
 }

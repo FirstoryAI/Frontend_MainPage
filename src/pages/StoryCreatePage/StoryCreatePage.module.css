@@ -39,6 +39,12 @@
   transform-origin: top center;
 }
 
+.fitPage .centerComplete {
+  top: 0;
+  bottom: 0;
+  margin-top: 0;
+}
+
 .backButtonAnchor {
   position: absolute;
   top: var(--story-header-offset);

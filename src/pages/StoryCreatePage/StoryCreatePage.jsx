@@ -129,7 +129,9 @@ function StoryCreatePage() {
   const [toneResolver, setToneResolver] = useState(null);
   const [selectedTone, setSelectedTone] = useState('');
 
-  const fitStageToViewport = [STEP.CHILD, STEP.TOPIC, STEP.SUMMARY].includes(step);
+  // 고정된 단계 화면은 콘텐츠 비율을 유지한 채 뷰포트 안에 맞춰요.
+  // 생성 중·제작 완료 화면도 같은 방식으로 맞춰 데스크톱에서 스크롤 없이 보여줘요.
+  const fitStageToViewport = [STEP.CHILD, STEP.TOPIC, STEP.SUMMARY, STEP.GENERATING].includes(step);
 
   useLayoutEffect(() => {
     if (!fitStageToViewport) {
@@ -819,7 +821,7 @@ function StoryCreatePage() {
         </div>
       )}
       <main
-        className={`${styles.main} ${fitStageToViewport && !toneOpen && step > STEP.SITUATION && step < STEP.CHAT ? styles.withBackButton : ''}`}
+        className={`${styles.main} ${visibleStep === STEP.COMPLETE ? styles.centerComplete : ''} ${fitStageToViewport && !toneOpen && step > STEP.SITUATION && step < STEP.CHAT ? styles.withBackButton : ''}`}
         ref={stageMainRef}
         inert={editing !== null}
       >
