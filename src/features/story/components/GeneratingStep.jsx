@@ -38,6 +38,7 @@ function lineClass(index, stage) {
 // stage: 지금 단계(0~2). 진행 상태는 StoryGenerationProvider가 앱 전체에서 관리해요.
 function GeneratingStep({ stage, scope }) {
   const navigate = useNavigate();
+
   return (
     <div className={styles.step}>
       <div className={styles.stepper}>
