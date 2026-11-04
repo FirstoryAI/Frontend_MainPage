@@ -58,8 +58,8 @@ export const STEP = {
   COMPLETE: 7,
 };
 
-// 서버가 받는 글자 수 제한이에요. (넘기면 '다음'에서 400 CUSTOM_VALUE_TOO_LONG 등으로 막혀요)
-export const EVENT_MAX_LENGTH = 60;
+// 상황 설명은 최대 300자, 직접 입력하는 아이 반응은 최대 30자예요.
+export const EVENT_MAX_LENGTH = 300;
 export const REACTION_MAX_LENGTH = 30;
 
 // AI 인터뷰 질문은 최대 15개예요. 질문 수를 화면에 고정해서 보여주지 않고, 이 값은 '넘어가기'를 반복하는 한도를 정할 때만 써요.
