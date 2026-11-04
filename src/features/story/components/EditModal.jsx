@@ -1,4 +1,4 @@
-import { useEffect, useRef, useState } from 'react';
+import { useEffect, useLayoutEffect, useRef, useState } from 'react';
 import iconClose from '../../../assets/icons/icon-close.svg';
 import styles from './EditModal.module.css';
 
@@ -18,6 +18,44 @@ function EditModal({
   const closeButtonRef = useRef(null);
   const [saving, setSaving] = useState(false);
   const [error, setError] = useState('');
+  const [modalScale, setModalScale] = useState(1);
+
+  useLayoutEffect(() => {
+    const updateScale = () => {
+      const modal = dialogRef.current;
+      if (!modal) return;
+
+      const viewportWidth = document.documentElement.clientWidth || window.innerWidth;
+      const viewportHeight = document.documentElement.clientHeight || window.innerHeight;
+      const headerHeight = Number.parseFloat(
+        getComputedStyle(document.documentElement).getPropertyValue('--story-header-height'),
+      ) || 0;
+      const availableWidth = viewportWidth - 32;
+      const availableHeight = viewportHeight - headerHeight - 32;
+      const widthScale = availableWidth / modal.offsetWidth;
+      const heightScale = availableHeight / modal.offsetHeight;
+
+      setModalScale(Math.max(0.1, Math.min(1, widthScale, heightScale)));
+    };
+
+    updateScale();
+    window.addEventListener('resize', updateScale);
+    const observer = new ResizeObserver(updateScale);
+    if (dialogRef.current) observer.observe(dialogRef.current);
+
+    return () => {
+      window.removeEventListener('resize', updateScale);
+      observer.disconnect();
+    };
+  }, []);
+
+  useEffect(() => {
+    const previousOverflow = document.body.style.overflow;
+    document.body.style.overflow = 'hidden';
+    return () => {
+      document.body.style.overflow = previousOverflow;
+    };
+  }, []);
 
   const handleSave = async () => {
     if (saving) return;
@@ -54,6 +92,7 @@ function EditModal({
     <div className={styles.overlay}>
       <div
         className={`${styles.modal} ${compact ? styles.compact : ''}`}
+        style={{ '--modal-scale': modalScale }}
         role="dialog"
         aria-modal="true"
         aria-labelledby={titleId}
