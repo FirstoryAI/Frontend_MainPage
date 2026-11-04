@@ -4,10 +4,10 @@
   inset: var(--story-header-height) 0 0;
   z-index: 50;
   display: flex;
-  align-items: flex-start;
+  align-items: center;
   justify-content: center;
-  padding: 53px 16px 24px;
-  overflow-y: auto;
+  padding: 16px;
+  overflow: hidden;
   background: rgb(0 0 0 / 44%);
   backdrop-filter: blur(3.6px);
 }
@@ -23,6 +23,8 @@
   background: var(--color-surface);
   border-radius: 36px;
   box-shadow: 0 0 12.3px rgb(0 0 0 / 10%);
+  transform: scale(var(--modal-scale, 1));
+  transform-origin: center;
 }
 
 /* 내용이 적은 모달은 694px로 늘리지 않아요. */
@@ -78,13 +80,6 @@
 .saveButton:disabled {
   cursor: not-allowed;
   opacity: 0.45;
-}
-
-@media (max-width: 900px) {
-  .overlay {
-    inset: var(--story-header-height) 0 0;
-    padding-top: 24px;
-  }
 }
 
 @media (max-width: 600px) {
