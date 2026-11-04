@@ -37,7 +37,6 @@ function CompleteStep({ storyId, title, coverUrl }) {
             </div>
           </div>
         </div>
-        <figcaption className={styles.bookTitle}>{title}</figcaption>
       </figure>
 
       <h1 className={styles.title} role="status">
