@@ -7,6 +7,7 @@ import { guideFor } from '../../features/story/guideContent';
 import PageTurnOverlay from '../../features/story/components/PageTurnOverlay';
 import SafeImage from '../../features/story/components/SafeImage';
 import StoryText from '../../features/story/components/StoryText';
+import StoryTextBlocks from '../../features/story/components/StoryTextBlocks';
 import { textPositionOf } from '../../features/story/textPosition';
 import { usePageTurn } from '../../features/story/hooks/usePageTurn';
 import { useSceneScale } from '../../features/story/hooks/useSceneScale';
@@ -72,9 +73,11 @@ function StoryGuidePage() {
                   alt={`${currentPage}쪽 동화 삽화`}
                   fallback={<p className={styles.noImage}>그림을 아직 준비하지 못했어요.</p>}
                 />
-                <div className={styles.pageCopy} data-position={textPositionOf(page)}>
-                  {page.text.split('\n').filter(Boolean).map((line) => <p key={line}><StoryText text={line} /></p>)}
-                </div>
+                {page.textBlocks == null ? (
+                  <div className={styles.pageCopy} data-position={textPositionOf(page)}>
+                    {page.text.split('\n').filter(Boolean).map((line) => <p key={line}><StoryText text={line} /></p>)}
+                  </div>
+                ) : <StoryTextBlocks blocks={page.textBlocks} />}
                 <PageTurnOverlay turn={turn} />
               </div>
               <div className={styles.pagination}>

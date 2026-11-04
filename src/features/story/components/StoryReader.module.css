@@ -127,6 +127,7 @@
   width: 100%;
   height: 100%;
   overflow: hidden;
+  container-type: inline-size;
 }
 
 .readerPageContent > img {
@@ -231,11 +232,14 @@
   .readerTitle { top: 24px; left: 47px; max-width: 43%; font-size: 16px; }
   .readerProgress { top: 31px; right: 16px; gap: 6px; width: 32%; font-size: 11px; }
   .readerProgressTrack { height: 8px; }
-  .readerBook { top: 40%; left: 2%; width: 96%; height: auto; aspect-ratio: 1304.2 / 793.102; }
-  .readerFrame { width: 100%; height: 100%; }
-  .readerPage { top: 5.48%; left: 3.11%; width: 93.78%; height: 88.88%; padding: 1.28vw 1.35vw 1.2vw; }
-  .readerCopy { font-size: clamp(8px, 2.4vw, 12px); }
+  .readerBook { top: 17%; left: 5%; width: 90%; height: 76%; }
+  .readerFrame { display: none; }
+  .readerPage { inset: 0; width: 100%; height: 100%; padding: 10px; border-radius: 12px; }
+  .readerPageContent { display: flex; flex-direction: column; overflow-y: auto; border-radius: 6px; }
+  .readerPageContent > img { flex: 0 0 auto; width: 100%; height: auto; aspect-ratio: 956.5 / 541; object-fit: cover; }
+  .readerCopy { position: relative; inset: auto; flex: 0 0 auto; padding: 12px 10px; color: #4a4a4a; font-size: clamp(8px, 2.4vw, 12px); text-align: left; background: transparent; border-radius: 0; white-space: pre-line; }
   .readerCopy p { margin-bottom: 2px; }
+  .readerPageContent > p[role='img'] { flex: 1 0 100px; display: grid; margin: 0; place-items: center; }
   .readerArrow { top: 52.6%; width: 60px; height: 61.54px; transform: translateY(-50%) scale(.7); }
   .readerArrow img { width: 60px; height: 61.5373px; }
   .readerArrowLeft { left: -2px; transform-origin: left center; }

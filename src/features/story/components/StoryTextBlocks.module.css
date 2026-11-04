@@ -1,0 +1,42 @@
+.blocks {
+  position: absolute;
+  inset: 0;
+  pointer-events: none;
+}
+
+.block {
+  position: absolute;
+  color: #4a4a4a;
+  font-family: var(--font-title);
+  font-size: 1.5cqw;
+  line-height: 1.55;
+  text-align: left;
+  white-space: nowrap;
+}
+
+.block[data-color='LIGHT'] { color: #fff; }
+.block[data-color='DARK'] { color: #4a4a4a; }
+
+.paragraph { margin: 0 0 0.6em; }
+.paragraph:last-child { margin-bottom: 0; }
+.line { display: block; }
+
+@media (max-width: 760px) {
+  .blocks {
+    position: relative;
+    inset: auto;
+    display: flex;
+    flex-direction: column;
+    gap: 12px;
+    padding: 12px 10px 6px;
+  }
+
+  .block {
+    position: relative;
+    top: auto !important;
+    left: auto !important;
+    font-size: clamp(14px, 4vw, 18px);
+    line-height: 1.6;
+    white-space: normal;
+  }
+}

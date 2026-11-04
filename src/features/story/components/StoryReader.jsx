@@ -7,6 +7,7 @@ import { usePageTurn } from '../hooks/usePageTurn';
 import PageTurnOverlay from './PageTurnOverlay';
 import SafeImage from './SafeImage';
 import StoryText from './StoryText';
+import StoryTextBlocks from './StoryTextBlocks';
 import { textPositionOf } from '../textPosition';
 import styles from './StoryReader.module.css';
 
@@ -62,9 +63,11 @@ function StoryReader({ title, pages, page, onPage, onClose, closeLabel = '돌아
                 alt={`${page}쪽 동화 삽화`}
                 fallback={<p role="img" aria-label="그림 없음">그림을 아직 준비하지 못했어요.</p>}
               />
-              <div className={styles.readerCopy} data-position={textPositionOf(current)}>
-                {lines.map((line, index) => <p key={`${page}-${index}`}><StoryText text={line} /></p>)}
-              </div>
+              {current.textBlocks == null ? (
+                <div className={styles.readerCopy} data-position={textPositionOf(current)}>
+                  {lines.map((line, index) => <p key={`${page}-${index}`}><StoryText text={line} /></p>)}
+                </div>
+              ) : <StoryTextBlocks blocks={current.textBlocks} />}
               <PageTurnOverlay turn={turn} />
             </div>
           </div>
