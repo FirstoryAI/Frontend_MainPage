@@ -18,7 +18,20 @@
   width: 103px;
   height: 110px;
   transform: translateX(-50%);
-  transition: left 0.6s ease;
+  animation: runnerBounce 1s ease-in-out infinite;
+  transition: left 0.9s cubic-bezier(0.4, 0, 0.2, 1);
+  will-change: left, transform;
+}
+
+@keyframes runnerBounce {
+  0%,
+  100% {
+    transform: translate(-50%, 0);
+  }
+
+  50% {
+    transform: translate(-50%, -7px);
+  }
 }
 
 .stages {
@@ -151,6 +164,10 @@
   .runner,
   .line {
     transition: none;
+  }
+
+  .runner {
+    animation: none;
   }
 }
 
