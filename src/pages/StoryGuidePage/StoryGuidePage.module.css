@@ -75,6 +75,7 @@
   height: 541px;
   overflow: hidden;
   border-radius: 8.816px;
+  container-type: inline-size;
 }
 
 .illustration > img {
@@ -184,7 +185,9 @@
   .logo { font-size: 32px; }
   .close { top: 24px; right: 20px; width: 24px; height: 24px; }
   .book { position: relative; top: auto; left: auto; width: auto; max-width: calc(100vw - 32px); height: auto; margin: 24px 16px 0; padding: 12px; border-radius: 18px; }
-  .illustration { width: 100%; height: auto; aspect-ratio: 956.5 / 541; }
+  .illustration { width: 100%; height: auto; aspect-ratio: auto; overflow: visible; }
+  .illustration > img { height: auto; aspect-ratio: 956.5 / 541; }
+  .illustration > .noImage { height: auto; aspect-ratio: 956.5 / 541; }
   .pageCopy { padding: 4px 8px; font-size: clamp(7px, 2.5vw, 12px); }
   .pagination { grid-template-columns: 78px auto 78px; gap: 12px; width: auto; margin: 15px auto 2px; justify-content: center; }
   .pagination button { width: 78px; height: 40px; font-size: 12px; }

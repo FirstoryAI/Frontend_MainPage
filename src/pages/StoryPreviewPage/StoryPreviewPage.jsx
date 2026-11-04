@@ -11,6 +11,7 @@ import RemakeDialog from '../../features/story/components/RemakeDialog';
 import StoryReader from '../../features/story/components/StoryReader';
 import SafeImage from '../../features/story/components/SafeImage';
 import StoryText from '../../features/story/components/StoryText';
+import StoryTextBlocks from '../../features/story/components/StoryTextBlocks';
 import PageTurnOverlay from '../../features/story/components/PageTurnOverlay';
 import { usePageTurn } from '../../features/story/hooks/usePageTurn';
 import { useImageQueue } from '../../features/story/hooks/useImageQueue';
@@ -209,9 +210,11 @@ function StoryPreviewPage({ initialRemakeOpen = false }) {
                 </p>
               )}
             />
-            <div className={styles.pageCopy} data-position={textPositionOf(page)}>
-              {lines.map((line) => <p key={line}><StoryText text={line} /></p>)}
-            </div>
+            {page.textBlocks == null ? (
+              <div className={styles.pageCopy} data-position={textPositionOf(page)}>
+                {lines.map((line) => <p key={line}><StoryText text={line} /></p>)}
+              </div>
+            ) : <StoryTextBlocks blocks={page.textBlocks} />}
             <PageTurnOverlay turn={turn} />
           </div>
           <div className={styles.pagination}>
