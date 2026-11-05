@@ -24,13 +24,12 @@ import PageTurnOverlay from '../../features/story/components/PageTurnOverlay';
 import { usePageTurn } from '../../features/story/hooks/usePageTurn';
 import { useImageQueue } from '../../features/story/hooks/useImageQueue';
 import { textPositionOf } from '../../features/story/textPosition';
-import { guideFor } from '../../features/story/guideContent';
+import { guideFor, NO_GUIDE_MESSAGE } from '../../features/story/guideContent';
 import { approveStory, getGuide, getPreview, regenerateStory } from '../../services/storiesApi';
 import ErrorText from '../../components/ui/ErrorText';
 
 // 화면의 '다시 만들 부분'을 API의 scope로 바꿔요.
 const REMAKE_SCOPES = { all: 'CHARACTER_STORY', text: 'TEXT', image: 'IMAGES' };
-const NO_GUIDE_MESSAGE = '이 쪽은 이야기를 그대로 읽어주세요.';
 
 // 만든 동화를 확정하기 전에 쪽마다 넘겨 보는 화면이에요. (GET /api/stories/{id}/preview)
 // initialRemakeOpen: '다시 만들기' 팝업을 연 채로 시작해요. 이때 팝업을 닫으면 서재로 돌아가요.
@@ -337,6 +336,8 @@ function StoryPreviewPage({ initialRemakeOpen = false }) {
           onPage={showPage}
           onClose={() => setIsReaderOpen(false)}
           closeLabel="미리보기로 돌아가기"
+          guide={guide}
+          previewMode
         />
       )}
     </div>

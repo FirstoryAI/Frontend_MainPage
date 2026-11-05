@@ -6,6 +6,7 @@ const PURPOSE_TEXT = {
   connect: '우리 아이의 경험과 이어서 이야기해 보는 쪽이에요.',
 };
 const DEFAULT_PURPOSE_TEXT = '이 쪽에서 아이와 이야기를 나눠 볼 수 있어요.';
+export const NO_GUIDE_MESSAGE = '이 쪽은 이야기를 그대로 읽어주세요.';
 
 function purposeText(purpose) {
   if (!purpose) return DEFAULT_PURPOSE_TEXT;
