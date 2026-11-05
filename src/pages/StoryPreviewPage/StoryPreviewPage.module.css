@@ -86,12 +86,13 @@
 
 .pageList {
   position: absolute;
-  top: 215px;
+  top: 207px;
   left: 65px;
   display: flex;
   flex-direction: column;
   width: 171px;
-  height: 760px;
+  height: 768px;
+  padding-top: 8px;
   overflow-y: auto;
   scrollbar-width: none;
 }
