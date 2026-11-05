@@ -39,7 +39,7 @@ function RadioMark({ checked }) {
 // 미리보기 위에 뜨는 '어떤 부분을 다시 만들까요?' 팝업이에요.
 // 1440×960 미리보기 화면(캔버스) 안에 놓이도록 만들었어요. 좁은 화면에서는 화면 전체 기준으로 떠요.
 // onRemake({ type, request })는 다시 만들 수 없으면 이유(문장)를, 시작했으면 아무것도 돌려주지 않아요.
-function RemakeDialog({ onClose, onRemake, pages = [] }) {
+function RemakeDialog({ onClose, onRemake, pages = [], sceneScale = 1 }) {
   const dialogRef = useRef(null);
   const [selectedOption, setSelectedOption] = useState('');
   const [selectedPages, setSelectedPages] = useState([]);
@@ -82,6 +82,7 @@ function RemakeDialog({ onClose, onRemake, pages = [] }) {
     <>
       <div className={styles.backdrop} />
 
+      <div className={styles.scene} style={{ '--scene-scale': sceneScale }}>
       <section
         className={`${styles.dialog} ${selectedOption === 'image' ? styles.dialogWithPages : ''}`}
         ref={dialogRef}
@@ -184,6 +185,7 @@ function RemakeDialog({ onClose, onRemake, pages = [] }) {
           </button>
         </div>
       </section>
+      </div>
     </>
   );
 }

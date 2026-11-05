@@ -329,8 +329,8 @@ function StoryPreviewPage({ initialRemakeOpen = false }) {
             </p>
           )}
         </div>
-        {isRemakeOpen && <RemakeDialog pages={pages} onClose={closeRemake} onRemake={remake} />}
       </div>
+      {isRemakeOpen && <RemakeDialog pages={pages} sceneScale={scale} onClose={closeRemake} onRemake={remake} />}
       {isReaderOpen && (
         <StoryReader
           title={title}
