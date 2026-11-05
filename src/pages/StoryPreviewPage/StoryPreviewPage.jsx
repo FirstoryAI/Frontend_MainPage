@@ -30,6 +30,7 @@ import ErrorText from '../../components/ui/ErrorText';
 
 // 화면의 '다시 만들 부분'을 API의 scope로 바꿔요.
 const REMAKE_SCOPES = { all: 'CHARACTER_STORY', text: 'TEXT', image: 'IMAGES' };
+const NO_GUIDE_MESSAGE = '이 쪽은 이야기를 그대로 읽어주세요.';
 
 // 만든 동화를 확정하기 전에 쪽마다 넘겨 보는 화면이에요. (GET /api/stories/{id}/preview)
 // initialRemakeOpen: '다시 만들기' 팝업을 연 채로 시작해요. 이때 팝업을 닫으면 서재로 돌아가요.
@@ -44,6 +45,7 @@ function StoryPreviewPage({ initialRemakeOpen = false }) {
   // 동화 줄거리(상세)와 대화 가이드예요. 가이드는 확정 전(REVIEWING)에도 받을 수 있어요.
   const [guide, setGuide] = useState(null);
   const [isGuideOpen, setIsGuideOpen] = useState(false);
+  const [isHintOpen, setIsHintOpen] = useState(false);
   const [loadError, setLoadError] = useState('');
   const [currentPage, setCurrentPage] = useState(1);
   const [isReaderOpen, setIsReaderOpen] = useState(false);
@@ -63,6 +65,12 @@ function StoryPreviewPage({ initialRemakeOpen = false }) {
       active = false;
     };
   }, [storyId]);
+
+  useEffect(() => {
+    if (!isHintOpen) return undefined;
+    const timer = window.setTimeout(() => setIsHintOpen(false), 3500);
+    return () => window.clearTimeout(timer);
+  }, [isHintOpen]);
 
   const pages = preview?.pages ?? [];
   const title = preview?.version?.title ?? story.title ?? '';
@@ -126,6 +134,7 @@ function StoryPreviewPage({ initialRemakeOpen = false }) {
 
   const showPage = (nextPage) => {
     setIsGuideOpen(false);
+    setIsHintOpen(false);
     setCurrentPage(Math.min(pages.length, Math.max(1, nextPage)));
   };
 
@@ -263,14 +272,30 @@ function StoryPreviewPage({ initialRemakeOpen = false }) {
           </div>
         </aside>
 
+        <aside
+          className={`${styles.guideHint} ${isHintOpen && !hasGuideContent ? styles.guideHintOpen : ''} ${isRemakeOpen ? styles.guideSuppressed : ''}`}
+          id="preview-guide-hint"
+          aria-hidden={!isHintOpen || hasGuideContent || isRemakeOpen}
+          inert={!isHintOpen || hasGuideContent || isRemakeOpen}
+        >
+          {NO_GUIDE_MESSAGE}
+        </aside>
+
         <button
           className={`${styles.guideToggle} ${isRemakeOpen ? styles.guideSuppressed : ''}`}
           type="button"
-          onClick={() => hasGuideContent && setIsGuideOpen((open) => !open)}
-          aria-label={hasGuideContent ? (isGuideOpen ? '가이드 닫기' : '가이드 열기') : '이 쪽에는 가이드가 없어요'}
-          aria-expanded={hasGuideContent && isGuideOpen}
-          aria-disabled={!hasGuideContent}
-          aria-controls="preview-guide"
+          onClick={() => {
+            if (hasGuideContent) {
+              setIsHintOpen(false);
+              setIsGuideOpen((open) => !open);
+            } else if (guide) {
+              setIsHintOpen((open) => !open);
+            }
+          }}
+          aria-label={hasGuideContent ? (isGuideOpen ? '가이드 닫기' : '가이드 열기') : isHintOpen ? '안내 닫기' : '안내 보기'}
+          aria-expanded={hasGuideContent ? isGuideOpen : isHintOpen}
+          aria-disabled={!guide}
+          aria-controls={hasGuideContent ? 'preview-guide' : 'preview-guide-hint'}
           inert={isRemakeOpen}
         >
           {isGuideOpen && hasGuideContent ? (
