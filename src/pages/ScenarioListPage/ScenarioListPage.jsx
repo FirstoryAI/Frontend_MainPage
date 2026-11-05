@@ -3,18 +3,14 @@ import { Link, useNavigate } from 'react-router-dom';
 import Sidebar from '../../components/layout/Sidebar';
 import HomeScenarioModal from '../../features/home/components/HomeScenarioModal';
 import { useSignedIn } from '../../features/auth/useSignedIn';
-import { scenarios } from '../../features/home/scenarios';
+import { listScenarios } from '../../features/home/scenarios';
 import iconBell from '../../assets/icons/icon-bell.svg';
 import iconBackSmall from '../../assets/icons/icon-back-small.svg';
 import avatarProfile from '../../assets/icons/avatar-profile.svg';
 import styles from './ScenarioListPage.module.css';
 
 const ALL = '전체';
-const filters = [ALL, ...new Set(scenarios.map((scenario) => scenario.category))];
-
-// 디자인(995:1063)은 같은 카드 4개를 두 줄로 놓은 8개 구성이에요.
-// 시나리오가 실제로 더 생기기 전까지는 목록을 한 번 더 이어 붙여 8개로 보여줘요.
-const listedScenarios = [...scenarios, ...scenarios];
+const filters = [ALL, ...new Set(listScenarios.map((scenario) => scenario.category))];
 
 function ScenarioListPage() {
   const navigate = useNavigate();
@@ -25,8 +21,8 @@ function ScenarioListPage() {
 
   const visibleScenarios =
     activeFilter === ALL
-      ? listedScenarios
-      : listedScenarios.filter((scenario) => scenario.category === activeFilter);
+      ? listScenarios
+      : listScenarios.filter((scenario) => scenario.category === activeFilter);
 
   if (isSignedIn === null) {
     return <div className={styles.page} role="status" aria-label="목록을 불러오는 중" />;
@@ -89,10 +85,10 @@ function ScenarioListPage() {
 
             <div className={styles.gridArea}>
               <ul className={styles.grid} aria-live="polite">
-                {visibleScenarios.map((scenario, index) => (
-                  <li key={`${scenario.id}-${index}`}>
+                {visibleScenarios.map((scenario) => (
+                  <li key={scenario.id}>
                     <button
-                      className={`${styles.card} ${styles[scenario.color]}`}
+                      className={`${styles.card} ${styles[scenario.color]} ${styles[scenario.id] ?? ''}`}
                       type="button"
                       aria-haspopup="dialog"
                       aria-label={`${scenario.category}: ${scenario.accessibleTitle}`}

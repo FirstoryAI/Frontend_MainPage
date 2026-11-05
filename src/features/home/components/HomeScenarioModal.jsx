@@ -73,7 +73,7 @@ function HomeScenarioModal({ scenario, onClose, onStart, requiresLogin = false }
         </p>
 
         <div className={styles.guideHeading}>
-          <img src={dialogueIcons[scenario.id] ?? dialogueKindergarten} alt="" />
+          <img src={dialogueIcons[scenario.color] ?? dialogueKindergarten} alt="" />
           <h3>{content.guideTitle}</h3>
         </div>
 
