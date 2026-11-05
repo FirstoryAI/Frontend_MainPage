@@ -148,6 +148,10 @@ function LibraryPage() {
     }
   };
 
+  // 로그인했어도 동화가 하나도 없으면(전체 보기) 비로그인과 같은 빈 서재 화면을 보여줘요. (로그인 버튼만 없어요)
+  const isLibraryEmpty = isSignedIn && !isLoading && !error && stories.length === 0 && activeFilter === 'ALL';
+  const showEmptyScreen = guest || isLibraryEmpty;
+
   if (isSignedIn === null) {
     return <div className={styles.page} role="status" aria-label="서재를 불러오는 중" />;
   }
@@ -196,19 +200,19 @@ function LibraryPage() {
               ))}
             </div>
 
-            {guest && (
-              // 로그인하지 않았으면 서재에 보여줄 동화가 없어서, 로그인으로 이어 주는 안내를 보여줘요.
+            {showEmptyScreen && (
+              // 보여줄 동화가 없을 때의 안내예요. 로그인하지 않았으면 로그인으로 이어 주는 버튼이 함께 나와요.
               <section className={styles.guestEmpty} aria-labelledby="library-empty-title">
                 <div className={styles.emptyMascot}>
                   <img src={emptyMascot} alt="" />
                 </div>
                 <p className={styles.emptyTitle} id="library-empty-title">아직 제작된 동화가 없어요</p>
-                <Link className={styles.emptyLogin} to="/auth">로그인하고 동화 만들기</Link>
+                {guest && <Link className={styles.emptyLogin} to="/auth">로그인하고 동화 만들기</Link>}
               </section>
             )}
 
             {!guest && error && <p className={styles.error} role="alert"><ErrorText message={error} /></p>}
-            {!guest && (
+            {!guest && !isLibraryEmpty && (
             <section className={styles.storyGrid} aria-live="polite" aria-busy={isLoading}>
               {isLoading ? <p className={styles.message}>서재를 불러오는 중이에요.</p> : stories.map((story) => {
                 const group = libraryGroup(story);
