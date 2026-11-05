@@ -1,6 +1,6 @@
 .backdrop {
   position: fixed;
-  inset: var(--header-height) 0 0;
+  inset: 0;
   z-index: 20;
   display: grid;
   place-items: center;
@@ -17,7 +17,7 @@
   background: #fff;
   border-radius: 36px;
   box-shadow: 0 0 12.3px rgb(0 0 0 / 10%);
-  transform: translateX(calc(-19px * var(--dialog-scale, 1))) scale(var(--dialog-scale, 1));
+  transform: scale(var(--dialog-scale, 1));
 }
 
 .title {

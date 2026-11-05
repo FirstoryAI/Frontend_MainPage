@@ -1,4 +1,5 @@
 import { useEffect, useRef, useState } from 'react';
+import { createPortal } from 'react-dom';
 import closeIcon from '../../../assets/notification/close.svg';
 import styles from './TermsModal.module.css';
 
@@ -21,13 +22,10 @@ function TermsModal({ onClose }) {
 
   useEffect(() => {
     const updateScale = () => {
-      const headerHeight = window.innerWidth <= 760
-        ? 76
-        : window.innerHeight <= 850 ? 88 : 109;
       const widthScale = window.innerWidth <= 760
         ? (window.innerWidth - 32) / 815
         : window.innerWidth / 1440;
-      const heightScale = (window.innerHeight - headerHeight - 32) / 596;
+      const heightScale = (window.innerHeight - 32) / 596;
       setDialogScale(Math.max(0.4, Math.min(1, widthScale, heightScale)));
     };
     updateScale();
@@ -36,7 +34,7 @@ function TermsModal({ onClose }) {
   }, []);
 
   return (
-    <div
+    createPortal(<div
       className={styles.backdrop}
       onMouseDown={(event) => {
         if (event.target === event.currentTarget) onClose();
@@ -74,7 +72,7 @@ function TermsModal({ onClose }) {
           </ol>
         </div>
       </section>
-    </div>
+    </div>, document.body)
   );
 }
 

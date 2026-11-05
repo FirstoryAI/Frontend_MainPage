@@ -1,4 +1,5 @@
 import { useEffect, useRef, useState } from 'react';
+import { createPortal } from 'react-dom';
 import closeIcon from '../../../assets/notification/close.svg';
 import { loadNotificationSettings, saveNotificationSettings } from '../notificationSettings';
 import { getCurrentMember } from '../../../services/homeApi';
@@ -43,13 +44,10 @@ function NotificationModal({ onClose }) {
 
   useEffect(() => {
     const updateScale = () => {
-      const headerHeight = window.innerWidth <= 760
-        ? 76
-        : window.innerHeight <= 850 ? 88 : 109;
       const widthScale = window.innerWidth <= 760
         ? (window.innerWidth - 32) / 560
         : window.innerWidth / 1440;
-      const heightScale = (window.innerHeight - headerHeight - 32) / 352;
+      const heightScale = (window.innerHeight - 32) / 352;
       setDialogScale(Math.max(0.4, Math.min(1, widthScale, heightScale)));
     };
     updateScale();
@@ -77,7 +75,7 @@ function NotificationModal({ onClose }) {
   };
 
   return (
-    <div
+    createPortal(<div
       className={styles.backdrop}
       onMouseDown={(event) => {
         if (event.target === event.currentTarget) onClose();
@@ -126,7 +124,7 @@ function NotificationModal({ onClose }) {
           </p>
         )}
       </section>
-    </div>
+    </div>, document.body)
   );
 }
 

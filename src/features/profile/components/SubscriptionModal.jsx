@@ -1,4 +1,5 @@
 import { useEffect, useRef, useState } from 'react';
+import { createPortal } from 'react-dom';
 import closeIcon from '../../../assets/notification/close.svg';
 import divider from '../../../assets/subscription/divider.svg';
 import styles from './SubscriptionModal.module.css';
@@ -22,13 +23,10 @@ function SubscriptionModal({ onClose }) {
 
   useEffect(() => {
     const updateScale = () => {
-      const headerHeight = window.innerWidth <= 760
-        ? 76
-        : window.innerHeight <= 850 ? 88 : 109;
       const widthScale = window.innerWidth <= 760
         ? (window.innerWidth - 32) / 825
         : window.innerWidth / 1440;
-      const heightScale = (window.innerHeight - headerHeight - 32) / 371;
+      const heightScale = (window.innerHeight - 32) / 371;
       setDialogScale(Math.max(0.4, Math.min(1, widthScale, heightScale)));
     };
     updateScale();
@@ -37,7 +35,7 @@ function SubscriptionModal({ onClose }) {
   }, []);
 
   return (
-    <div
+    createPortal(<div
       className={styles.backdrop}
       onMouseDown={(event) => {
         if (event.target === event.currentTarget) onClose();
@@ -82,7 +80,7 @@ function SubscriptionModal({ onClose }) {
           유지하기
         </button>
       </section>
-    </div>
+    </div>, document.body)
   );
 }
 
