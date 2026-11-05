@@ -8,6 +8,7 @@ import iconLibrary from '../../assets/icons/icon-library.svg';
 import iconLibraryActive from '../../assets/icons/icon-library-active.svg';
 import iconLogout from '../../assets/icons/icon-logout.svg';
 import { logout } from '../../services/authApi';
+import { setSignedInStatus } from '../../features/auth/useSignedIn';
 import styles from './Sidebar.module.css';
 
 function Sidebar({ guest = false }) {
@@ -23,6 +24,7 @@ function Sidebar({ guest = false }) {
 
     try {
       await logout();
+      setSignedInStatus(false);
       navigate('/', { replace: true });
     } catch (requestError) {
       setLogoutError(requestError.message || '로그아웃하지 못했어요.');
