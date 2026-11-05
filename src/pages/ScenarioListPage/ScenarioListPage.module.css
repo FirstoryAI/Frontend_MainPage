@@ -338,7 +338,7 @@
   height: calc(130.2 * var(--u));
 }
 
-.grandmaSick .cardImage {
+.grandmaPassed .cardImage {
   bottom: calc(9.1 * var(--u));
   left: calc(50.6 * var(--u));
   width: calc(149.8 * var(--u));

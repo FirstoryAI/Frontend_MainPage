@@ -155,8 +155,8 @@ export const scenarioPopupContent = {
       },
     ],
   },
-  // 이별 · 죽음 — 할머니가 편찮으세요
-  grandmaSick: {
+  // 이별 · 죽음 — 할머니가 돌아가셨어요
+  grandmaPassed: {
     ...sharedPopupContent,
     age: '6세',
     childTrait: '죽음을 처음 마주한 아이',
