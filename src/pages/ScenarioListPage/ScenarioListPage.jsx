@@ -91,7 +91,8 @@ function ScenarioListPage() {
                       className={`${styles.card} ${styles[scenario.color]} ${styles[scenario.id] ?? ''}`}
                       type="button"
                       aria-haspopup="dialog"
-                      aria-label={`${scenario.category}: ${scenario.accessibleTitle}`}
+                      aria-label={`${scenario.category}: ${scenario.accessibleTitle}${scenario.disabled ? ' (준비 중)' : ''}`}
+                      disabled={scenario.disabled}
                       onClick={() => setSelectedScenario(scenario)}
                     >
                       <span className={styles.category}>{scenario.category}</span>

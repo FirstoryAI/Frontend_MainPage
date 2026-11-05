@@ -91,7 +91,7 @@ function DashboardPage({ guest = false }) {
     paused: selectedScenario !== null || storyModal !== null || onboardingOpen,
     onCardClick: (scenarioId) => {
       const scenario = scenarios.find((item) => item.id === scenarioId);
-      if (scenario) setSelectedScenario(scenario);
+      if (scenario && !scenario.disabled) setSelectedScenario(scenario);
     },
   });
 
@@ -154,7 +154,8 @@ function DashboardPage({ guest = false }) {
                       key={`${copy}-${scenario.category}`}
                       data-scenario-id={scenario.id}
                       aria-haspopup="dialog"
-                      aria-label={`${scenario.category}: ${scenario.accessibleTitle}`}
+                      aria-label={`${scenario.category}: ${scenario.accessibleTitle}${scenario.disabled ? ' (준비 중)' : ''}`}
+                      disabled={scenario.disabled}
                       // 이어 붙인 카드는 모양만 같고 읽거나 포커스를 받지 않아요.
                       aria-hidden={copy > 0 ? 'true' : undefined}
                       tabIndex={copy > 0 ? -1 : undefined}
