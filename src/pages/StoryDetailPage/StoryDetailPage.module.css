@@ -227,8 +227,11 @@
   outline-offset: 3px;
 }
 
+/* 세 구역 사이는 글 길이와 상관없이 항상 같은 간격이에요. */
 .sections {
-  align-content: start;
+  display: flex;
+  flex-direction: column;
+  gap: 36px;
   margin-top: 70px;
 }
 
@@ -285,19 +288,9 @@
   word-break: keep-all;
 }
 
-/* 아래 구역이 디자인 위치에서 시작하도록, 앞 구역은 짧아도 이만큼 높이를 가져요. 글이 길면 그만큼 늘어나요. */
-.summarySection {
-  min-height: 216px;
-  padding-bottom: 24px;
-}
-
 .summarySection p {
   margin-top: 15.6px;
   padding-left: 9px;
-}
-
-.beforeSection {
-  min-height: 160px;
 }
 
 .beforeSection p {
@@ -327,13 +320,8 @@
   }
 
   .sections {
+    gap: 28px;
     margin-top: 28px;
-  }
-
-  .summarySection,
-  .beforeSection {
-    min-height: 0;
-    margin-bottom: 28px;
   }
 }
 
