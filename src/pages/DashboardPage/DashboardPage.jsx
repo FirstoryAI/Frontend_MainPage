@@ -120,9 +120,9 @@ function DashboardPage({ guest = false }) {
               <img className={styles.greetingMascot} src={mascotReading} alt="동화책을 읽는 Firstory 캐릭터" />
               <div className={styles.greetingCopy}>
                 <h1 id="greeting-title" className={styles.greetingText}>
-                  오늘, 아이와 어떤 이야기를 나누고 싶으세요?
+                  아이에게 전하고 싶은 마음, 동화로 시작해 보세요.
                 </h1>
-                <p>아이에게 어떤 말을 건네야 할지 고민될 때, 우리 아이의 이야기를 담은 동화로 대화를 시작해 보세요.</p>
+                <p>아이의 상황과 마음을 담은 맞춤 동화를 만들고, 함께 읽으며 자연스럽게 대화를 나눠보세요.</p>
               </div>
             </section>
 
