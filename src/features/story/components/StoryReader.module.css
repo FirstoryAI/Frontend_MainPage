@@ -224,6 +224,180 @@
 
 .extra button:disabled { opacity: 0.5; cursor: default; }
 
+.previewGuide {
+  position: absolute;
+  z-index: 5;
+  top: 17.6%;
+  left: 63.47%;
+  width: 30.35%;
+  height: 69%;
+  opacity: 0;
+  visibility: hidden;
+  pointer-events: none;
+  transform: translateY(7%) scale(.96);
+  transform-origin: bottom right;
+  transition: transform 330ms ease, opacity 250ms ease, visibility 0s linear 330ms;
+}
+
+.previewGuideOpen {
+  opacity: 1;
+  visibility: visible;
+  pointer-events: auto;
+  transform: none;
+  transition: transform 330ms ease, opacity 250ms ease, visibility 0s;
+}
+
+.previewGuideBackground {
+  position: absolute;
+  top: -1.24cqw;
+  left: -1.1cqw;
+  width: 32.55cqw;
+  height: 48.2cqw;
+  max-width: none;
+}
+
+.previewGuideContent {
+  position: absolute;
+  top: 4cqw;
+  right: 1.9cqw;
+  bottom: 5.9cqw;
+  left: 2.6cqw;
+  overflow-y: auto;
+  scrollbar-width: thin;
+  color: #575757;
+  font-size: 1.11cqw;
+  line-height: 1.54;
+}
+
+.previewGuideContent section:first-child { min-height: 13.6cqw; }
+.previewGuideContent section + section { margin-top: 1.7cqw; }
+.previewGuideContent h2 {
+  margin: 0;
+  font-family: var(--font-title);
+  font-size: 1.53cqw;
+  font-weight: 400;
+  line-height: 1.5;
+}
+.previewGuideContent p { overflow-wrap: anywhere; }
+.previewGuideLead { margin: .83cqw 0 0 .21cqw; font-size: 1.25cqw; font-weight: 500; line-height: 1.5; }
+.previewGuideDetail { display: flex; align-items: flex-start; gap: .28cqw; margin: 1.1cqw 0 0 .21cqw; }
+.previewGuideDetail img { flex: 0 0 auto; max-width: none; margin-top: .14cqw; }
+
+.previewGuideToggle {
+  position: absolute;
+  z-index: 6;
+  top: 87.92%;
+  left: 90.49%;
+  width: 5.28cqw;
+  height: 5.21cqw;
+  padding: 0;
+  border: 0;
+  background: transparent;
+  cursor: pointer;
+}
+.previewGuideToggle img { position: absolute; max-width: none; pointer-events: none; }
+.previewToggleBackground { top: -.3cqw; left: -.36cqw; width: 6cqw; height: 5.93cqw; }
+.previewToggleChevron { top: 2.22cqw; left: 1.88cqw; width: 1.56cqw; height: .87cqw; }
+.previewMascotBase { top: -.4cqw; left: -.47cqw; width: 6.22cqw; height: 6.15cqw; }
+.previewMascotFace { top: .56cqw; left: .44cqw; width: 4.46cqw; height: 4.65cqw; }
+.previewGuideDot { top: 0; left: 4.58cqw; width: .56cqw; height: .56cqw; }
+
+.previewHint {
+  position: absolute;
+  z-index: 5;
+  top: 78.44%;
+  left: 75.28%;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  width: 19.44cqw;
+  min-height: 5cqw;
+  padding: .97cqw 1.39cqw;
+  color: var(--color-text);
+  background: #fffdf4;
+  border-radius: 1.11cqw;
+  box-shadow: 0 2px 12px rgb(0 0 0 / 16%);
+  font-size: 1.11cqw;
+  line-height: 1.5;
+  text-align: center;
+  opacity: 0;
+  visibility: hidden;
+  pointer-events: none;
+  transform: translateY(12px) scale(.96);
+  transform-origin: bottom right;
+  transition: transform 220ms ease, opacity 220ms ease, visibility 0s linear 220ms;
+}
+.previewHint::after {
+  position: absolute;
+  right: 1.74cqw;
+  bottom: -.76cqw;
+  width: 1.11cqw;
+  height: .83cqw;
+  background: inherit;
+  clip-path: polygon(0 0, 100% 0, 100% 100%);
+  content: '';
+}
+.previewHintOpen { opacity: 1; visibility: visible; transform: translateY(0) scale(1); transition: transform 220ms ease, opacity 220ms ease, visibility 0s; }
+
+.previewPagination {
+  position: absolute;
+  z-index: 4;
+  top: 90.3%;
+  left: 50%;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  width: 13.85cqw;
+  height: 3.54cqw;
+  padding: .55cqw 1.42cqw;
+  background: #fff;
+  border-radius: 1.09cqw;
+  box-shadow: 0 1px 3.3px rgb(0 0 0 / 19%);
+  transform: translateX(-50%);
+}
+.previewPagination button { display: grid; width: 1.54cqw; height: 2.3cqw; place-items: center; padding: 0; border: 0; background: transparent; cursor: pointer; }
+.previewPagination button:disabled { cursor: default; }
+.previewPagination button img { display: block; max-width: none; width: 1.54cqw; height: 2.3cqw; }
+.previewPagination button:first-child img { transform: scaleX(-1); }
+.previewPagination strong { color: #717070; font-size: 1.25cqw; font-weight: 600; white-space: nowrap; }
+.previewPagination strong span { color: #ff8a5b; }
+
+.previewReader .readerBook { top: 13.85%; left: 8.9%; width: 82.2%; height: 73.5%; }
+@media (min-width: 761px) {
+  .previewReader .readerCanvas { overflow: visible; }
+  .previewReader .readerHeader {
+    right: auto;
+    left: 50%;
+    width: 100vw;
+    transform: translateX(-50%);
+  }
+  .previewReader .readerClose {
+    top: 50%;
+    left: clamp(24px, 4.03vw, 58px);
+    width: 27px;
+    height: 27px;
+    transform: translateY(-50%);
+  }
+  .previewReader .readerClose img { width: 27px; height: 27px; }
+  .previewReader .readerTitle { left: clamp(89px, 9.38vw, 135px); }
+  .previewReader .readerProgress {
+    right: clamp(24px, 4.17vw, 60px);
+    width: min(455px, 32vw);
+  }
+}
+.previewReader .readerFrame {
+  top: -1.36cqw;
+  left: -1.36cqw;
+  width: 84.94cqw;
+  height: 51.72cqw;
+}
+.previewReader .readerPage { top: 3.2%; left: 1.7%; width: 96.6%; height: 93.5%; padding: 1.18cqw; }
+.previewReader .readerArrow { display: none; }
+
+@media (prefers-reduced-motion: reduce) {
+  .previewGuide, .previewGuideOpen, .previewHint, .previewHintOpen { transition: none; }
+}
+
 @media (max-width: 760px) {
   .readerCanvas { width: 100vw; height: 100vh; aspect-ratio: auto; }
   .readerHeader { height: 76px; }
@@ -245,4 +419,26 @@
   .readerArrowLeft { left: -2px; transform-origin: left center; }
   .readerArrowRight { right: -2px; transform-origin: right center; }
   .extra { bottom: 12px; flex-wrap: wrap; font-size: 14px; }
+  .previewReader .readerBook { top: 17%; left: 5%; width: 90%; height: 68%; }
+  .previewReader .readerPage { inset: 0; width: 100%; height: 100%; padding: 10px; }
+  .previewPagination { top: auto; bottom: 7%; width: 150px; height: 44px; padding: 6px 12px; border-radius: 12px; }
+  .previewPagination button, .previewPagination button img { width: 22px; height: 33px; }
+  .previewPagination strong { font-size: 14px; }
+  .previewGuide { position: fixed; top: auto; bottom: 15%; left: auto; right: 16px; width: min(437px, calc(100vw - 32px)); height: min(662px, 66vh); }
+  .previewGuideBackground { top: 0; left: 0; width: 100%; height: 100%; }
+  .previewGuideContent { top: 9%; right: 7%; bottom: 10%; left: 9%; font-size: 14px; }
+  .previewGuideContent section:first-child { min-height: 190px; }
+  .previewGuideContent section + section { margin-top: 20px; }
+  .previewGuideContent h2 { font-size: 20px; }
+  .previewGuideLead { margin-top: 10px; font-size: 16px; }
+  .previewGuideDetail { gap: 4px; margin-top: 14px; }
+  .previewGuideDetail img { width: auto; height: auto; }
+  .previewGuideToggle { position: fixed; top: auto; bottom: 3%; left: auto; right: 5%; width: 76px; height: 75px; }
+  .previewToggleBackground { width: 86.4px; height: 85.4px; }
+  .previewToggleChevron { top: 32px; left: 27px; width: 22.5px; height: 12.5px; }
+  .previewMascotBase { top: -5.8px; left: -6.8px; width: 89.6px; height: 88.6px; }
+  .previewMascotFace { top: 8px; left: 6px; width: 64px; height: 67px; }
+  .previewGuideDot { left: 66px; width: 8px; height: 8px; }
+  .previewHint { position: fixed; top: auto; right: 16px; bottom: 111px; left: auto; width: min(280px, calc(100vw - 32px)); min-height: 72px; padding: 14px 20px; border-radius: 16px; font-size: 16px; }
+  .previewHint::after { right: 25px; bottom: -11px; width: 16px; height: 12px; }
 }
