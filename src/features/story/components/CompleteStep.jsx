@@ -69,7 +69,7 @@ function CompleteStep({ storyId, title, coverUrl }) {
         <h1 className={styles.title} id="complete-title">제작이 완료되었어요</h1>
         <p className={styles.description}>우리 아이를 위한 동화가 완성되었어요. 서재에서 확인하실 수 있어요.</p>
         <button className={styles.cta} type="button" onClick={() => navigate(`/story/${storyId}/preview`)}>
-          서재에서 동화 바로 확인하기 <span aria-hidden="true">→</span>
+          만들어진 동화 확인하기 <span aria-hidden="true">→</span>
         </button>
       </div>
     </section>
