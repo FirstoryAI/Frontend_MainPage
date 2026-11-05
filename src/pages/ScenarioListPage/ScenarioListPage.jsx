@@ -4,6 +4,7 @@ import Sidebar from '../../components/layout/Sidebar';
 import HomeScenarioModal from '../../features/home/components/HomeScenarioModal';
 import { useSignedIn } from '../../features/auth/useSignedIn';
 import { listScenarios } from '../../features/home/scenarios';
+import { lockedCategories } from '../../features/story/constants';
 import iconBell from '../../assets/icons/icon-bell.svg';
 import iconBackSmall from '../../assets/icons/icon-back-small.svg';
 import avatarProfile from '../../assets/icons/avatar-profile.svg';
@@ -76,6 +77,7 @@ function ScenarioListPage() {
                   type="button"
                   key={filter}
                   aria-pressed={activeFilter === filter}
+                  disabled={lockedCategories.includes(filter)}
                   onClick={() => setActiveFilter(filter)}
                 >
                   {filter}

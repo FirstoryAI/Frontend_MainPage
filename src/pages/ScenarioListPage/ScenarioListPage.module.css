@@ -131,6 +131,11 @@
   cursor: pointer;
 }
 
+.filter:disabled {
+  cursor: not-allowed;
+  opacity: 0.4;
+}
+
 .filterActive {
   color: var(--color-chip-selected);
   background: #fff6f3;
