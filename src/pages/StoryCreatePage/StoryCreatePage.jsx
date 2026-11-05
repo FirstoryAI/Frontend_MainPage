@@ -148,7 +148,9 @@ function StoryCreatePage() {
       const mainStyle = getComputedStyle(main);
       const mainTop = (Number.parseFloat(mainStyle.top) || 0)
         + (Number.parseFloat(mainStyle.marginTop) || 0);
-      const bottomMargin = [STEP.CHILD, STEP.TOPIC].includes(step) ? 4 : 16;
+      const bottomMargin = main.classList.contains(styles.centerComplete)
+        ? 0
+        : ([STEP.CHILD, STEP.TOPIC].includes(step) ? 4 : 16);
       const availableHeight = stageGroup.clientHeight - mainTop - bottomMargin;
       const widthScale = availableWidth / main.scrollWidth;
       const heightScale = availableHeight / main.scrollHeight;
@@ -808,12 +810,13 @@ function StoryCreatePage() {
 
   return (
     <div className={`${styles.page} ${fitStageToViewport ? styles.fitPage : ''}`}>
-      <StoryHeader progress={progress} onExit={() => setExitPromptOpen(true)} />
+      <StoryHeader progress={progress} onExit={() => setExitPromptOpen(true)} inert={visibleStep === STEP.COMPLETE} complete={visibleStep === STEP.COMPLETE} />
 
       <div
         className={styles.stageGroup}
         ref={stageGroupRef}
         style={{ '--stage-scale': stageScale }}
+        inert={visibleStep === STEP.COMPLETE}
       >
       {fitStageToViewport && !toneOpen && step > STEP.SITUATION && step < STEP.CHAT && (
         <div className={styles.backButtonAnchor}>
@@ -871,12 +874,15 @@ function StoryCreatePage() {
             onEditGoal={() => setEditing('goal')}
           />
         )}
-        {!toneOpen && visibleStep === STEP.GENERATING && (
+        {!toneOpen && (visibleStep === STEP.GENERATING || visibleStep === STEP.COMPLETE) && (
           <GeneratingStep stage={activeJob?.stage ?? 0} scope={activeJob?.scope} />
         )}
-        {!toneOpen && visibleStep === STEP.COMPLETE && <CompleteStep storyId={activeJob.storyId} title={activeJob.title} coverUrl={activeJob.coverUrl} />}
       </main>
       </div>
+
+      {!toneOpen && visibleStep === STEP.COMPLETE && (
+        <CompleteStep storyId={activeJob.storyId} title={activeJob.title} coverUrl={activeJob.coverUrl} />
+      )}
 
       {toneOpen && (
         <footer className={styles.footer}>

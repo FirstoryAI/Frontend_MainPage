@@ -3,9 +3,9 @@ import iconExit from '../../../assets/icons/icon-exit.svg';
 import styles from './StoryHeader.module.css';
 
 // progress가 없으면(동화 만드는 중 화면) 로고만 보여줘요.
-function StoryHeader({ progress = null, onExit }) {
+function StoryHeader({ progress = null, onExit, inert = false, complete = false }) {
   return (
-    <header className={styles.header}>
+    <header className={`${styles.header} ${complete ? styles.complete : ''}`} inert={inert}>
       <Link className={styles.logo} to="/home" aria-label="FIRSTORY 홈">
         FIRSTORY
       </Link>
