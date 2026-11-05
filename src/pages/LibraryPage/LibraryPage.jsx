@@ -52,7 +52,10 @@ function LibraryPage() {
   // 미리보기에서 '이대로 확정'으로 넘어오면 '서재에 저장했어요' 팝업을 보여줘요.
   const [savedStory] = useState(() => (location.state?.newlyCreated ? (location.state.story ?? {}) : null));
   const [savedModalOpen, setSavedModalOpen] = useState(savedStory !== null);
-  const [activeFilter, setActiveFilter] = useState('ALL');
+  const [activeFilter, setActiveFilter] = useState(() => {
+    const requestedFilter = new URLSearchParams(location.search).get('filter');
+    return filters.some((filter) => filter.value === requestedFilter) ? requestedFilter : 'ALL';
+  });
   const [stories, setStories] = useState([]);
   const [counts, setCounts] = useState({});
   const [page, setPage] = useState(0);
@@ -61,6 +64,16 @@ function LibraryPage() {
   const [isLoadingMore, setIsLoadingMore] = useState(false);
   const [error, setError] = useState('');
   const { resumeGeneration } = useStoryGeneration();
+
+  // Keep the selected tab in sync when a notification changes only the query string.
+  useEffect(() => {
+    const requestedFilter = new URLSearchParams(location.search).get('filter');
+    if (filters.some((filter) => filter.value === requestedFilter)) {
+      setActiveFilter(requestedFilter);
+      setIsLoading(true);
+      setError('');
+    }
+  }, [location.search]);
 
   // 새로고침했을 때 만드는 중인 동화가 있으면 다시 따라가서, 끝나면 알림이 오게 해요.
   useEffect(() => {

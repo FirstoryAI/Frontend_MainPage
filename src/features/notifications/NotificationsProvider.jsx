@@ -36,6 +36,15 @@ export function NotificationsProvider({ children }) {
     );
   }, []);
 
+  const updateStoryNotificationHref = useCallback((storyId, href) => {
+    const prefix = `story-${storyId}-`;
+    setNotifications((current) => current.map((item) => (
+      item.id?.startsWith(prefix) && item.id.endsWith('-done')
+        ? { ...item, href }
+        : item
+    )));
+  }, []);
+
   const value = useMemo(
     () => ({
       notifications,
@@ -43,8 +52,9 @@ export function NotificationsProvider({ children }) {
       addNotification,
       markRead,
       markAllRead,
+      updateStoryNotificationHref,
     }),
-    [notifications, addNotification, markRead, markAllRead],
+    [notifications, addNotification, markRead, markAllRead, updateStoryNotificationHref],
   );
 
   return <NotificationsContext.Provider value={value}>{children}</NotificationsContext.Provider>;

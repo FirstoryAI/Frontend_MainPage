@@ -81,7 +81,7 @@ export function StoryGenerationProvider({ children }) {
             id: notificationId,
             title: '동화를 만들지 못했어요',
             message: '서재에서 다시 만들어 볼 수 있어요.',
-            href: '/library',
+            href: '/library?filter=FAILED',
           });
           return;
         }
@@ -95,7 +95,7 @@ export function StoryGenerationProvider({ children }) {
           id: notificationId,
           title: '동화 제작이 완료되었어요',
           message: `‘${title}’ 동화가 완성되었어요. 서재에서 확인해 보세요.`,
-          href: '/library',
+          href: '/library?filter=REVIEWING',
         });
       } catch (error) {
         if (activeStory.current !== storyId) return;
