@@ -233,10 +233,10 @@
 }
 
 .emotion .cardImage {
-  bottom: calc(13 * var(--u));
-  left: calc(73 * var(--u));
-  width: calc(90 * var(--u));
-  height: calc(114 * var(--u));
+  bottom: calc(12.2 * var(--u));
+  left: calc(63.4 * var(--u));
+  width: calc(124 * var(--u));
+  height: calc(136.4 * var(--u));
 }
 
 .kindergarten .cardImage {

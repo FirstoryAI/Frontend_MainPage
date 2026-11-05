@@ -239,10 +239,10 @@
 }
 
 .emotion .cardImage {
-  bottom: 13px;
-  left: 73px;
-  width: 90px;
-  height: 114px;
+  bottom: 12.2px;
+  left: 63.4px;
+  width: 124px;
+  height: 136.4px;
 }
 
 .kindergarten .cardImage {
@@ -351,10 +351,10 @@
   }
 
   .emotion .cardImage {
-    bottom: clamp(11px, 1.5vh, 13px);
-    left: clamp(60px, 8.39vh, 73px);
-    width: clamp(74px, 10.34vh, 90px);
-    height: clamp(93px, 13.1vh, 114px);
+    bottom: clamp(10px, 1.4vh, 12.2px);
+    left: clamp(51.9px, 7.29vh, 63.4px);
+    width: clamp(101.5px, 14.26vh, 124px);
+    height: clamp(111.6px, 15.68vh, 136.4px);
   }
 
   .kindergarten .cardImage {
@@ -469,10 +469,10 @@
   }
 
   .emotion .cardImage {
-    bottom: 12px;
-    left: 67px;
-    width: 83px;
-    height: 105px;
+    bottom: 11.2px;
+    left: 58.3px;
+    width: 114.1px;
+    height: 125.5px;
   }
 
   .kindergarten .cardImage {
