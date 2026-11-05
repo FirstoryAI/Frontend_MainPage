@@ -22,6 +22,32 @@
   white-space: nowrap;
 }
 
+@media (min-width: 761px) {
+  .raiseLogo .logo {
+    transform: translateY(4px);
+  }
+}
+
+.closeButton {
+  position: absolute;
+  top: 50%;
+  right: 46px;
+  display: grid;
+  place-items: center;
+  width: 32px;
+  height: 32px;
+  transform: translateY(-50%);
+}
+
+.closeButton img {
+  width: 27px;
+  height: 27px;
+}
+
+.closeButton:focus-visible {
+  border-radius: 4px;
+}
+
 @media (min-width: 761px) and (max-height: 850px) {
   .header {
     padding: 20px 36px 0;
@@ -40,5 +66,9 @@
 
   .logo {
     font-size: 32px;
+  }
+
+  .closeButton {
+    right: 24px;
   }
 }
