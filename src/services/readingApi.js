@@ -9,7 +9,3 @@ export const saveReadingProgress = (sessionId, page) =>
   apiClient.put(`/api/reading-sessions/${sessionId}/progress`, { page });
 
 export const completeReading = (sessionId) => apiClient.post(`/api/reading-sessions/${sessionId}/complete`);
-
-// action: 'TALKED'(이야기 나눴어요) | 'SKIPPED'(건너뛰기)
-export const saveDialogue = (sessionId, promptId, action) =>
-  apiClient.put(`/api/reading-sessions/${sessionId}/dialogue/${promptId}`, { action });
