@@ -8,6 +8,11 @@
   background: var(--color-page);
 }
 
+/* 상단바가 사라지면 책과 화살표가 이만큼 올라가 화면 가운데에 와요. (디자인 1440 기준 46px) */
+.reader {
+  --reader-header-shift: 3.194cqw;
+}
+
 .readerCanvas {
   position: relative;
   width: min(100vw, 150vh);
@@ -24,6 +29,30 @@
   height: 11.35%;
   background: #fff;
   box-shadow: 0 2px 10.4px rgb(0 0 0 / 5%);
+  transition:
+    translate 0.45s ease,
+    opacity 0.35s ease,
+    visibility 0s;
+}
+
+.reader[data-header-hidden='true'] .readerHeader {
+  opacity: 0;
+  visibility: hidden;
+  translate: 0 -100%;
+  transition:
+    translate 0.45s ease,
+    opacity 0.35s ease,
+    visibility 0s linear 0.45s;
+}
+
+.readerBook,
+.readerArrow {
+  transition: translate 0.45s ease;
+}
+
+.reader[data-header-hidden='true'] .readerBook,
+.reader[data-header-hidden='true'] .readerArrow {
+  translate: 0 calc(-1 * var(--reader-header-shift));
 }
 
 .readerClose {
@@ -76,7 +105,7 @@
   line-height: 1;
 }
 
-.readerProgress > span { flex: 0 0 auto; white-space: nowrap; }
+.readerProgress > span { flex: 0 0 auto; opacity: 0.81; white-space: nowrap; }
 
 .readerProgressTrack {
   flex: 1;
@@ -84,6 +113,7 @@
   overflow: hidden;
   border-radius: 32px;
   background: #e2e2e2;
+  opacity: 0.77;
 }
 
 .readerProgressFill {
@@ -169,7 +199,6 @@
   border: 0;
   background: transparent;
   cursor: pointer;
-  transform: translateY(-50%);
 }
 
 .readerArrow img {
@@ -180,8 +209,8 @@
 
 .readerArrow:disabled { opacity: 0.35; cursor: default; }
 .readerArrowLeft { left: 1.25%; }
-.readerArrowRight { right: 1.25%; }
-.readerArrowRight img { transform: rotate(180deg); }
+.readerArrowRight { right: 1.18%; }
+.readerArrowRight img { transform: scaleX(-1); }
 
 /* 읽는 동안 쪽 아래에 띄우는 보조 영역(대화 질문·다 읽었어요 버튼 등) */
 .extra {
@@ -389,7 +418,7 @@
     transform: translateY(-50%);
   }
   .readerProgress {
-    top: 50%;
+    top: calc(50% + 3px);
     right: clamp(24px, 4.17vw, 60px);
     width: min(455px, 32vw);
     transform: translateY(-50%);
@@ -406,9 +435,13 @@
 
 @media (prefers-reduced-motion: reduce) {
   .previewGuide, .previewGuideOpen, .previewHint, .previewHintOpen { transition: none; }
+  /* 움직이지 않고 서서히 나타나고 사라져요. */
+  .readerBook, .readerArrow { transition: none; }
+  .readerHeader, .reader[data-header-hidden='true'] .readerHeader { translate: none; }
 }
 
 @media (max-width: 760px) {
+  .reader { --reader-header-shift: 5vh; }
   .readerCanvas { width: 100vw; height: 100vh; aspect-ratio: auto; }
   .readerHeader { height: 76px; }
   .readerClose { top: 24px; left: 16px; width: 24px; height: 24px; }
