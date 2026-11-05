@@ -2,6 +2,7 @@ import { useState } from 'react';
 import { Link, useLocation, useNavigate } from 'react-router-dom';
 import Header from '../../components/layout/Header';
 import { login } from '../../services/authApi';
+import { setSignedInStatus } from '../../features/auth/useSignedIn';
 import styles from './EmailLoginPage.module.css';
 
 function EmailLoginPage() {
@@ -26,6 +27,7 @@ function EmailLoginPage() {
         password: formData.get('password'),
         rememberMe: formData.get('rememberMe') === 'on',
       });
+      setSignedInStatus(true);
 
       navigate(returnTo ?? '/home', {
         replace: true,
