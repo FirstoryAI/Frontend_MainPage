@@ -95,6 +95,63 @@
   font-weight: 500;
 }
 
+/* 로그인하지 않았을 때의 빈 서재 안내예요. (Figma 1669:1357) 가운데보다 조금 왼쪽에 놓여 있어요. */
+.guestEmpty {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  margin-top: 171px;
+  padding-right: 62px;
+}
+
+.emptyMascot {
+  position: relative;
+  width: 209px;
+  height: 186px;
+  overflow: hidden;
+  pointer-events: none;
+}
+
+/* 그림 한 장에 캐릭터가 두 모습으로 들어 있어서, 왼쪽 모습만 보여줘요. */
+.emptyMascot img {
+  position: absolute;
+  top: 0;
+  left: -0.27%;
+  width: 190.65%;
+  max-width: none;
+  height: 100%;
+}
+
+.emptyTitle {
+  margin: 49px 0 0;
+  color: var(--color-text);
+  font-family: var(--font-title);
+  font-size: 35px;
+  line-height: normal;
+}
+
+.emptyLogin {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  width: 235px;
+  height: 58px;
+  margin-top: 36px;
+  /* 디자인에서는 버튼이 글보다 5px 오른쪽에 있어요. */
+  position: relative;
+  left: 5px;
+  color: var(--color-brand);
+  background: var(--color-surface);
+  border-radius: 14px;
+  box-shadow:
+    0 0 3.35px rgb(0 0 0 / 18%),
+    inset 0 0 8.8px rgb(255 255 255 / 25%);
+  font-size: 18px;
+  font-weight: 600;
+  line-height: 1.5;
+  text-decoration: none;
+}
+
 .storyGrid {
   display: grid;
   grid-template-columns: repeat(4, minmax(0, 236px));
@@ -332,3 +389,15 @@
   }
 }
 
+
+@media (max-width: 900px) {
+  .guestEmpty {
+    margin-top: 64px;
+    padding-right: 0;
+  }
+
+  .emptyTitle {
+    font-size: 28px;
+    text-align: center;
+  }
+}

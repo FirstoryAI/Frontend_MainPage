@@ -7,6 +7,7 @@ import StorySavedModal from '../../features/library/components/StorySavedModal';
 import avatarCircle from '../../assets/icons/avatar-circle.svg';
 import avatarPerson from '../../assets/icons/avatar-person.svg';
 import bookCover from '../../assets/images/library-cover-sample.png';
+import emptyMascot from '../../assets/images/library-empty-mascot.png';
 import SafeImage from '../../features/story/components/SafeImage';
 import { setCoverFrameRatio } from '../../features/story/coverLayout';
 import bookCoverStyles from '../../features/story/components/BookCover.module.css';
@@ -195,9 +196,21 @@ function LibraryPage() {
               ))}
             </div>
 
+            {guest && (
+              // 로그인하지 않았으면 서재에 보여줄 동화가 없어서, 로그인으로 이어 주는 안내를 보여줘요.
+              <section className={styles.guestEmpty} aria-labelledby="library-empty-title">
+                <div className={styles.emptyMascot}>
+                  <img src={emptyMascot} alt="" />
+                </div>
+                <p className={styles.emptyTitle} id="library-empty-title">아직 제작된 동화가 없어요</p>
+                <Link className={styles.emptyLogin} to="/auth">로그인하고 동화 만들기</Link>
+              </section>
+            )}
+
             {!guest && error && <p className={styles.error} role="alert"><ErrorText message={error} /></p>}
-            <section className={styles.storyGrid} aria-live="polite" aria-busy={!guest && isLoading}>
-              {!guest && isLoading ? <p className={styles.message}>서재를 불러오는 중이에요.</p> : !guest && stories.map((story) => {
+            {!guest && (
+            <section className={styles.storyGrid} aria-live="polite" aria-busy={isLoading}>
+              {isLoading ? <p className={styles.message}>서재를 불러오는 중이에요.</p> : stories.map((story) => {
                 const group = libraryGroup(story);
                 const storyTitle = story.title || '제목을 준비하고 있어요';
                 const meta = [story.categoryLabel, story.childDisplayName, formatStoryDate(story.updatedAt || story.createdAt)]
@@ -242,10 +255,11 @@ function LibraryPage() {
                   </article>
                 );
               })}
-              {(guest || (isSignedIn && !isLoading && !error && stories.length === 0)) && (
-                <p className={styles.message}>{guest ? '아직 아무것도 없어요.' : '이 조건에 해당하는 동화가 없어요.'}</p>
+              {isSignedIn && !isLoading && !error && stories.length === 0 && (
+                <p className={styles.message}>이 조건에 해당하는 동화가 없어요.</p>
               )}
             </section>
+            )}
             {!guest && hasNext && !isLoading && (
               <button className={styles.loadMore} type="button" onClick={handleLoadMore} disabled={isLoadingMore}>
                 {isLoadingMore ? '불러오는 중…' : '더 보기'}
