@@ -18,7 +18,6 @@ import { deleteStory, getBook, getGuide, getStoryDetail } from '../../services/s
 import {
   completeReading,
   resumeReading,
-  saveDialogue,
   saveReadingProgress,
   startReading,
 } from '../../services/readingApi';
@@ -36,44 +35,6 @@ const FALLBACK_AFTER = {
   ifUndecided: '아이의 이야기로 꼭 넘어가지 않아도 괜찮아요',
 };
 
-// 읽는 쪽 아래에 보여주는 대화 질문과 '다 읽었어요' 버튼이에요.
-function ReadingExtras({ reading, onDialogue, onFinish }) {
-  const { book, page, answers } = reading;
-  const prompt = book.prompts?.find((item) => item.afterPage === page);
-  const isLast = page === book.pages.length;
-
-  if (!prompt && !isLast) return null;
-
-  return (
-    <>
-      {prompt && (
-        <>
-          <span>{prompt.question}</span>
-          <button
-            className={answers[prompt.id] === 'TALKED' ? readerStyles.primary : ''}
-            type="button"
-            onClick={() => onDialogue(prompt.id, 'TALKED')}
-          >
-            이야기 나눴어요
-          </button>
-          <button
-            className={answers[prompt.id] === 'SKIPPED' ? readerStyles.primary : ''}
-            type="button"
-            onClick={() => onDialogue(prompt.id, 'SKIPPED')}
-          >
-            건너뛰기
-          </button>
-        </>
-      )}
-      {isLast && (
-        <button className={readerStyles.primary} type="button" onClick={onFinish}>
-          다 읽었어요
-        </button>
-      )}
-    </>
-  );
-}
-
 // 서재에서 '아직 읽지 않았어요'·'함께 읽었어요' 동화를 누르면 보이는 동화 상세 화면이에요.
 function StoryDetailPage() {
   const { storyId } = useParams();
@@ -85,7 +46,7 @@ function StoryDetailPage() {
   const [loadError, setLoadError] = useState('');
   const [notice, setNotice] = useState('');
   const [busy, setBusy] = useState(false);
-  // 아이와 읽는 중이면 { session, book, page, answers }
+  // 아이와 읽는 중이면 { session, book, page }
   const [reading, setReading] = useState(null);
 
   const loadDetail = useCallback(
@@ -132,7 +93,7 @@ function StoryDetailPage() {
     try {
       const [book, resumed] = await Promise.all([getBook(storyId), resumeReading(storyId)]);
       const session = resumed ?? (await startReading(storyId));
-      setReading({ session, book, page: Math.max(1, session.lastPage), answers: {} });
+      setReading({ session, book, page: Math.max(1, session.lastPage) });
     } catch (error) {
       setNotice(error.message || '읽기를 시작하지 못했어요.');
     } finally {
@@ -154,11 +115,6 @@ function StoryDetailPage() {
   const handlePage = (page) => {
     setReading((current) => ({ ...current, page }));
     saveReadingProgress(reading.session.sessionId, page).catch(() => {});
-  };
-
-  const handleDialogue = (promptId, action) => {
-    setReading((current) => ({ ...current, answers: { ...current.answers, [promptId]: action } }));
-    saveDialogue(reading.session.sessionId, promptId, action).catch(() => {});
   };
 
   const handleFinishReading = async () => {
@@ -300,11 +256,11 @@ function StoryDetailPage() {
           onClose={() => setReading(null)}
           closeLabel="읽기 닫기"
         >
-          <ReadingExtras
-            reading={reading}
-            onDialogue={handleDialogue}
-            onFinish={handleFinishReading}
-          />
+          {reading.page === reading.book.pages.length && (
+            <button className={readerStyles.primary} type="button" onClick={handleFinishReading}>
+              다 읽었어요
+            </button>
+          )}
         </StoryReader>
       )}
     </div>
