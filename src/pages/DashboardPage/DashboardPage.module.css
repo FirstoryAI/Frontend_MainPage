@@ -232,10 +232,10 @@
 }
 
 .friend .cardImage {
-  bottom: 13px;
-  left: 33.4px;
-  width: 185.8px;
-  height: 111px;
+  bottom: 12.4px;
+  left: 20.1px;
+  width: 210.8px;
+  height: 114.7px;
 }
 
 .emotion .cardImage {
@@ -344,10 +344,10 @@
   }
 
   .friend .cardImage {
-    bottom: clamp(11px, 1.5vh, 13px);
-    left: clamp(27px, 3.85vh, 33.4px);
-    width: clamp(152px, 21.36vh, 185.8px);
-    height: clamp(91px, 12.76vh, 111px);
+    bottom: clamp(10.5px, 1.43vh, 12.4px);
+    left: clamp(16.3px, 2.32vh, 20.1px);
+    width: clamp(172.5px, 24.24vh, 210.8px);
+    height: clamp(94px, 13.19vh, 114.7px);
   }
 
   .emotion .cardImage {
@@ -462,10 +462,10 @@
   }
 
   .friend .cardImage {
-    bottom: 12px;
-    left: 30.7px;
-    width: 171px;
-    height: 102px;
+    bottom: 11.4px;
+    left: 18.5px;
+    width: 194px;
+    height: 105.4px;
   }
 
   .emotion .cardImage {

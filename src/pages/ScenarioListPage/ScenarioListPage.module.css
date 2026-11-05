@@ -226,10 +226,10 @@
 }
 
 .friend .cardImage {
-  bottom: calc(13 * var(--u));
-  left: calc(33.4 * var(--u));
-  width: calc(185.8 * var(--u));
-  height: calc(111 * var(--u));
+  bottom: calc(12.4 * var(--u));
+  left: calc(20.1 * var(--u));
+  width: calc(210.8 * var(--u));
+  height: calc(114.7 * var(--u));
 }
 
 .emotion .cardImage {
