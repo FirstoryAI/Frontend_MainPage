@@ -6,12 +6,14 @@ import { useSignedIn } from '../../features/auth/useSignedIn';
 import { listScenarios } from '../../features/home/scenarios';
 import { lockedCategories } from '../../features/story/constants';
 import iconBell from '../../assets/icons/icon-bell.svg';
+import iconLock from '../../assets/icons/icon-lock.svg';
 import iconBackSmall from '../../assets/icons/icon-back-small.svg';
 import avatarProfile from '../../assets/icons/avatar-profile.svg';
 import styles from './ScenarioListPage.module.css';
 
 const ALL = '전체';
-const filters = [ALL, ...new Set(listScenarios.map((scenario) => scenario.category))];
+// 잠긴 카테고리(이별 · 죽음)는 카드는 숨기고 필터만 자물쇠로 남겨 둬요.
+const filters = [ALL, ...new Set([...listScenarios.map((scenario) => scenario.category), ...lockedCategories])];
 
 function ScenarioListPage() {
   const navigate = useNavigate();
@@ -69,20 +71,24 @@ function ScenarioListPage() {
             </header>
 
             <div className={styles.filters} role="group" aria-label="상황 카테고리">
-              {filters.map((filter) => (
-                <button
-                  className={`${styles.filter} ${
-                    activeFilter === filter ? styles.filterActive : ''
-                  }`}
-                  type="button"
-                  key={filter}
-                  aria-pressed={activeFilter === filter}
-                  disabled={lockedCategories.includes(filter)}
-                  onClick={() => setActiveFilter(filter)}
-                >
-                  {filter}
-                </button>
-              ))}
+              {filters.map((filter) => {
+                const locked = lockedCategories.includes(filter);
+                return (
+                  <button
+                    className={`${styles.filter} ${
+                      activeFilter === filter ? styles.filterActive : ''
+                    }`}
+                    type="button"
+                    key={filter}
+                    aria-pressed={activeFilter === filter}
+                    disabled={locked}
+                    onClick={() => setActiveFilter(filter)}
+                  >
+                    {filter}
+                    {locked && <img className={styles.lockIcon} src={iconLock} alt="준비 중" />}
+                  </button>
+                );
+              })}
             </div>
 
             <div className={styles.gridArea}>
@@ -93,8 +99,7 @@ function ScenarioListPage() {
                       className={`${styles.card} ${styles[scenario.color]} ${styles[scenario.id] ?? ''}`}
                       type="button"
                       aria-haspopup="dialog"
-                      aria-label={`${scenario.category}: ${scenario.accessibleTitle}${scenario.disabled ? ' (준비 중)' : ''}`}
-                      disabled={scenario.disabled}
+                      aria-label={`${scenario.category}: ${scenario.accessibleTitle}`}
                       onClick={() => setSelectedScenario(scenario)}
                     >
                       <span className={styles.category}>{scenario.category}</span>

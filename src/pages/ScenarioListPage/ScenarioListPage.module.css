@@ -132,8 +132,16 @@
 }
 
 .filter:disabled {
+  color: var(--color-text-muted);
+  background: #f3efec;
   cursor: not-allowed;
-  opacity: 0.4;
+}
+
+.lockIcon {
+  display: block;
+  width: 14px;
+  height: 17px;
+  margin-left: 8px;
 }
 
 .filterActive {
@@ -181,11 +189,6 @@
   font-family: var(--font-body);
   text-align: center;
   cursor: pointer;
-}
-
-.card:disabled {
-  cursor: not-allowed;
-  opacity: 0.4;
 }
 
 .card:focus-visible {
