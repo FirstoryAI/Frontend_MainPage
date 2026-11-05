@@ -20,6 +20,17 @@
   white-space: nowrap;
 }
 
+.complete {
+  height: 115px;
+  padding: 29px 46px 0;
+}
+
+.complete .logo {
+  font-size: 37.959px;
+  letter-spacing: -1.1388px;
+  transform: none;
+}
+
 .progress {
   position: absolute;
   top: 74.8px;
