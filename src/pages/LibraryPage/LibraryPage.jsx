@@ -148,9 +148,11 @@ function LibraryPage() {
     }
   };
 
-  // 로그인했어도 동화가 하나도 없으면(전체 보기) 비로그인과 같은 빈 서재 화면을 보여줘요. (로그인 버튼만 없어요)
-  const isLibraryEmpty = isSignedIn && !isLoading && !error && stories.length === 0 && activeFilter === 'ALL';
+  // 로그인했어도 보여줄 동화가 없으면 비로그인과 같은 빈 서재 화면을 보여줘요. (로그인 버튼만 없어요)
+  // 전체 보기에서 비었으면 '아직 제작된 동화가 없어요', 카테고리(상태) 필터에서 비었으면 '조건에 해당하는 동화가 없어요'예요.
+  const isLibraryEmpty = isSignedIn && !isLoading && !error && stories.length === 0;
   const showEmptyScreen = guest || isLibraryEmpty;
+  const emptyTitle = guest || activeFilter === 'ALL' ? '아직 제작된 동화가 없어요' : '조건에 해당하는 동화가 없어요';
 
   if (isSignedIn === null) {
     return <div className={styles.page} role="status" aria-label="서재를 불러오는 중" />;
@@ -206,7 +208,7 @@ function LibraryPage() {
                 <div className={styles.emptyMascot}>
                   <img src={emptyMascot} alt="" />
                 </div>
-                <p className={styles.emptyTitle} id="library-empty-title">아직 제작된 동화가 없어요</p>
+                <p className={styles.emptyTitle} id="library-empty-title">{emptyTitle}</p>
                 {guest && <Link className={styles.emptyLogin} to="/auth">로그인하고 동화 만들기</Link>}
               </section>
             )}
@@ -259,9 +261,6 @@ function LibraryPage() {
                   </article>
                 );
               })}
-              {isSignedIn && !isLoading && !error && stories.length === 0 && (
-                <p className={styles.message}>이 조건에 해당하는 동화가 없어요.</p>
-              )}
             </section>
             )}
             {!guest && hasNext && !isLoading && (
