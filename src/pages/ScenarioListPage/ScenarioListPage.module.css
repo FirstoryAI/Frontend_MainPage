@@ -131,6 +131,19 @@
   cursor: pointer;
 }
 
+.filter:disabled {
+  color: var(--color-text-muted);
+  background: #f3efec;
+  cursor: not-allowed;
+}
+
+.lockIcon {
+  display: block;
+  width: 14px;
+  height: 17px;
+  margin-left: 8px;
+}
+
 .filterActive {
   color: var(--color-chip-selected);
   background: #fff6f3;
