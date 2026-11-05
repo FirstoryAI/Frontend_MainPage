@@ -27,7 +27,7 @@ import styles from './StoryReader.module.css';
 // pages: [{ pageNo, text, imageUrl, imageStatus }], page: 지금 쪽(1부터), children: 쪽 아래에 띄울 보조 영역
 function StoryReader({ title, pages, page, onPage, onClose, closeLabel = '돌아가기', children, guide, previewMode = false }) {
   const current = pages[page - 1];
-  const [isGuideOpen, setIsGuideOpen] = useState(previewMode);
+  const [isGuideOpen, setIsGuideOpen] = useState(false);
   const [isHintOpen, setIsHintOpen] = useState(false);
   const showPage = useCallback((next) => {
     setIsGuideOpen(false);

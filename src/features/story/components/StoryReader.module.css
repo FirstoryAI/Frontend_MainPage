@@ -369,6 +369,7 @@
     right: auto;
     left: 50%;
     width: 100vw;
+    height: var(--header-height);
     transform: translateX(-50%);
   }
   .previewReader .readerClose {
