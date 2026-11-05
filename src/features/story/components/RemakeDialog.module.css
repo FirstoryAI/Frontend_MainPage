@@ -1,9 +1,24 @@
+/* 상단바까지 화면 전체를 흐리게 덮어요. */
 .backdrop {
-  position: absolute;
-  z-index: 2;
+  position: fixed;
+  z-index: 5;
   inset: 0;
   background: rgb(0 0 0 / 44%);
   backdrop-filter: blur(3.6px);
+}
+
+/* 팝업은 미리보기 화면(1440×960)과 같은 크기·배율의 층 위에 놓여요. */
+.scene {
+  position: absolute;
+  z-index: 6;
+  top: 0;
+  left: 50%;
+  width: 1440px;
+  height: 960px;
+  overflow: hidden;
+  pointer-events: none;
+  transform: translateX(-50%) scale(var(--scene-scale, 1));
+  transform-origin: top center;
 }
 
 .dialogClose {
@@ -23,6 +38,7 @@
 .dialog {
   position: absolute;
   z-index: 3;
+  pointer-events: auto;
   top: 150px;
   left: 375px;
   width: 689px;
@@ -333,9 +349,13 @@
 }
 
 @media (max-width: 760px) {
-  .backdrop {
+  .scene {
     position: fixed;
-    inset: 76px 0 0;
+    inset: 0;
+    width: auto;
+    height: auto;
+    overflow: visible;
+    transform: none;
   }
 
   .dialog {
