@@ -7,7 +7,7 @@ import dialogueHabit from '../../../assets/icons/scenario-dialogue-habit.svg';
 import { scenarioPopupContent } from '../scenarioPopupContent';
 import styles from './HomeScenarioModal.module.css';
 
-function HomeScenarioModal({ scenario, onClose, onStart }) {
+function HomeScenarioModal({ scenario, onClose, onStart, requiresLogin = false }) {
   const dialogRef = useRef(null);
   const content = scenario.popupContent ?? scenarioPopupContent[scenario.id] ?? scenarioPopupContent.friend;
   const accentStyle = { '--scenario-accent': scenario.accentColor };
@@ -90,7 +90,7 @@ function HomeScenarioModal({ scenario, onClose, onStart }) {
         </div>
 
         <button className={styles.actionButton} type="button" onClick={onStart}>
-          {content.actionLabel}
+          {requiresLogin ? '로그인하고 대화 시작하기 →' : content.actionLabel}
         </button>
       </section>
     </div>

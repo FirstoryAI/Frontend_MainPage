@@ -1,5 +1,5 @@
 import { useEffect, useState } from 'react';
-import { useLocation, useNavigate } from 'react-router-dom';
+import { Link, useLocation, useNavigate } from 'react-router-dom';
 import ErrorText from '../../components/ui/ErrorText';
 import Sidebar from '../../components/layout/Sidebar';
 import NotificationBell from '../../components/layout/NotificationBell';
@@ -15,6 +15,7 @@ import { getStories } from '../../services/libraryApi';
 import { retryStory } from '../../services/storiesApi';
 import { GENERATING_STATUSES, libraryGroup } from '../../features/story/storyMappers';
 import { useStoryGeneration } from '../../features/story/generation/useStoryGeneration';
+import { useSignedIn } from '../../features/auth/useSignedIn';
 import styles from './LibraryPage.module.css';
 
 const filters = [
@@ -45,6 +46,8 @@ function formatStoryDate(value) {
 function LibraryPage() {
   const navigate = useNavigate();
   const location = useLocation();
+  const isSignedIn = useSignedIn();
+  const guest = isSignedIn === false;
   // 미리보기에서 '이대로 확정'으로 넘어오면 '서재에 저장했어요' 팝업을 보여줘요.
   const [savedStory] = useState(() => (location.state?.newlyCreated ? (location.state.story ?? {}) : null));
   const [savedModalOpen, setSavedModalOpen] = useState(savedStory !== null);
@@ -60,21 +63,21 @@ function LibraryPage() {
 
   // 새로고침했을 때 만드는 중인 동화가 있으면 다시 따라가서, 끝나면 알림이 오게 해요.
   useEffect(() => {
-    resumeGeneration();
-  }, [resumeGeneration]);
+    if (isSignedIn) resumeGeneration();
+  }, [isSignedIn, resumeGeneration]);
 
   useEffect(() => {
+    if (!isSignedIn) return;
     getHome().then((home) => {
       if (home?.counts) setCounts((previous) => ({ ...previous, ...home.counts }));
     }).catch(() => {
       // The list is still usable when tab counts are unavailable.
     });
-  }, []);
+  }, [isSignedIn]);
 
   useEffect(() => {
+    if (!isSignedIn) return undefined;
     let active = true;
-    setIsLoading(true);
-    setError('');
 
     getStories({ filter: activeFilter, page: 0, size: 20 }).then((result) => {
       if (!active) return;
@@ -95,7 +98,7 @@ function LibraryPage() {
     });
 
     return () => { active = false; };
-  }, [activeFilter]);
+  }, [activeFilter, isSignedIn]);
 
   const closeSavedModal = () => {
     setSavedModalOpen(false);
@@ -144,14 +147,20 @@ function LibraryPage() {
     }
   };
 
+  if (isSignedIn === null) {
+    return <div className={styles.page} role="status" aria-label="서재를 불러오는 중" />;
+  }
+
   return (
     <>
-      <div className={styles.page} inert={savedModalOpen}>
-        <Sidebar />
+      <div className={styles.page} inert={isSignedIn && savedModalOpen}>
+        <Sidebar guest={guest} />
 
         <div className={styles.main}>
           <div className={styles.topbar}>
-            <NotificationBell />
+            {guest ? (
+              <Link className={styles.loginLink} to="/auth">로그인</Link>
+            ) : <><NotificationBell />
             <button
               className={styles.avatarButton}
               type="button"
@@ -160,7 +169,7 @@ function LibraryPage() {
             >
               <img className={styles.avatarCircle} src={avatarCircle} alt="" />
               <img className={styles.avatarPerson} src={avatarPerson} alt="" />
-            </button>
+            </button></>}
           </div>
 
           <main className={styles.content}>
@@ -173,16 +182,22 @@ function LibraryPage() {
                   className={`${styles.filter} ${activeFilter === filter.value ? styles.filterActive : ''}`}
                   type="button"
                   aria-pressed={activeFilter === filter.value}
-                  onClick={() => setActiveFilter(filter.value)}
+                  onClick={() => {
+                    setActiveFilter(filter.value);
+                    if (!guest) {
+                      setIsLoading(true);
+                      setError('');
+                    }
+                  }}
                 >
                   {filter.label}{counts[filter.countKey || 'all'] != null && ` ${counts[filter.countKey || 'all']}`}
                 </button>
               ))}
             </div>
 
-            {error && <p className={styles.error} role="alert"><ErrorText message={error} /></p>}
-            <section className={styles.storyGrid} aria-live="polite" aria-busy={isLoading}>
-              {isLoading ? <p className={styles.message}>서재를 불러오는 중이에요.</p> : stories.map((story) => {
+            {!guest && error && <p className={styles.error} role="alert"><ErrorText message={error} /></p>}
+            <section className={styles.storyGrid} aria-live="polite" aria-busy={!guest && isLoading}>
+              {!guest && isLoading ? <p className={styles.message}>서재를 불러오는 중이에요.</p> : !guest && stories.map((story) => {
                 const group = libraryGroup(story);
                 const storyTitle = story.title || '제목을 준비하고 있어요';
                 const meta = [story.categoryLabel, story.childDisplayName, formatStoryDate(story.updatedAt || story.createdAt)]
@@ -227,11 +242,11 @@ function LibraryPage() {
                   </article>
                 );
               })}
-              {!isLoading && !error && stories.length === 0 && (
-                <p className={styles.message}>이 조건에 해당하는 동화가 없어요.</p>
+              {(guest || (isSignedIn && !isLoading && !error && stories.length === 0)) && (
+                <p className={styles.message}>{guest ? '아직 아무것도 없어요.' : '이 조건에 해당하는 동화가 없어요.'}</p>
               )}
             </section>
-            {hasNext && !isLoading && (
+            {!guest && hasNext && !isLoading && (
               <button className={styles.loadMore} type="button" onClick={handleLoadMore} disabled={isLoadingMore}>
                 {isLoadingMore ? '불러오는 중…' : '더 보기'}
               </button>
@@ -239,7 +254,7 @@ function LibraryPage() {
           </main>
         </div>
       </div>
-      {savedModalOpen && <StorySavedModal onClose={closeSavedModal} onRead={readSavedStory} />}
+      {isSignedIn && savedModalOpen && <StorySavedModal onClose={closeSavedModal} onRead={readSavedStory} />}
     </>
   );
 }

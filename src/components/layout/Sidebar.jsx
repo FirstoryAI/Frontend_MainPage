@@ -10,7 +10,7 @@ import iconLogout from '../../assets/icons/icon-logout.svg';
 import { logout } from '../../services/authApi';
 import styles from './Sidebar.module.css';
 
-function Sidebar() {
+function Sidebar({ guest = false }) {
   const navigate = useNavigate();
   const location = useLocation();
   const [isLoggingOut, setIsLoggingOut] = useState(false);
@@ -33,14 +33,14 @@ function Sidebar() {
 
   return (
     <aside className={styles.sidebar}>
-      <Link className={styles.logo} to="/home" aria-label="FIRSTORY 홈">
+      <Link className={styles.logo} to={guest ? '/' : '/home'} aria-label="FIRSTORY 홈">
         FIRSTORY
       </Link>
 
       <CtaButton
         className={styles.createButton}
         icon={iconPlus}
-        onClick={() => navigate('/home', { state: { chooseStory: true } })}
+        onClick={() => guest ? navigate('/auth') : navigate('/home', { state: { chooseStory: true } })}
       >
         동화 만들기
       </CtaButton>
@@ -48,7 +48,7 @@ function Sidebar() {
       <nav className={styles.nav} aria-label="주요 메뉴">
         <Link
           className={`${styles.item} ${!libraryActive ? styles.active : ''}`}
-          to="/home"
+          to={guest ? '/' : '/home'}
           aria-current={!libraryActive ? 'page' : undefined}
         >
           <img
@@ -68,12 +68,12 @@ function Sidebar() {
         </Link>
       </nav>
 
-      {logoutError && (
+      {!guest && logoutError && (
         <p className={styles.logoutError} role="alert">
           {logoutError}
         </p>
       )}
-      <button
+      {!guest && <button
         className={`${styles.item} ${styles.logout}`}
         type="button"
         onClick={handleLogout}
@@ -81,7 +81,7 @@ function Sidebar() {
       >
         <img src={iconLogout} alt="" />
         <span>{isLoggingOut ? '로그아웃 중…' : '로그아웃'}</span>
-      </button>
+      </button>}
     </aside>
   );
 }

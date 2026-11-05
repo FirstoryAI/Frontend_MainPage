@@ -17,7 +17,7 @@ function ErrorText({ message }) {
       className={styles.link}
       type="button"
       title="로그인 화면으로 이동"
-      onClick={() => navigate('/auth/email/login', { state: { from: location.pathname } })}
+      onClick={() => navigate('/auth', { state: { from: location.pathname } })}
     >
       {message}
     </button>

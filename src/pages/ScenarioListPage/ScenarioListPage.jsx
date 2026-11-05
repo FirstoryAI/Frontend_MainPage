@@ -2,6 +2,7 @@ import { useState } from 'react';
 import { Link, useNavigate } from 'react-router-dom';
 import Sidebar from '../../components/layout/Sidebar';
 import HomeScenarioModal from '../../features/home/components/HomeScenarioModal';
+import { useSignedIn } from '../../features/auth/useSignedIn';
 import { scenarios } from '../../features/home/scenarios';
 import iconBell from '../../assets/icons/icon-bell.svg';
 import iconBackSmall from '../../assets/icons/icon-back-small.svg';
@@ -17,6 +18,8 @@ const listedScenarios = [...scenarios, ...scenarios];
 
 function ScenarioListPage() {
   const navigate = useNavigate();
+  const isSignedIn = useSignedIn();
+  const guest = isSignedIn === false;
   const [activeFilter, setActiveFilter] = useState(ALL);
   const [selectedScenario, setSelectedScenario] = useState(null);
 
@@ -25,14 +28,20 @@ function ScenarioListPage() {
       ? listedScenarios
       : listedScenarios.filter((scenario) => scenario.category === activeFilter);
 
+  if (isSignedIn === null) {
+    return <div className={styles.page} role="status" aria-label="목록을 불러오는 중" />;
+  }
+
   return (
     <div className={styles.page}>
       <div className={styles.shell} inert={selectedScenario !== null}>
-        <Sidebar />
+        <Sidebar guest={guest} />
 
         <div className={styles.main}>
           <div className={styles.topbar}>
-            <button
+            {guest ? (
+              <Link className={styles.loginLink} to="/auth">로그인</Link>
+            ) : <><button
               className={styles.bellButton}
               type="button"
               aria-label="알림"
@@ -48,12 +57,12 @@ function ScenarioListPage() {
               aria-label="마이페이지"
             >
               <img src={avatarProfile} alt="" />
-            </button>
+            </button></>}
           </div>
 
           <main className={styles.content}>
             <header className={styles.heading}>
-              <Link className={styles.back} to="/home" aria-label="홈으로 돌아가기">
+              <Link className={styles.back} to={guest ? '/' : '/home'} aria-label="홈으로 돌아가기">
                 <img src={iconBackSmall} alt="" />
               </Link>
               <h1 className={styles.title}>부모들의 이야기</h1>
@@ -105,10 +114,11 @@ function ScenarioListPage() {
       {selectedScenario && (
         <HomeScenarioModal
           scenario={selectedScenario}
+          requiresLogin={guest}
           onClose={() => setSelectedScenario(null)}
-          onStart={() =>
-            navigate('/story/new', { state: { scenarioId: selectedScenario.id } })
-          }
+          onStart={() => guest
+            ? navigate('/auth')
+            : navigate('/story/new', { state: { scenarioId: selectedScenario.id } })}
         />
       )}
     </div>

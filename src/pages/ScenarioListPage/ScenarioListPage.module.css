@@ -26,6 +26,13 @@
   height: 58.8px;
 }
 
+.loginLink {
+  color: var(--color-text);
+  font-size: 20px;
+  font-weight: 500;
+  text-decoration: none;
+}
+
 .bellButton {
   display: block;
   padding: 0;

@@ -1,8 +1,9 @@
-import { Link } from 'react-router-dom';
+import { Link, useLocation } from 'react-router-dom';
 import kakaoSymbol from '../../../assets/icons/kakao-symbol.png';
 import styles from './AuthCard.module.css';
 
 function AuthCard() {
+  const location = useLocation();
   return (
     <section className={styles.card} aria-labelledby="auth-card-title">
       <h1 id="auth-card-title" className={styles.logo}>
@@ -37,6 +38,7 @@ function AuthCard() {
       <Link
         className={styles.loginButton}
         to="/auth/email/login"
+        state={location.state}
       >
         이메일로 로그인
       </Link>
