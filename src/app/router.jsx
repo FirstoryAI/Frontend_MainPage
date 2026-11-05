@@ -1,10 +1,10 @@
 import { createBrowserRouter } from 'react-router-dom';
 import App from './App';
 import HomePage from '../pages/HomePage/HomePage';
+import AuthStartPage from '../pages/AuthStartPage/AuthStartPage';
 import EmailSignUpPage from '../pages/EmailSignUpPage/EmailSignUpPage';
 import EmailLoginPage from '../pages/EmailLoginPage/EmailLoginPage';
 import GuardianConsentPage from '../pages/GuardianConsentPage/GuardianConsentPage';
-import DashboardPage from '../pages/DashboardPage/DashboardPage';
 import LibraryPage from '../pages/LibraryPage/LibraryPage';
 import ScenarioListPage from '../pages/ScenarioListPage/ScenarioListPage';
 import StoryCreateRoute from '../pages/StoryCreatePage/StoryCreateRoute';
@@ -20,10 +20,11 @@ export const router = createBrowserRouter([
     element: <App />,
     children: [
       { path: '/', element: <HomePage /> },
+      { path: '/auth', element: <AuthStartPage /> },
       { path: '/auth/email/signup', element: <EmailSignUpPage /> },
       { path: '/auth/email/login', element: <EmailLoginPage /> },
       { path: '/auth/consent', element: <GuardianConsentPage /> },
-      { path: '/home', element: <DashboardPage /> },
+      { path: '/home', element: <HomePage /> },
       { path: '/mypage', element: <MyPage /> },
       { path: '/library', element: <LibraryPage /> },
       { path: '/library/:storyId', element: <StoryDetailPage /> },

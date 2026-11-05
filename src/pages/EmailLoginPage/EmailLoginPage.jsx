@@ -46,7 +46,7 @@ function EmailLoginPage() {
       <Header />
       <main className={styles.main}>
         <section className={styles.card} aria-labelledby="login-title">
-          <Link className={styles.backLink} to="/">
+          <Link className={styles.backLink} to="/auth" state={location.state}>
             ← 다른 방법으로 시작
           </Link>
 

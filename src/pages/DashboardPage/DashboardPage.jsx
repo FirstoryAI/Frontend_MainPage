@@ -1,5 +1,5 @@
 import { useCallback, useEffect, useState } from 'react';
-import { useLocation, useNavigate } from 'react-router-dom';
+import { Link, useLocation, useNavigate } from 'react-router-dom';
 import Sidebar from '../../components/layout/Sidebar';
 import NotificationBell from '../../components/layout/NotificationBell';
 import OnboardingModal from '../../features/onboarding/components/OnboardingModal';
@@ -40,12 +40,12 @@ async function loadDrafts() {
   );
 }
 
-function DashboardPage() {
+function DashboardPage({ guest = false }) {
   const location = useLocation();
   const navigate = useNavigate();
   const onboardingKey = location.state?.onboardingKey;
   const [onboardingOpen, setOnboardingOpen] = useState(
-    () => Boolean(location.state?.onboarding) && !hasSeenOnboarding(onboardingKey),
+    () => !guest && Boolean(location.state?.onboarding) && !hasSeenOnboarding(onboardingKey),
   );
   const [storyModal, setStoryModal] = useState(null);
   const [selectedScenario, setSelectedScenario] = useState(null);
@@ -58,15 +58,17 @@ function DashboardPage() {
 
   // 새로고침했을 때 만드는 중인 동화가 있으면 다시 따라가서, 끝나면 알림이 오게 해요.
   useEffect(() => {
-    resumeGeneration();
-  }, [resumeGeneration]);
+    if (!guest) resumeGeneration();
+  }, [guest, resumeGeneration]);
 
   useEffect(() => {
-    if (!location.state?.chooseStory) return;
-    loadDrafts().then(setDrafts).catch(() => setDrafts([]));
-    setStoryModal('choose');
+    if (guest || !location.state?.chooseStory) return;
+    loadDrafts()
+      .then(setDrafts)
+      .catch(() => setDrafts([]))
+      .finally(() => setStoryModal('choose'));
     navigate(location.pathname, { replace: true, state: null });
-  }, [location.pathname, location.state, navigate]);
+  }, [guest, location.pathname, location.state, navigate]);
 
   const closeOnboarding = useCallback(() => {
     markOnboardingSeen(onboardingKey);
@@ -96,11 +98,13 @@ function DashboardPage() {
   return (
     <div className={styles.page}>
       <div className={styles.shell} inert={onboardingOpen || storyModal !== null || selectedScenario !== null}>
-        <Sidebar />
+        <Sidebar guest={guest} />
 
         <div className={styles.main}>
           <div className={styles.topbar}>
-            <NotificationBell />
+            {guest ? (
+              <Link className={styles.loginLink} to="/auth">로그인</Link>
+            ) : <><NotificationBell />
             <button
               className={styles.avatarButton}
               type="button"
@@ -108,7 +112,7 @@ function DashboardPage() {
               aria-label="마이페이지"
             >
               <img className={styles.avatar} src={avatarProfile} alt="" />
-            </button>
+            </button></>}
           </div>
 
           <main className={styles.content}>
@@ -133,7 +137,7 @@ function DashboardPage() {
                   type="button"
                   onClick={() => navigate('/scenarios')}
                 >
-                  전체 보기 <span aria-hidden="true">→</span>
+                  {guest ? '더보기' : '전체 보기'} <span aria-hidden="true">→</span>
                 </button>
               </div>
 
@@ -174,8 +178,11 @@ function DashboardPage() {
       {selectedScenario && (
         <HomeScenarioModal
           scenario={selectedScenario}
+          requiresLogin={guest}
           onClose={() => setSelectedScenario(null)}
-          onStart={() => navigate('/story/new', { state: { scenarioId: selectedScenario.id } })}
+          onStart={() => guest
+            ? navigate('/auth')
+            : navigate('/story/new', { state: { scenarioId: selectedScenario.id } })}
         />
       )}
       {storyModal && (

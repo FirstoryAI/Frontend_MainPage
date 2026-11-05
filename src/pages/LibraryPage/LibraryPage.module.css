@@ -18,6 +18,13 @@
   height: 58.8px;
 }
 
+.loginLink {
+  color: var(--color-text);
+  font-size: 20px;
+  font-weight: 500;
+  text-decoration: none;
+}
+
 .avatarButton {
   position: relative;
   flex: 0 0 58.8px;
