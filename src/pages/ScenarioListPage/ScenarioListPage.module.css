@@ -152,7 +152,7 @@
 
   display: grid;
   grid-template-columns: repeat(4, calc(250 * var(--u)));
-  gap: calc(55.7 * var(--u)) calc(40 * var(--u));
+  gap: calc(68.2 * var(--u)) calc(40 * var(--u));
   margin: 0;
   padding: 0;
   list-style: none;
@@ -187,6 +187,7 @@
 .emotion { background: #65d0a5; }
 .kindergarten { background: #ffcf55; }
 .habit { background: #9e95ff; }
+.tantrum { background: #4ab1ff; }
 
 .category {
   z-index: 1;
@@ -226,31 +227,38 @@
 }
 
 .friend .cardImage {
-  bottom: calc(13 * var(--u));
-  left: calc(33.4 * var(--u));
-  width: calc(185.8 * var(--u));
-  height: calc(111 * var(--u));
+  bottom: calc(12.4 * var(--u));
+  left: calc(20.1 * var(--u));
+  width: calc(210.8 * var(--u));
+  height: calc(114.7 * var(--u));
 }
 
 .emotion .cardImage {
-  bottom: calc(13 * var(--u));
-  left: calc(73 * var(--u));
-  width: calc(90 * var(--u));
-  height: calc(114 * var(--u));
+  bottom: calc(12.2 * var(--u));
+  left: calc(63.4 * var(--u));
+  width: calc(124 * var(--u));
+  height: calc(136.4 * var(--u));
 }
 
 .kindergarten .cardImage {
-  bottom: calc(17.5 * var(--u));
-  left: calc(58 * var(--u));
-  width: calc(133 * var(--u));
-  height: calc(103 * var(--u));
+  bottom: calc(12.2 * var(--u));
+  left: calc(50.3 * var(--u));
+  width: calc(150.8 * var(--u));
+  height: calc(128.1 * var(--u));
 }
 
 .habit .cardImage {
-  bottom: calc(-4 * var(--u));
-  left: calc(14 * var(--u));
-  width: calc(222 * var(--u));
-  height: calc(148 * var(--u));
+  bottom: calc(12.2 * var(--u));
+  left: calc(62 * var(--u));
+  width: calc(127.1 * var(--u));
+  height: calc(146.7 * var(--u));
+}
+
+.tantrum .cardImage {
+  bottom: calc(8 * var(--u));
+  left: calc(56.8 * var(--u));
+  width: calc(132.3 * var(--u));
+  height: calc(135.4 * var(--u));
 }
 
 @media (max-width: 900px) {
@@ -307,4 +315,39 @@
     justify-content: center;
     gap: 47.3px 33.96px;
   }
+}
+
+.friendLeftOut .cardImage {
+  bottom: calc(12.2 * var(--u));
+  left: calc(26.9 * var(--u));
+  width: calc(179.8 * var(--u));
+  height: calc(131.2 * var(--u));
+}
+
+.familyApart .cardImage {
+  bottom: calc(-2.3 * var(--u));
+  left: calc(70.6 * var(--u));
+  width: calc(108.5 * var(--u));
+  height: calc(142.6 * var(--u));
+}
+
+.kindergartenScared .cardImage {
+  bottom: calc(3.9 * var(--u));
+  left: calc(69.9 * var(--u));
+  width: calc(112.6 * var(--u));
+  height: calc(130.2 * var(--u));
+}
+
+.grandmaSick .cardImage {
+  bottom: calc(9.1 * var(--u));
+  left: calc(50.6 * var(--u));
+  width: calc(149.8 * var(--u));
+  height: calc(139.5 * var(--u));
+}
+
+.clothesTeeth .cardImage {
+  bottom: calc(0.8 * var(--u));
+  left: calc(51.7 * var(--u));
+  width: calc(142.6 * var(--u));
+  height: calc(147.7 * var(--u));
 }

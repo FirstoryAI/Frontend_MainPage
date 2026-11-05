@@ -4,6 +4,7 @@ import dialogueFriend from '../../../assets/icons/scenario-dialogue-friend.svg';
 import dialogueEmotion from '../../../assets/icons/scenario-dialogue-emotion.svg';
 import dialogueKindergarten from '../../../assets/icons/scenario-dialogue.svg';
 import dialogueHabit from '../../../assets/icons/scenario-dialogue-habit.svg';
+import dialogueTantrum from '../../../assets/icons/scenario-dialogue-tantrum.svg';
 import { scenarioPopupContent } from '../scenarioPopupContent';
 import styles from './HomeScenarioModal.module.css';
 
@@ -16,6 +17,7 @@ function HomeScenarioModal({ scenario, onClose, onStart, requiresLogin = false }
     emotion: dialogueEmotion,
     kindergarten: dialogueKindergarten,
     habit: dialogueHabit,
+    tantrum: dialogueTantrum,
   };
 
   useEffect(() => {
@@ -71,7 +73,7 @@ function HomeScenarioModal({ scenario, onClose, onStart, requiresLogin = false }
         </p>
 
         <div className={styles.guideHeading}>
-          <img src={dialogueIcons[scenario.id] ?? dialogueKindergarten} alt="" />
+          <img src={dialogueIcons[scenario.color] ?? dialogueKindergarten} alt="" />
           <h3>{content.guideTitle}</h3>
         </div>
 
