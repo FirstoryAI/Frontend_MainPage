@@ -46,11 +46,12 @@
   gap: 20px;
 }
 
-/* 잠긴 주제(준비 중) 옆에 붙는 표시예요. */
-.soon {
+/* 잠긴 주제(준비 중) 옆에 붙는 자물쇠예요. */
+.lockIcon {
+  display: block;
+  width: 14px;
+  height: 17px;
   margin-left: 8px;
-  font-size: 13px;
-  letter-spacing: 0;
 }
 
 .textarea {

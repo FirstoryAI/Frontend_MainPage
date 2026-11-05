@@ -10,6 +10,13 @@ export const categoryContent = {
   '친구 관계': {
     eventExample:
       '예) 유치원에 가기 싫다고 2주째 말해요. 친했던 친구가 요즘 다른 친구하고만 논대요.',
+    // 상황을 '앞으로 겪을 일'·'먼저 알려 주고 싶은 일'로 골랐을 때의 예시예요.
+    eventExampleByTiming: {
+      upcoming:
+        '예) 다음 주에 새 반 친구들을 처음 만나요. 낯을 가리는 아이가 어떻게 먼저 말을 걸면 좋을지 미리 이야기해 주고 싶어요.',
+      proactive:
+        '예) 친구와 장난감을 나눠 쓰는 법, 싫을 때 "싫어"라고 말하는 법을 미리 알려 주고 싶어요.',
+    },
     reactionExample: '예) 아침마다 울면서 안 간다고 해요',
     topicExample: '예) 친구와 멀어져서 속상한 마음은 자연스럽다는 걸 알려주고 싶어요.',
     chat: {
@@ -37,6 +44,13 @@ export const categoryContent = {
   '등원 · 적응': {
     eventExample:
       '예) 이번 달부터 어린이집에 다니는데, 아침마다 엄마랑 떨어지기 싫다고 울어요.',
+    // 상황을 '앞으로 겪을 일'·'먼저 알려 주고 싶은 일'로 골랐을 때의 예시예요.
+    eventExampleByTiming: {
+      upcoming:
+        '예) 다음 주부터 새 어린이집에 가요. 낯선 곳에서 엄마와 떨어질 걸 아이가 벌써 걱정해요.',
+      proactive:
+        '예) 어린이집에서는 엄마 아빠가 일을 마치고 꼭 데리러 온다는 걸 미리 이야기해 주고 싶어요.',
+    },
     reactionExample: '예) 현관 앞에서 다리를 붙잡고 안 놓아요',
     topicExample: '예) 엄마 아빠가 꼭 데리러 온다는 걸 알고 조금씩 용기를 냈으면 좋겠어요.',
     chat: {
@@ -64,6 +78,13 @@ export const categoryContent = {
   가족: {
     eventExample:
       '예) 동생이 태어난 뒤로 자꾸 아기처럼 굴고 엄마 곁에서 떨어지지 않으려 해요.',
+    // 상황을 '앞으로 겪을 일'·'먼저 알려 주고 싶은 일'로 골랐을 때의 예시예요.
+    eventExampleByTiming: {
+      upcoming:
+        '예) 두 달 뒤에 동생이 태어나요. 엄마가 동생을 돌보느라 바빠질 거라는 걸 미리 알려 주고 싶어요.',
+      proactive:
+        '예) 곧 동생이 태어난다는 걸, 엄마 아빠의 사랑은 그대로라는 말과 함께 미리 이야기해 주고 싶어요.',
+    },
     reactionExample: '예) 동생을 밀치면서 "엄마는 나만 봐"라고 말해요',
     topicExample: '예) 동생이 생겨도 엄마 아빠의 사랑은 그대로라는 걸 알려주고 싶어요.',
     chat: {
@@ -90,6 +111,13 @@ export const categoryContent = {
 
   '떼쓰기 · 훈육': {
     eventExample: '예) 마트에서 장난감을 사 달라며 바닥에 누워 울었어요.',
+    // 상황을 '앞으로 겪을 일'·'먼저 알려 주고 싶은 일'로 골랐을 때의 예시예요.
+    eventExampleByTiming: {
+      upcoming:
+        '예) 다음 주에 친척 결혼식에 가는데, 오래 앉아서 조용히 있어야 한다는 걸 미리 이야기해 주고 싶어요.',
+      proactive:
+        '예) 마트에서 원하는 걸 다 살 수는 없다는 걸, 화가 날 때 할 수 있는 행동과 함께 미리 알려 주고 싶어요.',
+    },
     reactionExample: '예) 안 된다고 하면 소리를 지르고 물건을 던져요',
     topicExample:
       '예) 하고 싶은 게 안 될 때도 화를 다르게 표현할 수 있다는 걸 알려주고 싶어요.',
@@ -117,6 +145,13 @@ export const categoryContent = {
 
   '이별 · 죽음': {
     eventExample: '예) 함께 살던 할머니가 돌아가셔서 아이가 할머니를 자꾸 찾아요.',
+    // 상황을 '앞으로 겪을 일'·'먼저 알려 주고 싶은 일'로 골랐을 때의 예시예요.
+    eventExampleByTiming: {
+      upcoming:
+        '예) 오래 함께한 반려견이 많이 아파요. 곧 이별할 수도 있다는 걸 아이에게 어떻게 말해 줄지 고민이에요.',
+      proactive:
+        '예) 모든 생명에게는 끝이 있고, 보고 싶은 마음은 자연스럽다는 걸 미리 차분히 이야기해 주고 싶어요.',
+    },
     reactionExample: '예) "할머니는 어디 갔어?"라고 자꾸 물어봐요',
     topicExample: '예) 보고 싶은 마음은 자연스러운 거라고, 사랑은 계속된다고 알려주고 싶어요.',
     chat: {
@@ -143,6 +178,13 @@ export const categoryContent = {
 
   '그 밖의 일': {
     eventExample: '예) 최근에 아이가 겪은 일이나 걱정되는 모습을 편하게 적어 주세요.',
+    // 상황을 '앞으로 겪을 일'·'먼저 알려 주고 싶은 일'로 골랐을 때의 예시예요.
+    eventExampleByTiming: {
+      upcoming:
+        '예) 다음 달에 이사를 가요. 새 집과 새 동네에 대해 아이와 미리 이야기하고 싶어요.',
+      proactive:
+        '예) 낯선 사람이 말을 걸 때 따라가면 안 된다는 것, 내 몸은 소중하다는 걸 미리 알려 주고 싶어요.',
+    },
     reactionExample: '예) 그때 아이가 어떻게 말하고 행동했는지 적어 주세요',
     topicExample: '예) 이번 이야기로 아이와 나누고 싶은 마음이나 생각을 적어 주세요.',
     chat: {
@@ -167,6 +209,12 @@ export const categoryContent = {
     },
   },
 };
+
+// 고른 상황(past/upcoming/proactive)과 카테고리에 맞는 '무슨 일인가요?' 예시를 돌려줘요.
+export function getEventExample(category, situation) {
+  const content = getCategoryContent(category);
+  return content.eventExampleByTiming?.[situation] ?? content.eventExample;
+}
 
 export function getCategoryContent(category) {
   return categoryContent[category] ?? categoryContent[DEFAULT_CATEGORY];
