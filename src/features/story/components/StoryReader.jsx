@@ -1,4 +1,4 @@
-import { useCallback, useEffect, useState } from 'react';
+import { useCallback, useEffect, useRef, useState } from 'react';
 import readerFrame from '../../../assets/story-reader/frame.svg';
 import previewFrame from '../../../assets/story-reader/preview-frame.svg';
 import readerArrowLeft from '../../../assets/story-reader/arrow-left.svg';
@@ -23,12 +23,30 @@ import StoryTextBlocks from './StoryTextBlocks';
 import { textPositionOf } from '../textPosition';
 import styles from './StoryReader.module.css';
 
+// 아이와 읽기에서 상단바가 떠 있는 시간이에요.
+const HEADER_VISIBLE_MS = 2000;
+
 // 동화를 화면 가득 크게 읽는 화면이에요. 미리보기(확정 전)와 아이와 읽기(확정 후)가 함께 써요.
 // pages: [{ pageNo, text, imageUrl, imageStatus }], page: 지금 쪽(1부터), children: 쪽 아래에 띄울 보조 영역
 function StoryReader({ title, pages, page, onPage, onClose, closeLabel = '돌아가기', children, guide, previewMode = false }) {
   const current = pages[page - 1];
   const [isGuideOpen, setIsGuideOpen] = useState(false);
   const [isHintOpen, setIsHintOpen] = useState(false);
+  // 아이와 읽기에서는 상단바가 잠깐 떠 있다가 사라지고, 화면을 누를 때마다 다시 나와요. 미리보기에서는 항상 떠 있어요.
+  const [isHeaderShown, setIsHeaderShown] = useState(true);
+  const headerRef = useRef(null);
+  const hideTimer = useRef(null);
+  const scheduleHeaderHide = useCallback(() => {
+    clearTimeout(hideTimer.current);
+    hideTimer.current = setTimeout(() => {
+      // 키보드로 닫기 버튼에 가 있는 동안에는 숨기지 않아요.
+      if (!headerRef.current?.contains(document.activeElement)) setIsHeaderShown(false);
+    }, HEADER_VISIBLE_MS);
+  }, []);
+  const revealHeader = useCallback(() => {
+    setIsHeaderShown(true);
+    scheduleHeaderHide();
+  }, [scheduleHeaderHide]);
   const showPage = useCallback((next) => {
     setIsGuideOpen(false);
     setIsHintOpen(false);
@@ -45,7 +63,14 @@ function StoryReader({ title, pages, page, onPage, onClose, closeLabel = '돌아
   const guideLines = pageGuide?.talk?.split('\n').filter(Boolean) ?? [];
 
   useEffect(() => {
+    if (previewMode) return undefined;
+    scheduleHeaderHide();
+    return () => clearTimeout(hideTimer.current);
+  }, [previewMode, scheduleHeaderHide]);
+
+  useEffect(() => {
     const handleKeys = (event) => {
+      if (event.key === 'Tab' && !previewMode) revealHeader();
       if (event.key === 'Escape') onClose();
       if (event.key === 'ArrowLeft') showPage(page - 1);
       if (event.key === 'ArrowRight') showPage(page + 1);
@@ -58,7 +83,7 @@ function StoryReader({ title, pages, page, onPage, onClose, closeLabel = '돌아
       document.body.style.overflow = previousOverflow;
       window.removeEventListener('keydown', handleKeys);
     };
-  }, [onClose, page, pages.length, showPage]);
+  }, [onClose, page, pages.length, previewMode, revealHeader, showPage]);
 
   useEffect(() => {
     if (!isHintOpen) return undefined;
@@ -69,11 +94,28 @@ function StoryReader({ title, pages, page, onPage, onClose, closeLabel = '돌아
   if (!current) return null;
 
   const lines = current.text.split('\n').filter(Boolean);
+  const isHeaderHidden = !previewMode && !isHeaderShown;
+
+  // 쪽 넘기기 같은 버튼을 뺀 화면 어디든 누르면 상단바가 다시 나와요.
+  const handleScreenClick = (event) => {
+    if (!previewMode && !event.target.closest('button')) revealHeader();
+  };
 
   return (
-    <section className={`${styles.reader} ${previewMode ? styles.previewReader : ''}`} aria-label="동화 읽기" aria-modal="true" role="dialog">
+    <section
+      className={`${styles.reader} ${previewMode ? styles.previewReader : ''}`}
+      data-header-hidden={isHeaderHidden}
+      onClick={handleScreenClick}
+      aria-label="동화 읽기"
+      aria-modal="true"
+      role="dialog"
+    >
       <div className={styles.readerCanvas}>
-        <header className={styles.readerHeader}>
+        <header
+          className={styles.readerHeader}
+          ref={headerRef}
+          onBlur={previewMode ? undefined : revealHeader}
+        >
           <button className={styles.readerClose} type="button" onClick={onClose} aria-label={closeLabel}>
             <img src={readerClose} alt="" />
           </button>
