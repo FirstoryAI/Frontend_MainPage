@@ -1,9 +1,7 @@
 import { useNavigate } from 'react-router-dom';
 import CtaButton from '../../../components/ui/CtaButton';
-import { useGenerationFills } from '../generation/progressModel';
-import thinkingImage from '../../../assets/images/story-loading-thinking.png';
-import writingImage from '../../../assets/images/story-loading-writing.png';
-import drawingImage from '../../../assets/images/story-loading-drawing.png';
+import { useGenerationPosition } from '../generation/progressModel';
+import LoadingMascots from './LoadingMascots';
 import glyphBook from '../../../assets/icons/step-book.svg';
 import glyphPencil from '../../../assets/icons/step-pencil.svg';
 import glyphBrush from '../../../assets/icons/step-brush.svg';
@@ -12,38 +10,40 @@ import iconHomeWhite from '../../../assets/icons/icon-home-white.svg';
 import styles from './GeneratingStep.module.css';
 
 const stages = [
-  { label: '이야기 짜기', title: '이야기를 짜고 있어요', glyph: glyphBook, image: thinkingImage, mascot: styles.thinking },
-  { label: '글 쓰기', title: '글을 쓰고 있어요', glyph: glyphPencil, image: writingImage, mascot: styles.writing },
-  { label: '그림 그리기', title: '그림을 그리고 있어요', glyph: glyphBrush, image: drawingImage, mascot: styles.drawing },
+  { label: '이야기 짜기', title: '이야기를 짜고 있어요', glyph: glyphBook },
+  { label: '글 쓰기', title: '글을 쓰고 있어요', glyph: glyphPencil },
+  { label: '그림 그리기', title: '그림을 그리고 있어요', glyph: glyphBrush },
 ];
 
-function stateOf(index, stage) {
-  if (index < stage) return 'done';
-  return index === stage ? 'active' : 'pending';
+const clamp01 = (value) => Math.min(Math.max(value, 0), 1);
+
+function stateOf(index, position) {
+  if (position >= index + 1) return 'done';
+  return position >= index ? 'active' : 'pending';
 }
 
-// job: 진행 중인 동화 제작이에요. 단계(stage)는 서버가 알려 주고, 게이지는 걸린 시간에 맞춰 실시간으로 차올라요.
-// 단계가 바뀔 때는 마스코트·제목·단계 아이콘이 모두 CSS 전환으로 서서히 바뀌어요.
+// job: 진행 중인 동화 제작이에요.
+// 게이지 위치(0~3) 하나로 줄·고리·단계 아이콘·마스코트·제목이 함께 움직여서, 게이지가 닿는 순간 다음 단계로 넘어가요.
 function GeneratingStep({ job }) {
   const navigate = useNavigate();
-  const stage = job?.stage ?? 0;
+  const position = useGenerationPosition(job);
+  const stage = Math.min(Math.floor(position), stages.length - 1);
   const scope = job?.scope;
-  const fills = useGenerationFills(job);
 
   return (
     <div className={styles.step}>
       <ol className={styles.stepper} aria-label="동화 제작 단계">
         {[0, 1].map((index) => (
           <li className={styles.track} style={{ left: `${index * 50}%` }} key={index} aria-hidden="true">
-            <span className={styles.fill} style={{ transform: `scaleX(${fills[index]})` }} />
+            <span className={styles.fill} style={{ transform: `scaleX(${clamp01(position - index)})` }} />
           </li>
         ))}
 
         {stages.map((item, index) => (
           <li
             className={styles.node}
-            style={{ left: `${index * 50}%`, '--p': `${Math.round(fills[index] * 360)}deg` }}
-            data-state={stateOf(index, stage)}
+            style={{ left: `${index * 50}%`, '--p': `${clamp01(position - index) * 360}deg` }}
+            data-state={stateOf(index, position)}
             aria-current={index === stage ? 'step' : undefined}
             key={item.label}
           >
@@ -59,22 +59,7 @@ function GeneratingStep({ job }) {
         ))}
       </ol>
 
-      <div className={styles.mascots} aria-hidden="true">
-        {stages.map((item, index) => (
-          <div className={`${styles.mascot} ${item.mascot}`} data-active={index === stage} key={item.label}>
-            <div className={styles.motion}>
-              <img className={styles.mascotImage} src={item.image} alt="" />
-              {index === 0 && <span className={styles.bulbGlow} />}
-              {index === 2 && (
-                <>
-                  <span className={`${styles.sparkle} ${styles.sparkleBig}`} />
-                  <span className={`${styles.sparkle} ${styles.sparkleSmall}`} />
-                </>
-              )}
-            </div>
-          </div>
-        ))}
-      </div>
+      <LoadingMascots stage={stage} />
 
       <h1 className={styles.titles} role="status">
         {stages.map((item, index) => (

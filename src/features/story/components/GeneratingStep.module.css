@@ -42,7 +42,8 @@
   border-radius: 32px;
   transform: scaleX(0);
   transform-origin: left center;
-  transition: transform 0.4s linear;
+  /* 게이지 위치가 0.1초마다 바뀌어요. 그 사이를 이어서 끊김 없이 차올라요. */
+  transition: transform 0.12s linear;
 }
 
 .node {
@@ -53,7 +54,7 @@
   align-items: center;
   width: max-content;
   transform: translateX(-50%);
-  transition: --p 0.4s linear;
+  transition: --p 0.12s linear;
 }
 
 .badge {
@@ -143,181 +144,6 @@
   transition-delay: 0.15s;
 }
 
-/* ── 마스코트 ─────────────────────────────── */
-/* 세 그림이 같은 자리에 겹쳐 있다가, 단계가 바뀌면 서로 천천히 교차하며 바뀌어요. */
-.mascots {
-  position: relative;
-  flex: none;
-  width: min(400px, calc(100% - 32px));
-  margin-top: 17px;
-  aspect-ratio: 400 / 323;
-}
-
-.mascot {
-  position: absolute;
-  opacity: 0;
-  transform: translateY(10px) scale(0.94);
-  transition:
-    opacity 0.45s ease,
-    transform 0.6s ease;
-}
-
-.mascot[data-active='true'] {
-  opacity: 1;
-  transform: none;
-  transition:
-    opacity 0.7s ease 0.2s,
-    transform 0.8s cubic-bezier(0.22, 1, 0.36, 1) 0.2s;
-}
-
-.thinking {
-  top: 3.7%;
-  left: 2.75%;
-  width: 96.75%;
-}
-
-.writing {
-  top: 8.7%;
-  left: 16.5%;
-  width: 72.75%;
-}
-
-.drawing {
-  top: 0;
-  left: 12.25%;
-  width: 79%;
-}
-
-.motion {
-  position: relative;
-}
-
-.mascotImage {
-  display: block;
-  width: 100%;
-  height: auto;
-}
-
-/* 이야기 짜기: 고개를 갸웃하듯 천천히 흔들리고, 전구가 깜빡 켜졌다 꺼져요. */
-.thinking .motion {
-  transform-origin: 50% 88%;
-  animation: think 3.8s ease-in-out infinite;
-}
-
-.bulbGlow {
-  position: absolute;
-  top: 12%;
-  left: 67%;
-  width: 20%;
-  aspect-ratio: 1;
-  background: radial-gradient(circle, rgb(255 199 51 / 70%) 0%, rgb(255 199 51 / 0%) 68%);
-  border-radius: 50%;
-  opacity: 0;
-  animation: bulb 2.4s ease-in-out infinite;
-}
-
-/* 글 쓰기: 연필 끝을 중심으로 아주 살짝 떨리며 글씨를 쓰듯 움직여요. */
-.writing .motion {
-  transform-origin: 50% 82%;
-  animation: write 1.3s ease-in-out infinite;
-}
-
-/* 그림 그리기: 붓질하듯 좌우로 흔들리고, 반짝이가 번갈아 반짝여요. */
-.drawing .motion {
-  transform-origin: 42% 85%;
-  animation: paint 3.2s ease-in-out infinite;
-}
-
-.sparkle {
-  position: absolute;
-  background: radial-gradient(circle, rgb(255 214 64 / 75%) 0%, rgb(255 214 64 / 0%) 70%);
-  border-radius: 50%;
-  opacity: 0;
-  animation: twinkle 1.8s ease-in-out infinite;
-}
-
-.sparkleBig {
-  top: 12.5%;
-  left: 58.1%;
-  width: 16%;
-  aspect-ratio: 1;
-}
-
-.sparkleSmall {
-  top: 22.6%;
-  left: 66.5%;
-  width: 10%;
-  aspect-ratio: 1;
-  animation-delay: 0.9s;
-}
-
-@keyframes think {
-  0%,
-  100% {
-    transform: translateY(0) rotate(-1.4deg);
-  }
-
-  50% {
-    transform: translateY(-6px) rotate(1.4deg);
-  }
-}
-
-@keyframes bulb {
-  0%,
-  100% {
-    opacity: 0.1;
-    transform: scale(0.85);
-  }
-
-  50% {
-    opacity: 1;
-    transform: scale(1.15);
-  }
-}
-
-@keyframes write {
-  0%,
-  100% {
-    transform: translate(0, 0) rotate(0deg);
-  }
-
-  25% {
-    transform: translate(-2px, 1px) rotate(-1.2deg);
-  }
-
-  50% {
-    transform: translate(1px, -1px) rotate(0.6deg);
-  }
-
-  75% {
-    transform: translate(-1px, 1px) rotate(-0.7deg);
-  }
-}
-
-@keyframes paint {
-  0%,
-  100% {
-    transform: translate(0, 0) rotate(-1.6deg);
-  }
-
-  50% {
-    transform: translate(5px, -3px) rotate(1.6deg);
-  }
-}
-
-@keyframes twinkle {
-  0%,
-  100% {
-    opacity: 0;
-    transform: scale(0.7);
-  }
-
-  50% {
-    opacity: 1;
-    transform: scale(1.2);
-  }
-}
-
 /* ── 문구 ─────────────────────────────── */
 /* 제목도 같은 자리에 겹쳐 두고 서서히 바꿔요. 높이가 그대로라 아래 문구가 흔들리지 않아요. */
 .titles {
@@ -378,16 +204,6 @@
 }
 
 @media (prefers-reduced-motion: reduce) {
-  .thinking .motion,
-  .writing .motion,
-  .drawing .motion,
-  .bulbGlow,
-  .sparkle {
-    animation: none;
-  }
-
-  .mascot,
-  .mascot[data-active='true'],
   .title,
   .title[data-active='true'] {
     transform: none;

@@ -1,0 +1,678 @@
+/* 꽃잎이 시계 방향으로 그려지는 각도예요. 모션이 꺼져 있으면 끝까지 그려진 상태로 보여요. */
+@property --sweep {
+  syntax: '<angle>';
+  inherits: false;
+  initial-value: 365deg;
+}
+
+.mascots {
+  position: relative;
+  flex: none;
+  width: min(400px, calc(100% - 32px));
+  margin-top: 17px;
+  aspect-ratio: 400 / 323;
+}
+
+.mascot {
+  position: absolute;
+  opacity: 0;
+  transform: translateY(10px) scale(0.94);
+  transition:
+    opacity 0.45s ease,
+    transform 0.6s ease;
+}
+
+.mascot[data-active='true'] {
+  opacity: 1;
+  transform: none;
+  transition:
+    opacity 0.7s ease 0.2s,
+    transform 0.8s cubic-bezier(0.22, 1, 0.36, 1) 0.2s;
+}
+
+.thinking {
+  top: 3.7%;
+  left: 2.75%;
+  width: 96.75%;
+}
+
+.writing {
+  top: 8.7%;
+  left: 16.5%;
+  width: 72.75%;
+}
+
+.drawing {
+  top: 0;
+  left: 12.25%;
+  width: 79%;
+}
+
+/* 몸은 숨 쉬듯 아주 조금만 움직여요. 진짜 움직임은 말풍선·연필·붓이 맡아요. */
+.breathing {
+  position: relative;
+  transform-origin: 50% 92%;
+}
+
+.mascot[data-played='true'] .breathing {
+  animation: breathe 3.6s ease-in-out infinite;
+}
+
+.image {
+  display: block;
+  width: 100%;
+  height: auto;
+}
+
+.layer {
+  position: absolute;
+  inset: 0;
+  display: block;
+  width: 100%;
+  height: 100%;
+}
+
+@keyframes breathe {
+  0%,
+  100% {
+    transform: scale(1, 1);
+  }
+
+  50% {
+    transform: scale(1.004, 1.012);
+  }
+}
+
+/* ── 이야기 짜기 (한 번에 6초) ── */
+.dot1 {
+  transform-origin: 65.9% 43.6%;
+}
+
+.dot2 {
+  transform-origin: 69.8% 39.3%;
+}
+
+.bubble {
+  transform-origin: 67.2% 37.5%;
+}
+
+.bulbGlow {
+  position: absolute;
+  top: 13.5%;
+  left: 67.9%;
+  width: 17%;
+  aspect-ratio: 1;
+  background: radial-gradient(circle, rgb(255 199 51 / 75%) 0%, rgb(255 199 51 / 0%) 68%);
+  border-radius: 50%;
+  opacity: 0;
+}
+
+.mascot[data-played='true'] .dot1 {
+  animation: dot1Pop 6s ease-in-out infinite;
+}
+
+.mascot[data-played='true'] .dot2 {
+  animation: dot2Pop 6s ease-in-out infinite;
+}
+
+.mascot[data-played='true'] .bubble {
+  animation: bubblePop 6s ease-in-out infinite;
+}
+
+.mascot[data-played='true'] .bulbGlow {
+  animation: bulbGlow 6s ease-in-out infinite;
+}
+
+@keyframes dot1Pop {
+  0%,
+  6% {
+    opacity: 0;
+    transform: scale(0);
+  }
+
+  10% {
+    opacity: 1;
+    transform: scale(1.2);
+  }
+
+  13%,
+  78% {
+    opacity: 1;
+    transform: scale(1);
+  }
+
+  84%,
+  100% {
+    opacity: 0;
+    transform: scale(0.4);
+  }
+}
+
+@keyframes dot2Pop {
+  0%,
+  11% {
+    opacity: 0;
+    transform: scale(0);
+  }
+
+  15% {
+    opacity: 1;
+    transform: scale(1.2);
+  }
+
+  18%,
+  75% {
+    opacity: 1;
+    transform: scale(1);
+  }
+
+  81%,
+  100% {
+    opacity: 0;
+    transform: scale(0.4);
+  }
+}
+
+@keyframes bubblePop {
+  0%,
+  16% {
+    opacity: 0;
+    transform: scale(0.25);
+  }
+
+  24% {
+    opacity: 1;
+    transform: scale(1.06);
+  }
+
+  28%,
+  71% {
+    opacity: 1;
+    transform: scale(1);
+  }
+
+  79%,
+  100% {
+    opacity: 0;
+    transform: scale(0.45);
+  }
+}
+
+@keyframes bulbGlow {
+  0%,
+  28% {
+    opacity: 0;
+    transform: scale(0.85);
+  }
+
+  35% {
+    opacity: 1;
+    transform: scale(1.15);
+  }
+
+  43% {
+    opacity: 0.4;
+    transform: scale(0.95);
+  }
+
+  51% {
+    opacity: 1;
+    transform: scale(1.15);
+  }
+
+  59% {
+    opacity: 0.4;
+    transform: scale(0.95);
+  }
+
+  66% {
+    opacity: 1;
+    transform: scale(1.15);
+  }
+
+  72%,
+  100% {
+    opacity: 0;
+    transform: scale(0.85);
+  }
+}
+
+/* ── 글 쓰기 (한 번에 7초) ──
+   글씨가 그려지는 구간과 손이 지나가는 구간을 같은 시간표로 맞췄어요.
+   첫째 줄 6~30%, 둘째 줄 38~58%, 다 쓰면 잠시 보여 주고 88~96%에 지워져요. */
+.stroke {
+  stroke: #d3b797;
+  stroke-width: 5.5;
+  stroke-linecap: round;
+  stroke-dasharray: 1;
+  stroke-dashoffset: 0;
+}
+
+.mascot[data-played='true'] .strokeFirst {
+  animation: strokeFirst 7s linear infinite;
+}
+
+.mascot[data-played='true'] .strokeSecond {
+  animation: strokeSecond 7s linear infinite;
+}
+
+.mascot[data-played='true'] .writingHand {
+  animation: writingHand 7s linear infinite;
+}
+
+.writingWiggle {
+  transform-origin: 45% 73.6%;
+}
+
+.mascot[data-played='true'] .writingWiggle {
+  animation: writingWiggle 7s linear infinite;
+}
+
+@keyframes strokeFirst {
+  0%,
+  5.9% {
+    stroke-dashoffset: 1;
+    opacity: 0;
+  }
+
+  6% {
+    stroke-dashoffset: 1;
+    opacity: 1;
+  }
+
+  30%,
+  88% {
+    stroke-dashoffset: 0;
+    opacity: 1;
+  }
+
+  96%,
+  100% {
+    stroke-dashoffset: 0;
+    opacity: 0;
+  }
+}
+
+@keyframes strokeSecond {
+  0%,
+  37.9% {
+    stroke-dashoffset: 1;
+    opacity: 0;
+  }
+
+  38% {
+    stroke-dashoffset: 1;
+    opacity: 1;
+  }
+
+  58%,
+  88% {
+    stroke-dashoffset: 0;
+    opacity: 1;
+  }
+
+  96%,
+  100% {
+    stroke-dashoffset: 0;
+    opacity: 0;
+  }
+}
+
+@keyframes writingHand {
+  0% {
+    transform: translate(0, 0);
+    animation-timing-function: ease-in-out;
+  }
+
+  6% {
+    transform: translate(1.37%, -0.34%);
+  }
+
+  14% {
+    transform: translate(3.09%, -1.37%);
+  }
+
+  22% {
+    transform: translate(5.5%, -1.88%);
+  }
+
+  30% {
+    transform: translate(8.59%, -1.88%);
+    animation-timing-function: ease-in-out;
+  }
+
+  38% {
+    transform: translate(1.03%, 3.94%);
+  }
+
+  44% {
+    transform: translate(3.26%, 2.4%);
+  }
+
+  50% {
+    transform: translate(5.67%, 2.23%);
+  }
+
+  58% {
+    transform: translate(8.42%, 1.37%);
+    animation-timing-function: ease-in-out;
+  }
+
+  68%,
+  100% {
+    transform: translate(0, 0);
+  }
+}
+
+/* 글씨를 쓰는 동안에만 연필이 잘게 움직여요. */
+@keyframes writingWiggle {
+  0%,
+  6% {
+    transform: rotate(0deg);
+  }
+
+  8.5%,
+  13.5%,
+  18.5%,
+  23.5%,
+  28.5%,
+  40.5%,
+  45.5%,
+  50.5%,
+  55.5% {
+    transform: rotate(-2.2deg);
+  }
+
+  11%,
+  16%,
+  21%,
+  26%,
+  43%,
+  48%,
+  53% {
+    transform: rotate(2deg);
+  }
+
+  30%,
+  38%,
+  58%,
+  100% {
+    transform: rotate(0deg);
+  }
+}
+
+/* ── 그림 그리기 (한 번에 9초) ──
+   꽃잎 4~44%, 가운데 44~50%, 줄기 50~58%, 왼쪽 잎 58~68%, 오른쪽 잎 68~78%,
+   다 그리면 반짝이가 나타나고 92~98%에 그림이 지워져요. */
+.drawingHand {
+  transform-origin: 41.46% 69.97%;
+}
+
+.mascot[data-played='true'] .drawingHand {
+  animation: drawingHand 9s ease-in-out infinite;
+}
+
+.petals {
+  --sweep: 365deg;
+  -webkit-mask-image: conic-gradient(from 270deg at 70.4% 62.5%, #000 calc(var(--sweep) - 3deg), transparent var(--sweep));
+  mask-image: conic-gradient(from 270deg at 70.4% 62.5%, #000 calc(var(--sweep) - 3deg), transparent var(--sweep));
+}
+
+.mascot[data-played='true'] .petals {
+  animation: paintPetals 9s linear infinite;
+}
+
+.center {
+  transform-origin: 70.4% 62.5%;
+}
+
+.mascot[data-played='true'] .center {
+  animation: paintCenter 9s ease-out infinite;
+}
+
+.mascot[data-played='true'] .stem {
+  animation: paintStem 9s linear infinite;
+}
+
+.mascot[data-played='true'] .leafLeft {
+  animation: paintLeafLeft 9s linear infinite;
+}
+
+.mascot[data-played='true'] .leafRight {
+  animation: paintLeafRight 9s linear infinite;
+}
+
+.stars {
+  transform-origin: 69% 24%;
+}
+
+.mascot[data-played='true'] .stars {
+  animation: starsTwinkle 9s ease-in-out infinite;
+}
+
+@keyframes drawingHand {
+  0%,
+  100% {
+    transform: translate(0, 0) rotate(0deg);
+  }
+
+  4% {
+    transform: translate(1.27%, -0.93%) rotate(0deg);
+  }
+
+  9% {
+    transform: translate(3.48%, -2.17%) rotate(-3deg);
+  }
+
+  14% {
+    transform: translate(5.38%, -1.24%) rotate(-2deg);
+  }
+
+  19% {
+    transform: translate(6.01%, 0.31%) rotate(1deg);
+  }
+
+  24% {
+    transform: translate(4.75%, 1.55%) rotate(3deg);
+  }
+
+  29% {
+    transform: translate(2.85%, 1.86%) rotate(3deg);
+  }
+
+  34% {
+    transform: translate(1.27%, 0.93%) rotate(1deg);
+  }
+
+  39% {
+    transform: translate(0.63%, -0.31%) rotate(0deg);
+  }
+
+  44% {
+    transform: translate(1.58%, -0.93%) rotate(0deg);
+  }
+
+  47% {
+    transform: translate(4.75%, 0.31%) rotate(1deg);
+  }
+
+  50% {
+    transform: translate(3.16%, 1.55%) rotate(4deg);
+  }
+
+  58% {
+    transform: translate(3.16%, 1.55%) rotate(10deg);
+  }
+
+  63% {
+    transform: translate(0.63%, 1.24%) rotate(11deg);
+  }
+
+  68% {
+    transform: translate(1.9%, 1.24%) rotate(9deg);
+  }
+
+  73% {
+    transform: translate(4.75%, 1.86%) rotate(13deg);
+  }
+
+  78% {
+    transform: translate(3.16%, 1.24%) rotate(10deg);
+  }
+
+  86% {
+    transform: translate(0, 0) rotate(0deg);
+  }
+}
+
+@keyframes paintPetals {
+  0%,
+  4% {
+    --sweep: 0deg;
+    opacity: 1;
+  }
+
+  44%,
+  92% {
+    --sweep: 365deg;
+    opacity: 1;
+  }
+
+  98%,
+  100% {
+    --sweep: 365deg;
+    opacity: 0;
+  }
+}
+
+@keyframes paintCenter {
+  0%,
+  44% {
+    opacity: 0;
+    transform: scale(0.1);
+  }
+
+  50%,
+  92% {
+    opacity: 1;
+    transform: scale(1);
+  }
+
+  98%,
+  100% {
+    opacity: 0;
+    transform: scale(1);
+  }
+}
+
+@keyframes paintStem {
+  0%,
+  50% {
+    clip-path: inset(0 0 33.5% 0);
+    opacity: 1;
+  }
+
+  58%,
+  92% {
+    clip-path: inset(0 0 25% 0);
+    opacity: 1;
+  }
+
+  98%,
+  100% {
+    clip-path: inset(0 0 25% 0);
+    opacity: 0;
+  }
+}
+
+@keyframes paintLeafLeft {
+  0%,
+  58% {
+    clip-path: circle(0% at 64.5% 74%);
+    opacity: 1;
+  }
+
+  68%,
+  92% {
+    clip-path: circle(9% at 64.5% 74%);
+    opacity: 1;
+  }
+
+  98%,
+  100% {
+    clip-path: circle(9% at 64.5% 74%);
+    opacity: 0;
+  }
+}
+
+@keyframes paintLeafRight {
+  0%,
+  68% {
+    clip-path: circle(0% at 68% 75.5%);
+    opacity: 1;
+  }
+
+  78%,
+  92% {
+    clip-path: circle(11% at 68% 75.5%);
+    opacity: 1;
+  }
+
+  98%,
+  100% {
+    clip-path: circle(11% at 68% 75.5%);
+    opacity: 0;
+  }
+}
+
+@keyframes starsTwinkle {
+  0%,
+  76% {
+    opacity: 0;
+    transform: scale(0.5);
+  }
+
+  81% {
+    opacity: 1;
+    transform: scale(1.12);
+  }
+
+  85%,
+  92% {
+    opacity: 1;
+    transform: scale(1);
+  }
+
+  98%,
+  100% {
+    opacity: 0;
+    transform: scale(0.8);
+  }
+}
+
+/* 모션을 꺼 둔 사용자에게는 움직임 없이 완성된 그림(디자인 그대로)을 보여줘요. */
+@media (prefers-reduced-motion: reduce) {
+  .mascot,
+  .mascot[data-active='true'] {
+    transform: none;
+  }
+
+  .mascot[data-played='true'] .breathing,
+  .mascot[data-played='true'] .dot1,
+  .mascot[data-played='true'] .dot2,
+  .mascot[data-played='true'] .bubble,
+  .mascot[data-played='true'] .bulbGlow,
+  .mascot[data-played='true'] .strokeFirst,
+  .mascot[data-played='true'] .strokeSecond,
+  .mascot[data-played='true'] .writingHand,
+  .mascot[data-played='true'] .writingWiggle,
+  .mascot[data-played='true'] .drawingHand,
+  .mascot[data-played='true'] .petals,
+  .mascot[data-played='true'] .center,
+  .mascot[data-played='true'] .stem,
+  .mascot[data-played='true'] .leafLeft,
+  .mascot[data-played='true'] .leafRight,
+  .mascot[data-played='true'] .stars {
+    animation: none;
+  }
+}

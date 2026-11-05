@@ -1,10 +1,11 @@
 import { useEffect, useRef, useState } from 'react';
 
 // 서버는 "지금 몇 번째 단계인지"만 알려 줘요. (이야기 짜기 → 글 쓰기 → 그림 그리기)
-// 그래서 단계 안에서 얼마나 찼는지는 걸린 시간으로 어림해요.
-//  - 단계가 바뀌는 순간은 서버가 알려 주는 대로 따라가요. (게이지가 그 단계 몫까지 꽉 차요)
-//  - 단계 안에서는 예상 시간에 맞춰 차오르다가, 끝에 가까울수록 천천히 차서 100%를 넘지 않아요.
+// 그래서 게이지는 하나의 위치(0~3)로 나타내요. 정수 부분이 단계, 소수 부분이 그 단계에서 찬 정도예요.
+//  - 목표 위치: 단계 안에서는 걸린 시간으로 어림하고, 끝에 가까울수록 천천히 차서 다음 단계를 넘지 않아요.
 //  - 앞 단계가 예상보다 빨리/늦게 끝났으면, 그 속도를 다음 단계 예상에 반영해요. (AI 제작 속도에 맞춰요)
+//  - 화면의 위치: 목표를 부드럽게 따라가요. 서버가 다음 단계로 넘어갔다고 알려 줘도 건너뛰지 않고,
+//    게이지가 다음 단계에 실제로 닿았을 때 화면의 단계가 바뀌어요.
 
 // 단계별로 보통 걸리는 시간이에요. (전체 3~4분)
 export const STAGE_EXPECTED_MS = [50_000, 50_000, 110_000];
@@ -14,7 +15,10 @@ const IMAGES_ONLY_EXPECTED_MS = 45_000;
 const MAX_FILL = 0.97;
 const SPEED_MIN = 0.4;
 const SPEED_MAX = 3;
-const TICK_MS = 250;
+const TICK_MS = 100;
+// 목표가 앞서갔을 때 따라잡는 속도예요. 1초에 한 단계의 30%까지만 움직여서 휙 넘어가지 않아요.
+const MAX_CATCH_UP_PER_SECOND = 0.3;
+const FOLLOW_TIME_MS = 500;
 
 const clamp = (value, min, max) => Math.min(Math.max(value, min), max);
 
@@ -44,51 +48,56 @@ export function stageFill(elapsedMs, expectedMs, speed = 1) {
   return Math.min(MAX_FILL, 1 - Math.exp(-Math.max(elapsedMs, 0) / tau));
 }
 
-// 세 단계 각각이 찬 비율이에요. 지난 단계는 1, 앞으로 올 단계는 0이에요.
-export function computeFills(job, now) {
+// 지금 게이지가 가 있어야 할 위치(0~3)예요.
+export function targetPosition(job, now) {
+  if (job?.status === 'done') return 3;
   const stage = job?.stage ?? 0;
-  if (job?.status === 'done') return [1, 1, 1];
-
-  return [0, 1, 2].map((index) => {
-    if (index < stage) return 1;
-    if (index > stage) return 0;
-    const elapsed = now - (job?.stageSince ?? now);
-    return stageFill(elapsed, expectedStageMs(stage, job?.scope), job?.speed ?? 1);
-  });
+  const elapsed = now - (job?.stageSince ?? now);
+  return stage + stageFill(elapsed, expectedStageMs(stage, job?.scope), job?.speed ?? 1);
 }
 
-// 화면에 보여 줄 게이지 값이에요. 시간이 흐르는 만큼 조금씩 차오르고, 한 번 찬 게이지는 줄어들지 않아요.
-export function useGenerationFills(job) {
-  const [fills, setFills] = useState(() => computeFills(job, Date.now()));
-  const floor = useRef({ storyId: null, values: [0, 0, 0] });
+// 화면 위치를 목표 쪽으로 한 걸음 옮겨요. 앞으로만 가고, 멀리 있어도 정해진 속도를 넘지 않아요.
+export function stepPosition(position, target, elapsedMs) {
+  const gap = target - position;
+  if (gap <= 0) return position;
+  const follow = gap * (1 - Math.exp(-elapsedMs / FOLLOW_TIME_MS));
+  return position + Math.min(follow, (MAX_CATCH_UP_PER_SECOND * elapsedMs) / 1000);
+}
 
-  const storyId = job?.storyId ?? null;
-  const stage = job?.stage ?? 0;
-  const scope = job?.scope ?? null;
-  const status = job?.status ?? null;
-  const stageSince = job?.stageSince ?? null;
-  const speed = job?.speed ?? 1;
+// 화면에 보여 줄 게이지 위치(0~3)예요. 시간이 흐르는 만큼 끊김 없이 차오르고 줄어들지 않아요.
+export function useGenerationPosition(job) {
+  const [position, setPosition] = useState(() => targetPosition(job, Date.now()));
+  const latest = useRef({ job, position });
+
+  useEffect(() => {
+    latest.current.job = job;
+  }, [job]);
 
   useEffect(() => {
     const tick = () => {
-      if (floor.current.storyId !== storyId) {
-        floor.current = { storyId, values: [0, 0, 0] };
-      }
-      const next = computeFills({ stage, scope, status, stageSince, speed }, Date.now()).map((value, index) =>
-        Math.max(value, floor.current.values[index]),
-      );
-      floor.current.values = next;
-      setFills((current) => (current.every((value, index) => Math.abs(value - next[index]) < 0.002) ? current : next));
+      const state = latest.current;
+      const now = Date.now();
+      const target = targetPosition(state.job, now);
+      const switched = state.storyId !== state.job?.storyId;
+      // 다른 동화로 바뀌었거나 새로고침 뒤 이어 보는 중이면, 처음부터 차오르지 않고 제자리로 바로 가요.
+      const restored = state.wasResumed && !state.job?.resumed;
+      const next =
+        switched || restored || state.job?.resumed ? target : stepPosition(state.position, target, now - state.tickedAt);
+
+      state.storyId = state.job?.storyId;
+      state.wasResumed = Boolean(state.job?.resumed);
+      state.tickedAt = now;
+      state.position = next;
+      setPosition(next);
     };
+
+    latest.current.storyId = latest.current.job?.storyId;
+    latest.current.wasResumed = Boolean(latest.current.job?.resumed);
+    latest.current.tickedAt = Date.now();
 
     const timer = setInterval(tick, TICK_MS);
-    // 단계가 바뀐 순간에도 바로 반영해요.
-    const first = setTimeout(tick, 0);
-    return () => {
-      clearInterval(timer);
-      clearTimeout(first);
-    };
-  }, [storyId, stage, scope, status, stageSince, speed]);
+    return () => clearInterval(timer);
+  }, []);
 
-  return fills;
+  return position;
 }
