@@ -1,0 +1,17 @@
+<svg preserveAspectRatio="none" overflow="visible" style="display: block;" width="89.6" height="88.6" viewBox="0 0 89.6 88.6" fill="none" xmlns="http://www.w3.org/2000/svg">
+<g id="Union" filter="url(#filter0_d_0_14)">
+<path d="M44.8 5.8C65.7868 5.8 82.8 22.5893 82.8 43.3C82.8 64.0107 65.7868 80.8 44.8 80.8C23.8132 80.8 6.8 64.0107 6.8 43.3C6.8 22.5893 23.8132 5.8 44.8 5.8Z" fill="#FFCF55"/>
+</g>
+<defs>
+<filter id="filter0_d_0_14" x="0" y="0" width="89.6" height="88.6" filterUnits="userSpaceOnUse" color-interpolation-filters="sRGB">
+<feFlood flood-opacity="0" result="BackgroundImageFix"/>
+<feColorMatrix in="SourceAlpha" type="matrix" values="0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 127 0" result="hardAlpha"/>
+<feOffset dy="1"/>
+<feGaussianBlur stdDeviation="3.4"/>
+<feComposite in2="hardAlpha" operator="out"/>
+<feColorMatrix type="matrix" values="0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0.17 0"/>
+<feBlend mode="normal" in2="BackgroundImageFix" result="effect1_dropShadow_0_14"/>
+<feBlend mode="normal" in="SourceGraphic" in2="effect1_dropShadow_0_14" result="shape"/>
+</filter>
+</defs>
+</svg>

@@ -20,6 +20,21 @@
   transform-origin: top center;
 }
 
+.desktopHeader { display: none; }
+
+@media (min-width: 1400px), (min-width: 761px) and (hover: hover) and (pointer: fine) {
+  .desktopHeader { display: block; }
+  .desktopHeader .header {
+    display: flex;
+    align-items: center;
+    height: var(--header-height);
+    padding: 0 46px;
+  }
+  .desktopHeader .logo { transform: translateY(-6px); }
+  .desktopHeader .close { top: 50%; transform: translateY(-50%); }
+  .canvasHeader { display: none; }
+}
+
 .header {
   position: absolute;
   z-index: 4;
@@ -53,10 +68,15 @@
   cursor: pointer;
 }
 
+@media (min-width: 1400px) and (max-height: 850px), (min-width: 761px) and (max-height: 850px) and (hover: hover) and (pointer: fine) {
+  .desktopHeader .header { padding: 0 36px; }
+  .desktopHeader .logo { font-size: 34px; }
+}
+
 .heading {
   position: absolute;
-  top: 151px;
-  left: 46px;
+  top: 164px;
+  left: 88px;
   margin: 0;
   color: var(--color-text);
   font-size: 22px;
@@ -66,8 +86,8 @@
 
 .pageList {
   position: absolute;
-  top: 209px;
-  left: 23px;
+  top: 215px;
+  left: 65px;
   display: flex;
   flex-direction: column;
   width: 171px;
@@ -163,28 +183,21 @@
 .thumbnail:nth-child(5),
 .thumbnail:nth-child(6) { margin-top: 2px; }
 
-.book,
-.storyInfo {
-  position: absolute;
-  top: 158px;
-  height: 653px;
-  background: #fff;
-  border-radius: 24px;
-  box-shadow: 0 0 8px rgb(0 0 0 / 10%);
-}
-
 .book {
-  left: 220px;
-  width: 922px;
-  padding: 26px 27px 27px;
+  position: absolute;
+  top: 178px;
+  left: 313px;
+  width: 997px;
+  height: 630px;
 }
 
 .illustration {
   position: relative;
-  width: 868px;
-  height: 491px;
+  width: 997px;
+  height: 564px;
   overflow: hidden;
-  border-radius: 8px;
+  background: url('../../assets/story-preview-guide/image-background.png') center / cover;
+  border-radius: 9.19px;
   cursor: zoom-in;
   container-type: inline-size;
 }
@@ -225,35 +238,35 @@
 .pageCopy p { margin: 0 0 3px; }
 
 .pagination {
-  display: grid;
-  grid-template-columns: 86px 48px 86px;
+  position: absolute;
+  top: 579px;
+  left: 399px;
+  display: flex;
   align-items: center;
-  justify-content: center;
-  gap: 38px;
-  margin-top: 44px;
+  justify-content: space-between;
+  width: 175px;
+  height: 51px;
+  padding: 7.93px 20.4px;
+  background: #fff;
+  border-radius: 15.708px;
+  box-shadow: 0 1px 3.287px rgb(0 0 0 / 19%);
 }
 
 .pagination button {
   display: inline-flex;
   align-items: center;
   justify-content: center;
-  gap: 5px;
-  width: 86px;
-  height: 45px;
+  width: 22.135px;
+  height: 33.051px;
   padding: 0;
   color: var(--color-text);
   background: #fff;
   border: 0;
-  border-radius: 9px;
-  box-shadow: 0 0 5.9px rgb(0 0 0 / 15%);
-  font-family: var(--font-body);
-  font-size: 14px;
-  font-weight: 600;
   cursor: pointer;
 }
 
-.pagination button:disabled { opacity: 0.4; cursor: default; }
-.pagination button img { display: block; flex: 0 0 auto; }
+.pagination button:disabled { cursor: default; }
+.pagination button img { display: block; max-width: none; flex: 0 0 auto; }
 .pagination button:first-child img { transform: scaleX(-1); }
 
 .pagination strong {
@@ -265,48 +278,112 @@
 
 .pagination strong span { color: var(--color-brand); }
 
-.storyInfo {
-  left: 1166px;
-  display: flex;
-  flex-direction: column;
-  gap: 43px;
-  width: 237px;
-  padding: 39px 27px 34px;
-}
-
-.remakeNote {
+.guidePanel {
   position: absolute;
-  bottom: 26px;
-  left: 34px;
-  margin: 0;
-  color: #818181;
-  font-size: 14px;
-  line-height: 1.5;
-  white-space: nowrap;
+  z-index: 5;
+  top: 169px;
+  left: 914px;
+  width: 437px;
+  height: 662px;
+  opacity: 0;
+  visibility: hidden;
+  pointer-events: none;
+  transform: translateY(72px) scale(.96);
+  transform-origin: bottom right;
+  transition: transform 330ms cubic-bezier(.2, .8, .2, 1), opacity 250ms ease, visibility 0s linear 330ms;
 }
 
-.storyInfo section h2 {
-  margin: 0 0 20px;
+.guidePanelOpen {
+  opacity: 1;
+  visibility: visible;
+  pointer-events: auto;
+  transform: translateY(0) scale(1);
+  transition: transform 330ms cubic-bezier(.2, .8, .2, 1), opacity 250ms ease, visibility 0s;
+}
+
+.guidePanelBackground {
+  position: absolute;
+  top: -11.92px;
+  left: -15.9px;
+  max-width: none;
+}
+
+.guidePanelContent {
+  position: absolute;
+  top: 58px;
+  right: 27px;
+  bottom: 86px;
+  left: 37px;
+  overflow-y: auto;
+  scrollbar-width: thin;
   color: var(--color-text);
+}
+
+.guidePanelContent section:first-child { min-height: 220px; }
+.guideResponse { margin-top: 24px; }
+.guidePanelContent h2 {
+  margin: 0;
+  font-family: var(--font-title);
+  font-size: 22px;
+  font-weight: 400;
+  line-height: 1.5;
+}
+
+.guidePanelContent p { overflow-wrap: anywhere; }
+.guideLead {
+  margin: 12px 0 0 3px;
   font-size: 18px;
-  font-weight: 600;
+  font-weight: 500;
   line-height: 1.5;
 }
 
-.storyInfo section p {
-  margin: 0;
-  color: var(--color-text);
-  font-size: 14px;
-  font-weight: 300;
-  line-height: 1.5;
-  overflow-wrap: anywhere;
-  white-space: pre-line;
+.guideDetail {
+  display: flex;
+  gap: 4px;
+  align-items: flex-start;
+  margin: 16px 0 0 3px;
+  font-size: 16px;
+  line-height: 1.54;
+}
+
+.guideDetail img { flex: 0 0 auto; max-width: none; margin-top: 2px; }
+
+.guideToggle {
+  position: absolute;
+  z-index: 6;
+  top: 844px;
+  left: 1303px;
+  width: 76px;
+  height: 75px;
+  padding: 0;
+  background: transparent;
+  border: 0;
+  cursor: pointer;
+}
+
+.guideToggle img { position: absolute; max-width: none; pointer-events: none; }
+.mascotBase { top: -5.8px; left: -6.8px; }
+.mascotFace { top: 8.03px; left: 6.38px; width: 64.288px; height: 66.968px; }
+.guideDot { top: 0; left: 66px; }
+.toggleBackground { top: -4.2px; left: -5.2px; }
+.toggleChevron { top: 32px; left: 27px; }
+
+.guideSuppressed {
+  opacity: 0;
+  visibility: hidden;
+  pointer-events: none;
+  transition: none;
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .guidePanel,
+  .guidePanelOpen { transition: none; }
 }
 
 .actions {
   position: absolute;
-  top: 846px;
-  left: 742px;
+  top: 853px;
+  left: 481px;
   display: grid;
   grid-template-columns: 316px 316px;
   gap: 29px;
@@ -350,24 +427,34 @@
   .thumbnail::before { height: 60px; }
   .thumbnail img { width: 88px; height: 50px; }
   .thumbnail span { margin-top: 2px; font-size: 12px; }
-  .book { position: relative; top: auto; left: auto; width: auto; min-width: 0; max-width: calc(100vw - 32px); height: auto; margin: 0 16px; padding: 12px; border-radius: 18px; }
+  .book { position: relative; top: auto; left: auto; width: auto; min-width: 0; max-width: calc(100vw - 32px); height: auto; margin: 0 16px; padding: 12px; background: #fff; border-radius: 18px; box-shadow: 0 0 8px rgb(0 0 0 / 10%); }
   .illustration { width: 100%; height: auto; aspect-ratio: auto; overflow: visible; }
   .illustration > img { height: auto; aspect-ratio: 868 / 491; }
   .illustration > .noImageText { height: auto; aspect-ratio: 868 / 491; }
   .pageCopy { padding: 4px 8px; font-size: clamp(7px, 2.5vw, 12px); }
-  .pagination { grid-template-columns: 78px auto 78px; gap: 12px; margin: 15px auto 2px; }
-  .pagination button { width: 78px; height: 40px; font-size: 12px; }
+  .pagination { position: relative; top: auto; left: auto; width: 175px; margin: 15px auto 2px; }
+  .pagination button { width: 22px; height: 33px; }
   .pagination strong { font-size: 15px; }
-  .storyInfo { position: relative; top: auto; left: auto; display: grid; gap: 18px; width: auto; max-width: calc(100vw - 32px); height: auto; margin: 14px 16px; padding: 20px; border-radius: 18px; }
-  .storyInfo section h2 { margin-bottom: 6px; font-size: 16px; }
-  .storyInfo section p { font-size: 14px; }
+  .guidePanel { position: fixed; top: auto; right: 16px; bottom: 82px; left: auto; }
+  .guideToggle { position: fixed; top: auto; right: 20px; bottom: 22px; left: auto; }
   .actions { position: relative; top: auto; left: auto; grid-template-columns: minmax(0, 1fr); gap: 10px; width: auto; min-width: 0; margin: 14px 16px 24px; }
   .remakeAction { min-width: 0; }
   .remakeAction { order: 2; }
   .actions .confirm { order: 1; }
   .actions button { width: 100%; min-width: 0; height: 52px; border-radius: 12px; font-size: 15px; }
-  .remakeNote { position: static; margin: 4px 0 0; font-size: 12px; text-align: center; white-space: normal; }
 
+}
+
+@media (max-width: 500px) {
+  .guidePanel { scale: .9; }
+}
+
+@media (max-width: 430px) {
+  .guidePanel { scale: .8; }
+}
+
+@media (max-width: 380px), (max-height: 760px) and (max-width: 760px) {
+  .guidePanel { scale: .72; }
 }
 
 @media (max-width: 380px) {
