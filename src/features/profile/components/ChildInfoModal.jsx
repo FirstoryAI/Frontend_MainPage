@@ -1,4 +1,5 @@
 import { useEffect, useRef, useState } from 'react';
+import { createPortal } from 'react-dom';
 import clearIcon from '../../../assets/child-info/clear.svg';
 import closeIcon from '../../../assets/child-info/close.svg';
 import removeIcon from '../../../assets/child-info/chip-remove.svg';
@@ -17,11 +18,10 @@ function getDialogScale() {
   if (typeof window === 'undefined') return 1;
 
   const isMobile = window.innerWidth <= 760;
-  const headerHeight = isMobile ? 76 : window.innerHeight <= 850 ? 88 : 109;
   const horizontalMargin = isMobile ? 32 : 64;
   const verticalMargin = 64;
   const widthScale = (window.innerWidth - horizontalMargin) / 560;
-  const heightScale = (window.innerHeight - headerHeight - verticalMargin) / 694;
+  const heightScale = (window.innerHeight - verticalMargin) / 694;
   const maxScale = isMobile ? 1 : 0.86;
   return Math.max(0.4, Math.min(maxScale, widthScale, heightScale));
 }
@@ -91,7 +91,7 @@ function ChildInfoModal({ child, onSave, onClose }) {
   };
 
   return (
-    <div
+    createPortal(<div
       className={styles.backdrop}
       onMouseDown={(event) => {
         if (event.target === event.currentTarget) onClose();
@@ -219,7 +219,7 @@ function ChildInfoModal({ child, onSave, onClose }) {
           {saving ? '저장 중…' : '수정하기'}
         </button>
       </section>
-    </div>
+    </div>, document.body)
   );
 }
 
