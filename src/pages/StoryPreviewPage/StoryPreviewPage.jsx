@@ -27,6 +27,7 @@ import { textPositionOf } from '../../features/story/textPosition';
 import { guideFor, NO_GUIDE_MESSAGE } from '../../features/story/guideContent';
 import { approveStory, getGuide, getPreview, regenerateStory } from '../../services/storiesApi';
 import ErrorText from '../../components/ui/ErrorText';
+import { useNotifications } from '../../features/notifications/useNotifications';
 
 // 화면의 '다시 만들 부분'을 API의 scope로 바꿔요.
 const REMAKE_SCOPES = { all: 'CHARACTER_STORY', text: 'TEXT', image: 'IMAGES' };
@@ -39,6 +40,7 @@ function StoryPreviewPage({ initialRemakeOpen = false }) {
   const { storyId } = useParams();
   const story = location.state?.story ?? {};
   const { startGeneration } = useStoryGeneration();
+  const { updateStoryNotificationHref } = useNotifications();
   const scale = useSceneScale();
   const [preview, setPreview] = useState(null);
   // 동화 줄거리(상세)와 대화 가이드예요. 가이드는 확정 전(REVIEWING)에도 받을 수 있어요.
@@ -124,7 +126,8 @@ function StoryPreviewPage({ initialRemakeOpen = false }) {
     setNotice('');
     try {
       await approveStory(storyId);
-      navigate('/library', { state: { story: { ...story, id: Number(storyId), title }, newlyCreated: true } });
+      updateStoryNotificationHref(storyId, '/library?filter=UNREAD');
+      navigate('/library?filter=UNREAD', { state: { story: { ...story, id: Number(storyId), title }, newlyCreated: true } });
     } catch (error) {
       setNotice(error.message || '확정하지 못했어요. 잠시 뒤에 다시 시도해 주세요.');
       setApproving(false);
