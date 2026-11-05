@@ -48,7 +48,8 @@
   flex-wrap: wrap;
   gap: 4px 12px;
   margin-top: 14.6px;
-  color: var(--color-secondary);
+  padding-left: 47px;
+  color: #818181;
   font-size: 18px;
   font-weight: 500;
   line-height: 1.5;
@@ -60,16 +61,17 @@
 }
 
 .headingRow {
-  display: flex;
-  align-items: center;
-  justify-content: space-between;
-  gap: 16px;
+  position: relative;
   margin-top: 16px;
+  padding-left: 47px;
 }
 
-.close {
-  flex: none;
-  width: 27px;
+/* 뒤로가기 화살표는 제목보다 왼쪽(사이드바 쪽)에 놓여요. */
+.back {
+  position: absolute;
+  top: -11px;
+  left: -15px;
+  width: 13px;
   height: 27px;
   padding: 0;
   background: transparent;
@@ -77,18 +79,22 @@
   cursor: pointer;
 }
 
-.close img {
+.back img {
+  position: absolute;
+  top: -2.83px;
+  left: -2.78px;
   display: block;
+  max-width: none;
 }
 
-.close:focus-visible {
+.back:focus-visible {
   outline: 3px solid var(--color-brand);
-  outline-offset: 4px;
+  outline-offset: 6px;
 }
 
 .heading {
   margin: 0;
-  color: var(--color-heading);
+  color: #444;
   font-size: 33px;
   font-weight: 700;
   line-height: 1.304;
@@ -103,8 +109,8 @@
 
 .detail {
   display: grid;
-  grid-template-columns: 354px minmax(0, 637px);
-  column-gap: 31px;
+  grid-template-columns: 354px minmax(0, 623px);
+  column-gap: 54px;
   margin: 16px 0 0 -10px;
 }
 
@@ -221,60 +227,93 @@
   outline-offset: 3px;
 }
 
-.cards {
-  display: grid;
-  gap: 21px;
+.sections {
   align-content: start;
   margin-top: 70px;
 }
 
-.card {
-  min-height: 124px;
-  padding: 23px 28px 17px;
+/* 줄거리·읽기 전에·다 읽은 뒤에는 카드 없이 아이콘이 붙은 제목과 글로 이어져요. */
+.section {
   color: var(--color-text);
-  background: #fff;
-  border-radius: 18px;
-  box-shadow: 0 0 6.3px rgb(0 0 0 / 10%);
 }
 
-.card h2 {
+.section h2 {
+  display: flex;
+  align-items: center;
+  gap: 13px;
   margin: 0;
-  font-size: 20px;
+  color: #575757;
+  font-size: 22.29px;
   font-weight: 700;
   line-height: 1.5;
+  white-space: nowrap;
 }
 
-.card p {
-  margin: 6px 0 0;
+.icon {
+  display: flex;
+  flex: 0 0 28px;
+  align-items: center;
+  width: 28px;
+}
+
+.icon img {
+  display: block;
+  flex: none;
+}
+
+/* 아이콘마다 디자인에서 놓인 가로 위치가 조금씩 달라요. */
+.iconSummary {
+  padding-left: 7.5px;
+}
+
+.iconAfter {
+  padding-left: 3.4px;
+  transform: translateY(1.3px);
+}
+
+.beforeSection .icon {
+  transform: translateY(-2.1px);
+}
+
+.section p {
+  margin: 0;
+  padding-left: 3px;
   color: #747474;
-  font-size: 16px;
+  font-size: 17.832px;
   font-weight: 400;
   line-height: 1.5;
   word-break: keep-all;
 }
 
-.summaryCard {
-  min-height: 173px;
-  padding-top: 24px;
+/* 아래 구역이 디자인 위치에서 시작하도록, 앞 구역은 짧아도 이만큼 높이를 가져요. 글이 길면 그만큼 늘어나요. */
+.summarySection {
+  min-height: 216px;
+  padding-bottom: 24px;
 }
 
-.summaryCard p {
-  margin-top: 13px;
+.summarySection p {
+  margin-top: 15.6px;
+  padding-left: 9px;
 }
 
-.afterCard {
-  padding-top: 20px;
+.beforeSection {
+  min-height: 160px;
 }
 
-.afterCard .question {
-  margin-top: 7px;
+.beforeSection p {
+  margin-top: 17.4px;
+}
+
+.afterSection .question {
+  margin-top: 22px;
   color: #646464;
-  font-size: 17px;
+  font-size: 18.946px;
   font-weight: 500;
 }
 
-.afterCard p:last-child {
-  margin: 0 0 0 5px;
+.afterSection .ifUndecided {
+  margin-top: 10.6px;
+  padding-left: 9px;
 }
 
 @media (max-width: 1180px) {
@@ -287,8 +326,14 @@
     padding-top: 28px;
   }
 
-  .cards {
+  .sections {
     margin-top: 28px;
+  }
+
+  .summarySection,
+  .beforeSection {
+    min-height: 0;
+    margin-bottom: 28px;
   }
 }
 
@@ -298,7 +343,17 @@
   }
 
   .crumbs {
+    padding-left: 32px;
     font-size: 16px;
+  }
+
+  .headingRow {
+    padding-left: 32px;
+  }
+
+  .back {
+    top: 4px;
+    left: 0;
   }
 
   .heading {
@@ -331,7 +386,7 @@
     margin-left: 0;
   }
 
-  .card {
-    padding-inline: 20px;
+  .section h2 {
+    white-space: normal;
   }
 }

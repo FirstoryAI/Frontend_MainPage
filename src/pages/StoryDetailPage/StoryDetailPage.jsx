@@ -5,7 +5,10 @@ import NotificationBell from '../../components/layout/NotificationBell';
 import avatarCircle from '../../assets/icons/avatar-circle.svg';
 import avatarPerson from '../../assets/icons/avatar-person.svg';
 import iconTrash from '../../assets/icons/icon-trash.svg';
-import iconClose from '../../assets/remake/header-close.svg';
+import iconBack from '../../assets/icons/icon-back-large.svg';
+import iconSummary from '../../assets/icons/icon-detail-summary.svg';
+import iconBefore from '../../assets/icons/icon-detail-before.svg';
+import iconAfter from '../../assets/icons/icon-detail-after.svg';
 import bookCover from '../../assets/images/library-cover-sample.png';
 import SafeImage from '../../features/story/components/SafeImage';
 import bookCoverStyles from '../../features/story/components/BookCover.module.css';
@@ -195,10 +198,10 @@ function StoryDetailPage() {
             <span aria-current="page">동화 상세</span>
           </nav>
           <div className={styles.headingRow}>
-            <h1 className={styles.heading}>동화 한 눈에 보기</h1>
-            <button className={styles.close} type="button" onClick={() => navigate('/library')} aria-label="서재로 돌아가기">
-              <img src={iconClose} alt="" />
+            <button className={styles.back} type="button" onClick={() => navigate('/library')} aria-label="서재로 돌아가기">
+              <img src={iconBack} alt="" />
             </button>
+            <h1 className={styles.heading}>동화 한 눈에 보기</h1>
           </div>
 
           {(loadError || notice) && (
@@ -251,15 +254,21 @@ function StoryDetailPage() {
               </button>
             </section>
 
-            <div className={styles.cards}>
+            <div className={styles.sections}>
               {synopsis && (
-                <section className={`${styles.card} ${styles.summaryCard}`}>
-                  <h2>동화 줄거리</h2>
+                <section className={`${styles.section} ${styles.summarySection}`}>
+                  <h2>
+                    <span className={`${styles.icon} ${styles.iconSummary}`}><img src={iconSummary} alt="" /></span>
+                    동화 줄거리
+                  </h2>
                   <p>{synopsis}</p>
                 </section>
               )}
-              <section className={styles.card}>
-                <h2>읽기 전에</h2>
+              <section className={`${styles.section} ${styles.beforeSection}`}>
+                <h2>
+                  <span className={styles.icon}><img src={iconBefore} alt="" /></span>
+                  읽기 전에
+                </h2>
                 <p>
                   {beforeLines.map((line, index) => (
                     <span key={line}>
@@ -269,10 +278,13 @@ function StoryDetailPage() {
                   ))}
                 </p>
               </section>
-              <section className={`${styles.card} ${styles.afterCard}`}>
-                <h2>다 읽은 뒤에</h2>
+              <section className={`${styles.section} ${styles.afterSection}`}>
+                <h2>
+                  <span className={`${styles.icon} ${styles.iconAfter}`}><img src={iconAfter} alt="" /></span>
+                  다 읽은 뒤에
+                </h2>
                 <p className={styles.question}>{after.bridgeQuestion}</p>
-                <p>{after.ifUndecided}</p>
+                <p className={styles.ifUndecided}>{after.ifUndecided}</p>
               </section>
             </div>
           </div>
