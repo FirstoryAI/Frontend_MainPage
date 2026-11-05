@@ -24,14 +24,14 @@ export const moreScenarios = [
   { id: 'friendLeftOut', category: '친구 관계', accessibleTitle: '친구들이 나만 빼고 놀아요', title: <>친구들이 나만 빼고<br />놀아요</>, description: '아이에게 어떻게 말해줘야 할까요?', image: scenarioFriendLeftOut, color: 'friend', accentColor: '#ff7c68' },
   { id: 'familyApart', category: '가족', accessibleTitle: '엄마 아빠가 따로 지내게 됐어요', title: <>엄마 아빠가 따로<br />지내게 됐어요</>, description: '아이의 마음을 어떻게 물어볼까요?', image: scenarioFamilyApart, color: 'emotion', accentColor: '#65d0a5' },
   { id: 'kindergartenScared', category: '등원 · 적응', accessibleTitle: '엄마가 오지 않을 것 같아서 무서워요', title: <>엄마가 오지 않을 것<br />같아서 무서워요</>, description: '어떤 말로 안심시켜 줄까요?', image: scenarioKindergartenScared, color: 'kindergarten', accentColor: '#ffcf55' },
-  { id: 'grandmaSick', category: '이별 · 죽음', accessibleTitle: '할머니가 편찮으세요', title: '할머니가 편찮으세요', description: '어떤 말로 안심시켜 줄까요?', image: scenarioGrandmaSick, color: 'habit', accentColor: '#9e95ff' },
+  { id: 'grandmaPassed', category: '이별 · 죽음', accessibleTitle: '할머니가 돌아가셨어요', title: '할머니가 돌아가셨어요', description: '어떤 말로 안심시켜 줄까요?', image: scenarioGrandmaSick, color: 'habit', accentColor: '#9e95ff' },
   { id: 'clothesTeeth', category: '떼쓰기 · 훈육', accessibleTitle: '옷 입기 싫어요 양치하기 싫어요', title: <>옷 입기 싫어요<br />양치하기 싫어요</>, description: '아이에게 어떻게 말해줘야 할까요?', image: scenarioClothesTeeth, color: 'tantrum', accentColor: '#4ab1ff' },
 ];
 
 // 더보기 목록의 카드 순서예요. (디자인대로 한 줄에 4개씩 놓여요.)
 const LIST_ORDER = [
   'friend', 'emotion', 'kindergarten', 'tantrum',
-  'habit', 'clothesTeeth', 'friendLeftOut', 'grandmaSick',
+  'habit', 'clothesTeeth', 'friendLeftOut', 'grandmaPassed',
   'familyApart', 'kindergartenScared',
 ];
 const allScenarios = [...scenarios, ...moreScenarios];
