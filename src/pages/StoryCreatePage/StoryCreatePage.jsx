@@ -875,7 +875,7 @@ function StoryCreatePage() {
           />
         )}
         {!toneOpen && (visibleStep === STEP.GENERATING || visibleStep === STEP.COMPLETE) && (
-          <GeneratingStep stage={activeJob?.stage ?? 0} scope={activeJob?.scope} />
+          <GeneratingStep job={activeJob} />
         )}
       </main>
       </div>

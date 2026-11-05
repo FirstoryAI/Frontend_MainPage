@@ -4,6 +4,7 @@ import { getGeneration, getStoryDetail } from '../../../services/storiesApi';
 import { getHome } from '../../../services/homeApi';
 import { GENERATING_STATUSES, toLoadingStage } from '../storyMappers';
 import { StoryGenerationContext } from './storyGenerationContext';
+import { estimateStageSince, nextSpeed } from './progressModel';
 
 // 서버가 뒤에서 동화를 만드는 동안 진행 상태를 읽어 와요. (GET /api/stories/{id}/generation)
 // 동화 만드는 화면을 나가도 이어지도록 화면이 아니라 앱 전체에서 한 번만 돌려요.
@@ -11,7 +12,7 @@ import { StoryGenerationContext } from './storyGenerationContext';
 const POLL_INTERVAL = 3000;
 
 // 진행 중인 동화는 하나만 따라가요. 새로 시작하면 이전 것은 더 이상 따라가지 않아요.
-// job: { storyId, scope, stage(0~2), status: 'running' | 'done' | 'failed' | 'blocked', title, coverUrl, error, notificationId }
+// job: { storyId, scope, stage(0~2), status: 'running' | 'done' | 'failed' | 'blocked', stageSince, speed, title, coverUrl, error, notificationId }
 export function StoryGenerationProvider({ children }) {
   const { addNotification } = useNotifications();
   const [job, setJob] = useState(null);
@@ -37,14 +38,30 @@ export function StoryGenerationProvider({ children }) {
         if (activeStory.current !== storyId) return;
 
         if (GENERATING_STATUSES.includes(generation.status)) {
-          setJob((current) =>
-            current?.storyId === storyId
-              ? {
-                  ...current,
-                  stage: current.scope === 'IMAGES' ? 2 : toLoadingStage(generation.stage),
-                }
-              : current,
-          );
+          setJob((current) => {
+            if (current?.storyId !== storyId) return current;
+
+            const stage = current.scope === 'IMAGES' ? 2 : toLoadingStage(generation.stage);
+            const now = Date.now();
+
+            // 새로고침 뒤 처음 읽은 거라면, 제작 시작 시각으로 이 단계가 얼마나 지났는지 어림해요.
+            if (current.resumed) {
+              return {
+                ...current,
+                stage,
+                resumed: false,
+                stageEstimated: true,
+                stageSince: estimateStageSince(generation.startedAt, stage, current.scope, now),
+              };
+            }
+            if (stage === current.stage) return current;
+
+            // 단계가 넘어갔어요. 앞 단계가 예상보다 빨랐는지 느렸는지를 다음 단계 속도에 반영해요.
+            const speed = current.stageEstimated
+              ? current.speed
+              : nextSpeed(current.speed, now - current.stageSince, current.stage, current.scope);
+            return { ...current, stage, speed, stageSince: now, stageEstimated: false };
+          });
           timer.current = setTimeout(() => pollRef.current(storyId), POLL_INTERVAL);
           return;
         }
@@ -99,12 +116,21 @@ export function StoryGenerationProvider({ children }) {
   }, [poll]);
 
   const startGeneration = useCallback(
-    (storyId, { scope = null } = {}) => {
+    (storyId, { scope = null, resumed = false } = {}) => {
       if (activeStory.current === storyId) return;
 
       stopPolling();
       activeStory.current = storyId;
-      setJob({ storyId, scope, stage: scope === 'IMAGES' ? 2 : 0, status: 'running' });
+      // stageSince: 지금 단계가 시작된 시각(ms), speed: 이번 제작이 예상보다 빠른지(<1)/느린지(>1) 나타내는 배율이에요.
+      setJob({
+        storyId,
+        scope,
+        stage: scope === 'IMAGES' ? 2 : 0,
+        status: 'running',
+        stageSince: Date.now(),
+        speed: 1,
+        resumed,
+      });
       poll(storyId);
     },
     [poll, stopPolling],
@@ -117,7 +143,7 @@ export function StoryGenerationProvider({ children }) {
     try {
       const home = await getHome();
       const running = (home.inProgress ?? []).find((story) => GENERATING_STATUSES.includes(story.status));
-      if (running) startGeneration(running.id);
+      if (running) startGeneration(running.id, { resumed: true });
     } catch {
       // 로그인하지 않았거나 서버에 닿지 않으면 따라갈 동화가 없는 걸로 해요.
     }
