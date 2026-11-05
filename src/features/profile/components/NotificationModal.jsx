@@ -1,7 +1,5 @@
 import { useEffect, useRef, useState } from 'react';
 import closeIcon from '../../../assets/notification/close.svg';
-import toggleOff from '../../../assets/notification/toggle-off.svg';
-import toggleOn from '../../../assets/notification/toggle-on.svg';
 import { loadNotificationSettings, saveNotificationSettings } from '../notificationSettings';
 import { getCurrentMember } from '../../../services/homeApi';
 import { setSmsNotify } from '../../../services/meApi';
@@ -117,7 +115,7 @@ function NotificationModal({ onClose }) {
                 aria-label={label}
                 onClick={() => toggleSetting(id)}
               >
-                <img src={notifications[id] ? toggleOn : toggleOff} alt="" />
+                <span className={styles.knob} aria-hidden="true" />
               </button>
             </div>
           ))}
