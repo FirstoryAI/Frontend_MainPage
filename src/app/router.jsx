@@ -9,7 +9,6 @@ import LibraryPage from '../pages/LibraryPage/LibraryPage';
 import ScenarioListPage from '../pages/ScenarioListPage/ScenarioListPage';
 import StoryCreateRoute from '../pages/StoryCreatePage/StoryCreateRoute';
 import StoryDetailPage from '../pages/StoryDetailPage/StoryDetailPage';
-import StoryGuidePage from '../pages/StoryGuidePage/StoryGuidePage';
 import StoryRemakePage from '../pages/StoryRemakePage/StoryRemakePage';
 import StoryPreviewPage from '../pages/StoryPreviewPage/StoryPreviewPage';
 import NotFoundPage from '../pages/NotFoundPage/NotFoundPage';
@@ -28,7 +27,6 @@ export const router = createBrowserRouter([
       { path: '/mypage', element: <MyPage /> },
       { path: '/library', element: <LibraryPage /> },
       { path: '/library/:storyId', element: <StoryDetailPage /> },
-      { path: '/library/:storyId/guide', element: <StoryGuidePage /> },
       { path: '/scenarios', element: <ScenarioListPage /> },
       { path: '/story/new', element: <StoryCreateRoute /> },
       { path: '/story/:storyId/preview', element: <StoryPreviewPage /> },

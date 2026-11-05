@@ -48,6 +48,9 @@ function StoryDetailPage() {
   const [busy, setBusy] = useState(false);
   // 아이와 읽는 중이면 { session, book, page }
   const [reading, setReading] = useState(null);
+  // '대화 가이드 보기'로 미리보기와 같은 크게 보기 화면을 연 동안 { book, page }
+  const [guideView, setGuideView] = useState(null);
+  const [guideLoading, setGuideLoading] = useState(false);
 
   const loadDetail = useCallback(
     () =>
@@ -111,6 +114,25 @@ function StoryDetailPage() {
     navigate(location.pathname, { replace: true, state: { story } });
     handleStartReading();
   }, [shouldStartReading, handleStartReading, navigate, location.pathname, story]);
+
+  const handleOpenGuide = async () => {
+    if (guideLoading) return;
+
+    setGuideLoading(true);
+    setNotice('');
+    try {
+      const [book, loadedGuide] = await Promise.all([
+        getBook(storyId),
+        guide ?? getGuide(storyId).catch(() => null),
+      ]);
+      setGuide(loadedGuide);
+      setGuideView({ book, page: 1 });
+    } catch (error) {
+      setNotice(error.message || '대화 가이드를 불러오지 못했어요.');
+    } finally {
+      setGuideLoading(false);
+    }
+  };
 
   const handlePage = (page) => {
     setReading((current) => ({ ...current, page }));
@@ -204,9 +226,10 @@ function StoryDetailPage() {
               <button
                 className={styles.guideButton}
                 type="button"
-                onClick={() => navigate(`/library/${storyId}/guide`, { state: { story } })}
+                onClick={handleOpenGuide}
+                disabled={guideLoading}
               >
-                대화 가이드 보기
+                {guideLoading ? '불러오는 중…' : '대화 가이드 보기'}
               </button>
             </section>
 
@@ -262,6 +285,19 @@ function StoryDetailPage() {
             </button>
           )}
         </StoryReader>
+      )}
+
+      {guideView && (
+        <StoryReader
+          title={guideView.book.title}
+          pages={guideView.book.pages}
+          page={guideView.page}
+          onPage={(page) => setGuideView((current) => ({ ...current, page }))}
+          onClose={() => setGuideView(null)}
+          closeLabel="동화 상세로 돌아가기"
+          guide={guide}
+          previewMode
+        />
       )}
     </div>
   );
