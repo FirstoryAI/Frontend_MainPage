@@ -364,26 +364,35 @@
 
 .previewReader .readerBook { top: 13.85%; left: 8.9%; width: 82.2%; height: 73.5%; }
 @media (min-width: 761px) {
-  .previewReader .readerCanvas { overflow: visible; }
-  .previewReader .readerHeader {
+  /* Keep the header viewport-wide even when the 3:2 reading canvas is narrower. */
+  .readerCanvas { overflow: visible; }
+  .readerHeader {
     right: auto;
     left: 50%;
     width: 100vw;
     height: var(--header-height);
     transform: translateX(-50%);
   }
-  .previewReader .readerClose {
+  .readerClose {
     top: 50%;
     left: clamp(24px, 4.03vw, 58px);
     width: 27px;
     height: 27px;
     transform: translateY(-50%);
   }
-  .previewReader .readerClose img { width: 27px; height: 27px; }
-  .previewReader .readerTitle { left: clamp(89px, 9.38vw, 135px); }
-  .previewReader .readerProgress {
+  .readerClose img { width: 27px; height: 27px; }
+  .readerTitle {
+    top: 50%;
+    left: clamp(89px, 9.38vw, 135px);
+    max-width: 48vw;
+    font-size: clamp(16px, 2.083vw, 30px);
+    transform: translateY(-50%);
+  }
+  .readerProgress {
+    top: 50%;
     right: clamp(24px, 4.17vw, 60px);
     width: min(455px, 32vw);
+    transform: translateY(-50%);
   }
 }
 .previewReader .readerFrame {
