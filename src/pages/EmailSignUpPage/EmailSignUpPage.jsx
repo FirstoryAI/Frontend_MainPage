@@ -242,7 +242,7 @@ function EmailSignUpPage() {
       <main className={styles.main}>
         <section className={styles.card} aria-labelledby="email-signup-title">
           {step === 'account' ? (
-            <Link className={styles.backLink} to="/">
+            <Link className={styles.backLink} to="/auth">
               ← 다른 방법으로 시작
             </Link>
           ) : (
