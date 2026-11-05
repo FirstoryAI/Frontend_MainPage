@@ -6,7 +6,7 @@ import styles from './AuthStartPage.module.css';
 function AuthStartPage() {
   return (
     <div className={styles.page}>
-      <Header />
+      <Header showCloseButton raiseLogo />
       <main className={styles.hero}>
         <img
           className={styles.illustration}
