@@ -28,5 +28,6 @@ export const scenarioPopupContent = {
   emotion: sharedPopupContent,
   kindergarten: sharedPopupContent,
   habit: sharedPopupContent,
+  tantrum: sharedPopupContent,
 };
 

@@ -187,6 +187,7 @@
 .emotion { background: #65d0a5; }
 .kindergarten { background: #ffcf55; }
 .habit { background: #9e95ff; }
+.tantrum { background: #4ab1ff; }
 
 .category {
   z-index: 1;
@@ -240,17 +241,24 @@
 }
 
 .kindergarten .cardImage {
-  bottom: calc(17.5 * var(--u));
-  left: calc(58 * var(--u));
-  width: calc(133 * var(--u));
-  height: calc(103 * var(--u));
+  bottom: calc(12.2 * var(--u));
+  left: calc(50.3 * var(--u));
+  width: calc(150.8 * var(--u));
+  height: calc(128.1 * var(--u));
 }
 
 .habit .cardImage {
-  bottom: calc(-4 * var(--u));
-  left: calc(14 * var(--u));
-  width: calc(222 * var(--u));
-  height: calc(148 * var(--u));
+  bottom: calc(12.2 * var(--u));
+  left: calc(62 * var(--u));
+  width: calc(127.1 * var(--u));
+  height: calc(146.7 * var(--u));
+}
+
+.tantrum .cardImage {
+  bottom: calc(8 * var(--u));
+  left: calc(56.8 * var(--u));
+  width: calc(132.3 * var(--u));
+  height: calc(135.4 * var(--u));
 }
 
 @media (max-width: 900px) {
