@@ -3,6 +3,27 @@
   <head>
     <meta charset="UTF-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <script>
+      // 패드에서는 데스크톱 화면을 통째로 비율대로 줄여 스크롤 없이 한 화면에 담아요.
+      // 가로로 들면 1440px, 세로로 들면 1200px 기준으로 그린 화면을 패드 폭에 맞춰요.
+      // 휴대폰(짧은 변 600px 미만)과 데스크톱 브라우저는 그대로예요. (데스크톱 브라우저는 이 설정을 쓰지 않아요)
+      (function () {
+        var meta = document.querySelector('meta[name="viewport"]');
+        function isPortrait() {
+          return window.screen.orientation
+            ? /portrait/.test(window.screen.orientation.type)
+            : window.matchMedia('(orientation: portrait)').matches;
+        }
+        function fitTablet() {
+          var shortSide = Math.min(window.screen.width, window.screen.height);
+          if (navigator.maxTouchPoints > 0 && shortSide >= 600) {
+            meta.setAttribute('content', 'width=' + (isPortrait() ? 1200 : 1440));
+          }
+        }
+        fitTablet();
+        window.addEventListener('orientationchange', fitTablet);
+      })();
+    </script>
     <link rel="icon" type="image/png" href="/favicon.png?v=2" />
     <meta
       name="description"
