@@ -9,6 +9,14 @@
   padding: 58.6px 75px 64px 363px;
 }
 
+@media (min-width: 901px) and (hover: hover) and (pointer: fine) {
+  .guestMain {
+    height: 100vh;
+    min-height: 0;
+    overflow: hidden;
+  }
+}
+
 .topbar {
   position: relative;
   display: flex;
@@ -21,7 +29,7 @@
 .loginLink {
   color: var(--color-text);
   font-size: 20px;
-  font-weight: 500;
+  font-weight: 600;
   text-decoration: none;
 }
 
@@ -337,6 +345,30 @@
 .loadMore:disabled {
   cursor: wait;
   opacity: 0.65;
+}
+
+@media (min-width: 901px) and (max-height: 1000px) and (hover: hover) and (pointer: fine) {
+  .main {
+    padding-bottom: clamp(16px, 4vh, 36px);
+  }
+
+  .content { margin-top: clamp(4px, 1vh, 8px); }
+  .filters { margin-top: clamp(10px, 2vh, 16px); }
+  .guestEmpty {
+    margin-top: clamp(24px, 10vh, 90px);
+    padding-right: 0;
+  }
+  .emptyMascot {
+    width: clamp(150px, 23vh, 190px);
+    height: clamp(134px, 20.5vh, 168px);
+  }
+  .emptyTitle {
+    margin-top: clamp(16px, 3vh, 28px);
+    font-size: clamp(26px, 4.2vh, 32px);
+  }
+  .emptyLogin {
+    margin-top: clamp(16px, 3vh, 28px);
+  }
 }
 
 @media (max-width: 1280px) {

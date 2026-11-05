@@ -163,7 +163,7 @@ function LibraryPage() {
       <div className={styles.page} inert={isSignedIn && savedModalOpen}>
         <Sidebar guest={guest} />
 
-        <div className={styles.main}>
+        <div className={`${styles.main} ${guest ? styles.guestMain : ''}`}>
           <div className={styles.topbar}>
             {guest ? (
               <Link className={styles.loginLink} to="/auth">로그인</Link>
