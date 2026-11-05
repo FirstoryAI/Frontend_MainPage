@@ -1,223 +1,428 @@
+/* 단계 사이를 자연스럽게 오가도록, 색·투명도·크기는 모두 전환(transition)으로 바뀌어요. */
+@property --p {
+  syntax: '<angle>';
+  inherits: true;
+  initial-value: 0deg;
+}
+
 .step {
   display: flex;
   flex: 1;
+  width: 100%;
   flex-direction: column;
   align-items: center;
 }
 
+/* ── 단계 표시 ─────────────────────────────── */
 .stepper {
   position: relative;
-  width: min(591px, calc(100% - 32px));
-  margin-top: 143px;
-  padding-top: 117px;
-}
-
-.runner {
-  position: absolute;
-  top: 0;
-  width: 103px;
-  height: 110px;
-  transform: translateX(-50%);
-  animation: runnerBounce 1s ease-in-out infinite;
-  transition: left 0.9s cubic-bezier(0.4, 0, 0.2, 1);
-  will-change: left, transform;
-}
-
-@keyframes runnerBounce {
-  0%,
-  100% {
-    transform: translate(-50%, 0);
-  }
-
-  50% {
-    transform: translate(-50%, -7px);
-  }
-}
-
-.stages {
-  display: flex;
-  margin: 0;
+  width: min(493px, calc(100% - 64px));
+  height: 72px;
+  margin: 78px 0 0;
   padding: 0;
   list-style: none;
 }
 
-.stage {
-  display: flex;
-  flex: 1;
-  align-items: flex-start;
-  color: var(--color-step-pending-label);
+/* 아이콘 사이를 잇는 줄. 초록색이 걸린 시간에 맞춰 왼쪽에서 오른쪽으로 차올라요. */
+.track {
+  position: absolute;
+  top: 17px;
+  width: 50%;
+  height: 6px;
+  overflow: hidden;
+  background: rgb(221 219 218 / 77%);
+  border-radius: 32px;
 }
 
-.stage:last-child {
-  flex: none;
-}
-
-.reached {
-  color: var(--color-text);
+.fill {
+  display: block;
+  width: 100%;
+  height: 100%;
+  background: rgb(85 201 154 / 77%);
+  border-radius: 32px;
+  transform: scaleX(0);
+  transform-origin: left center;
+  transition: transform 0.4s linear;
 }
 
 .node {
+  position: absolute;
+  top: 0;
   display: flex;
-  flex: none;
   flex-direction: column;
   align-items: center;
-  width: 36px;
+  width: max-content;
+  transform: translateX(-50%);
+  transition: --p 0.4s linear;
 }
 
-.icon {
+.badge {
   position: relative;
   display: block;
-  width: 36px;
-  height: 36px;
+  width: 40px;
+  height: 40px;
 }
 
-.icon img {
+/* 지금 단계를 감싸는 고리. 진행한 만큼 초록색이 시계 방향으로 채워져요. */
+.ring {
   position: absolute;
   inset: 0;
+  background: conic-gradient(#55c99a var(--p), #ffbca1 0);
+  border-radius: 50%;
+  opacity: 0;
+  transform: scale(0.7);
+  transition:
+    opacity 0.5s ease,
+    transform 0.5s cubic-bezier(0.34, 1.36, 0.64, 1);
 }
 
-.icon .glyph {
-  inset: auto;
-  top: 50%;
-  left: 50%;
-  transform: translate(-50%, -50%);
+.circle {
+  position: absolute;
+  inset: 4px;
+  display: grid;
+  place-items: center;
+  background: #dddbda;
+  border-radius: 50%;
+  transition: background-color 0.5s ease;
+}
+
+.glyph,
+.check {
+  grid-area: 1 / 1;
+  display: block;
+  transition:
+    opacity 0.4s ease,
+    transform 0.5s cubic-bezier(0.34, 1.36, 0.64, 1);
+}
+
+.check {
+  opacity: 0;
+  transform: scale(0.4);
 }
 
 .label {
-  margin-top: 11px;
-  font-size: 18px;
-  font-weight: 400;
-  letter-spacing: -0.54px;
-  line-height: normal;
+  margin-top: 12px;
+  color: #dddbda;
+  font-size: 16px;
+  font-weight: 600;
+  letter-spacing: -0.48px;
+  line-height: 20px;
   white-space: nowrap;
+  transition: color 0.5s ease;
 }
 
-/* 아이콘 사이를 채우는 줄. 데스크톱에서는 양쪽 19px씩 띄워 204px가 돼요. */
-.line {
-  flex: 1;
-  height: 4px;
-  margin: 16px 19px 0;
-  background: rgb(166 166 166 / 77%);
-  border-radius: 32px;
-  transition: background-color 0.4s ease;
+.node[data-state='active'] .ring {
+  opacity: 1;
+  transform: scale(1);
 }
 
-.lineDone {
-  background: rgb(85 201 154 / 77%);
+.node[data-state='active'] .circle {
+  background: var(--color-brand);
 }
 
-.lineDoneSoft {
-  background: rgb(124 213 175 / 77%);
+.node[data-state='active'] .label {
+  color: var(--color-brand);
+}
+
+.node[data-state='done'] .circle {
+  background: var(--color-secondary-green);
+}
+
+.node[data-state='done'] .label {
+  color: var(--color-secondary-green);
+}
+
+.node[data-state='done'] .glyph {
+  opacity: 0;
+  transform: scale(0.4);
+}
+
+.node[data-state='done'] .check {
+  opacity: 1;
+  transform: scale(1);
+  transition-delay: 0.15s;
+}
+
+/* ── 마스코트 ─────────────────────────────── */
+/* 세 그림이 같은 자리에 겹쳐 있다가, 단계가 바뀌면 서로 천천히 교차하며 바뀌어요. */
+.mascots {
+  position: relative;
+  flex: none;
+  width: min(400px, calc(100% - 32px));
+  margin-top: 17px;
+  aspect-ratio: 400 / 323;
+}
+
+.mascot {
+  position: absolute;
+  opacity: 0;
+  transform: translateY(10px) scale(0.94);
+  transition:
+    opacity 0.45s ease,
+    transform 0.6s ease;
+}
+
+.mascot[data-active='true'] {
+  opacity: 1;
+  transform: none;
+  transition:
+    opacity 0.7s ease 0.2s,
+    transform 0.8s cubic-bezier(0.22, 1, 0.36, 1) 0.2s;
+}
+
+.thinking {
+  top: 3.7%;
+  left: 2.75%;
+  width: 96.75%;
+}
+
+.writing {
+  top: 8.7%;
+  left: 16.5%;
+  width: 72.75%;
+}
+
+.drawing {
+  top: 0;
+  left: 12.25%;
+  width: 79%;
+}
+
+.motion {
+  position: relative;
+}
+
+.mascotImage {
+  display: block;
+  width: 100%;
+  height: auto;
+}
+
+/* 이야기 짜기: 고개를 갸웃하듯 천천히 흔들리고, 전구가 깜빡 켜졌다 꺼져요. */
+.thinking .motion {
+  transform-origin: 50% 88%;
+  animation: think 3.8s ease-in-out infinite;
+}
+
+.bulbGlow {
+  position: absolute;
+  top: 12%;
+  left: 67%;
+  width: 20%;
+  aspect-ratio: 1;
+  background: radial-gradient(circle, rgb(255 199 51 / 70%) 0%, rgb(255 199 51 / 0%) 68%);
+  border-radius: 50%;
+  opacity: 0;
+  animation: bulb 2.4s ease-in-out infinite;
+}
+
+/* 글 쓰기: 연필 끝을 중심으로 아주 살짝 떨리며 글씨를 쓰듯 움직여요. */
+.writing .motion {
+  transform-origin: 50% 82%;
+  animation: write 1.3s ease-in-out infinite;
+}
+
+/* 그림 그리기: 붓질하듯 좌우로 흔들리고, 반짝이가 번갈아 반짝여요. */
+.drawing .motion {
+  transform-origin: 42% 85%;
+  animation: paint 3.2s ease-in-out infinite;
+}
+
+.sparkle {
+  position: absolute;
+  background: radial-gradient(circle, rgb(255 214 64 / 75%) 0%, rgb(255 214 64 / 0%) 70%);
+  border-radius: 50%;
+  opacity: 0;
+  animation: twinkle 1.8s ease-in-out infinite;
+}
+
+.sparkleBig {
+  top: 12.5%;
+  left: 58.1%;
+  width: 16%;
+  aspect-ratio: 1;
+}
+
+.sparkleSmall {
+  top: 22.6%;
+  left: 66.5%;
+  width: 10%;
+  aspect-ratio: 1;
+  animation-delay: 0.9s;
+}
+
+@keyframes think {
+  0%,
+  100% {
+    transform: translateY(0) rotate(-1.4deg);
+  }
+
+  50% {
+    transform: translateY(-6px) rotate(1.4deg);
+  }
+}
+
+@keyframes bulb {
+  0%,
+  100% {
+    opacity: 0.1;
+    transform: scale(0.85);
+  }
+
+  50% {
+    opacity: 1;
+    transform: scale(1.15);
+  }
+}
+
+@keyframes write {
+  0%,
+  100% {
+    transform: translate(0, 0) rotate(0deg);
+  }
+
+  25% {
+    transform: translate(-2px, 1px) rotate(-1.2deg);
+  }
+
+  50% {
+    transform: translate(1px, -1px) rotate(0.6deg);
+  }
+
+  75% {
+    transform: translate(-1px, 1px) rotate(-0.7deg);
+  }
+}
+
+@keyframes paint {
+  0%,
+  100% {
+    transform: translate(0, 0) rotate(-1.6deg);
+  }
+
+  50% {
+    transform: translate(5px, -3px) rotate(1.6deg);
+  }
+}
+
+@keyframes twinkle {
+  0%,
+  100% {
+    opacity: 0;
+    transform: scale(0.7);
+  }
+
+  50% {
+    opacity: 1;
+    transform: scale(1.2);
+  }
+}
+
+/* ── 문구 ─────────────────────────────── */
+/* 제목도 같은 자리에 겹쳐 두고 서서히 바꿔요. 높이가 그대로라 아래 문구가 흔들리지 않아요. */
+.titles {
+  display: grid;
+  justify-items: center;
+  margin: 18px 0 0;
+  font-weight: 400;
 }
 
 .title {
-  margin: 68px 0 0;
+  grid-area: 1 / 1;
   color: var(--color-text);
   font-family: var(--font-title);
-  font-size: 35px;
+  font-size: 38px;
   font-weight: 400;
-  letter-spacing: -1.05px;
-  line-height: 48px;
+  letter-spacing: -1.14px;
+  line-height: 46px;
   text-align: center;
+  white-space: nowrap;
+  opacity: 0;
+  transform: translateY(8px);
+  transition:
+    opacity 0.4s ease,
+    transform 0.4s ease;
+}
+
+.title[data-active='true'] {
+  opacity: 1;
+  transform: none;
+  transition:
+    opacity 0.6s ease 0.25s,
+    transform 0.6s ease 0.25s;
 }
 
 .notice {
-  margin: 0;
+  margin: 39px 0 0;
   color: var(--color-secondary);
   font-size: 18px;
   letter-spacing: -0.54px;
-  line-height: normal;
+  line-height: 22px;
   text-align: center;
 }
 
-.card {
-  display: flex;
-  align-items: center;
-  width: min(969px, calc(100% - 32px));
-  height: 72px;
-  margin-top: 69px;
-  padding: 0 30.5px 0 31px;
-  background: var(--color-surface);
-  border-radius: 24px;
-  box-shadow: 0 0 8.2px rgb(0 0 0 / 10%);
-}
-
-.cardText {
-  margin: 0;
-  color: var(--color-text);
+.kakao {
+  margin: 10px 0 0;
+  color: var(--color-brand);
   font-size: 18px;
-  font-weight: 500;
-  line-height: 1.5;
+  letter-spacing: -0.54px;
+  line-height: 22px;
+  text-align: center;
 }
-
-
 
 .footer {
   display: flex;
   align-items: center;
-  gap: 16px;
-  margin-top: auto;
-  padding: 40px 0 79px;
+  margin-top: 67px;
+  padding-bottom: 40px;
 }
 
 @media (prefers-reduced-motion: reduce) {
-  .runner,
-  .line {
-    transition: none;
+  .thinking .motion,
+  .writing .motion,
+  .drawing .motion,
+  .bulbGlow,
+  .sparkle {
+    animation: none;
   }
 
-  .runner {
-    animation: none;
+  .mascot,
+  .mascot[data-active='true'],
+  .title,
+  .title[data-active='true'] {
+    transform: none;
+  }
+
+  .ring,
+  .glyph,
+  .check,
+  .node[data-state='done'] .glyph,
+  .node[data-state='done'] .check {
+    transform: none;
   }
 }
 
-@media (max-width: 900px) {
+@media (max-width: 600px) {
   .stepper {
-    margin-top: 56px;
+    width: calc(100% - 96px);
+    margin-top: 40px;
   }
 
   .title {
-    margin-top: 48px;
-    font-size: clamp(26px, 7vw, 35px);
+    font-size: clamp(26px, 7.4vw, 38px);
+    line-height: 1.2;
   }
 
-  .notice {
+  .notice,
+  .kakao {
     padding: 0 16px;
   }
 
-  .card {
-    flex-wrap: wrap;
-    gap: 4px 12px;
-    height: auto;
-    margin-top: 40px;
-    padding: 16px 20px;
-  }
-
-
-}
-
-@media (max-width: 480px) {
-  .line {
-    margin-right: 8px;
-    margin-left: 8px;
-  }
-}
-
-@media (min-width: 901px) and (max-height: 850px) {
-  .stepper {
-    margin-top: clamp(72px, 11.7vh, 143px);
-  }
-
-  .title {
-    margin-top: clamp(32px, 5.2vh, 68px);
-  }
-
-  .card {
-    margin-top: clamp(24px, 4.2vh, 69px);
+  .notice {
+    margin-top: 28px;
   }
 
   .footer {
-    padding-top: 24px;
-    padding-bottom: 40px;
+    margin-top: 40px;
   }
 }
