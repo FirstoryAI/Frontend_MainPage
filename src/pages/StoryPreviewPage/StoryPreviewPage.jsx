@@ -1,8 +1,16 @@
 import { useEffect, useState } from 'react';
 import { Link, useLocation, useNavigate, useParams } from 'react-router-dom';
-import pageArrowLeft from '../../assets/remake/page-arrow-left.svg';
-import pageArrowRight from '../../assets/remake/page-arrow-right.svg';
+import pageArrowInactive from '../../assets/story-preview-guide/page-left.svg';
+import pageArrowActive from '../../assets/story-preview-guide/page-right.svg';
 import headerClose from '../../assets/remake/header-close.svg';
+import mascotBase from '../../assets/story-preview-guide/mascot-base.svg';
+import mascotFace from '../../assets/story-preview-guide/mascot-face.png';
+import guideDot from '../../assets/story-preview-guide/guide-dot.svg';
+import toggleBackground from '../../assets/story-preview-guide/toggle-bg.svg';
+import toggleChevron from '../../assets/story-preview-guide/toggle-chevron.svg';
+import guidePanelBackground from '../../assets/story-preview-guide/guide-panel.svg';
+import guideQuestion from '../../assets/story-preview-guide/guide-question.svg';
+import guideHand from '../../assets/story-preview-guide/guide-hand.svg';
 import styles from './StoryPreviewPage.module.css';
 
 import { useSceneScale } from '../../features/story/hooks/useSceneScale';
@@ -17,11 +25,12 @@ import { usePageTurn } from '../../features/story/hooks/usePageTurn';
 import { useImageQueue } from '../../features/story/hooks/useImageQueue';
 import { textPositionOf } from '../../features/story/textPosition';
 import { guideFor } from '../../features/story/guideContent';
-import { approveStory, getGuide, getPreview, getStoryDetail, regenerateStory } from '../../services/storiesApi';
+import { approveStory, getGuide, getPreview, regenerateStory } from '../../services/storiesApi';
 import ErrorText from '../../components/ui/ErrorText';
 
 // 화면의 '다시 만들 부분'을 API의 scope로 바꿔요.
 const REMAKE_SCOPES = { all: 'CHARACTER_STORY', text: 'TEXT', image: 'IMAGES' };
+const NO_GUIDE_MESSAGE = '이 쪽은 이야기를 그대로 읽어주세요.';
 
 // 만든 동화를 확정하기 전에 쪽마다 넘겨 보는 화면이에요. (GET /api/stories/{id}/preview)
 // initialRemakeOpen: '다시 만들기' 팝업을 연 채로 시작해요. 이때 팝업을 닫으면 서재로 돌아가요.
@@ -34,9 +43,9 @@ function StoryPreviewPage({ initialRemakeOpen = false }) {
   const scale = useSceneScale();
   const [preview, setPreview] = useState(null);
   // 동화 줄거리(상세)와 대화 가이드예요. 가이드는 확정 전(REVIEWING)에도 받을 수 있어요.
-  const [synopsis, setSynopsis] = useState('');
   const [guide, setGuide] = useState(null);
-  const [guideFailed, setGuideFailed] = useState(false);
+  const [isGuideOpen, setIsGuideOpen] = useState(false);
+  const [isHintOpen, setIsHintOpen] = useState(false);
   const [loadError, setLoadError] = useState('');
   const [currentPage, setCurrentPage] = useState(1);
   const [isReaderOpen, setIsReaderOpen] = useState(false);
@@ -49,16 +58,19 @@ function StoryPreviewPage({ initialRemakeOpen = false }) {
     getPreview(storyId)
       .then((result) => active && setPreview(result))
       .catch((error) => active && setLoadError(error.message || '미리보기를 불러오지 못했어요.'));
-    getStoryDetail(storyId)
-      .then((detail) => active && setSynopsis(detail.synopsis ?? ''))
-      .catch(() => {});
     getGuide(storyId)
       .then((result) => active && setGuide(result))
-      .catch(() => active && setGuideFailed(true));
+      .catch(() => {});
     return () => {
       active = false;
     };
   }, [storyId]);
+
+  useEffect(() => {
+    if (!isHintOpen) return undefined;
+    const timer = window.setTimeout(() => setIsHintOpen(false), 3500);
+    return () => window.clearTimeout(timer);
+  }, [isHintOpen]);
 
   const pages = preview?.pages ?? [];
   const title = preview?.version?.title ?? story.title ?? '';
@@ -121,15 +133,24 @@ function StoryPreviewPage({ initialRemakeOpen = false }) {
   };
 
   const showPage = (nextPage) => {
+    setIsGuideOpen(false);
+    setIsHintOpen(false);
     setCurrentPage(Math.min(pages.length, Math.max(1, nextPage)));
   };
 
   const page = pages[currentPage - 1];
-  // 쪽마다 설명·가이드가 있으면 그걸, 아직 없으면 동화 줄거리를 보여줘요.
+  // 실제 가이드 문구가 있는 쪽에서만 안내 표시를 보여줘요.
   const pageGuide = guide ? guideFor(guide, currentPage, pages.length) : null;
+  const guidePrompt = guide?.prompts?.find((item) => item.afterPage === currentPage);
+  const hasGuideContent = Boolean(
+    guidePrompt?.question?.trim() || guidePrompt?.parentHint?.trim()
+    || (currentPage === 1 && (guide?.beforeReading?.intent?.trim() || guide?.beforeReading?.tips?.some((tip) => tip?.trim())))
+    || (currentPage === pages.length && (guide?.afterReading?.bridgeQuestion?.trim() || guide?.afterReading?.ifUndecided?.trim())),
+  );
+  const guideLines = pageGuide?.talk?.split('\n').filter(Boolean) ?? [];
   const lines = page ? page.text.split('\n').filter(Boolean) : [];
 
-  const header = (
+  const renderHeader = () => (
     <header className={styles.header}>
       <Link className={styles.logo} to="/home" aria-label="FIRSTORY 홈">FIRSTORY</Link>
       <button className={styles.close} type="button" onClick={() => navigate('/library')} aria-label="서재로 돌아가기">
@@ -141,8 +162,9 @@ function StoryPreviewPage({ initialRemakeOpen = false }) {
   if (!preview) {
     return (
       <div className={styles.page}>
+        <div className={styles.desktopHeader}>{renderHeader()}</div>
         <div className={styles.canvas} style={{ '--scene-scale': scale }}>
-          {header}
+          <div className={styles.canvasHeader}>{renderHeader()}</div>
           <p className={styles.status} role={loadError ? 'alert' : 'status'}>
             {loadError ? <ErrorText message={loadError} /> : '미리보기를 불러오는 중이에요.'}
           </p>
@@ -153,8 +175,9 @@ function StoryPreviewPage({ initialRemakeOpen = false }) {
 
   return (
     <div className={styles.page}>
+      <div className={styles.desktopHeader}>{renderHeader()}</div>
       <div className={styles.canvas} style={{ '--scene-scale': scale }}>
-        {header}
+        <div className={styles.canvasHeader}>{renderHeader()}</div>
 
         <h1 className={styles.heading}>미리보기</h1>
 
@@ -218,29 +241,76 @@ function StoryPreviewPage({ initialRemakeOpen = false }) {
             <PageTurnOverlay turn={turn} />
           </div>
           <div className={styles.pagination}>
-            <button type="button" onClick={() => showPage(currentPage - 1)} disabled={currentPage === 1}>
-              <img src={pageArrowLeft} alt="" /> 이전 쪽
+            <button type="button" aria-label="이전 쪽" onClick={() => showPage(currentPage - 1)} disabled={currentPage === 1}>
+              <img src={currentPage === 1 ? pageArrowInactive : pageArrowActive} alt="" />
             </button>
             <strong><span>{currentPage}</span> / {pages.length}</strong>
-            <button type="button" onClick={() => showPage(currentPage + 1)} disabled={currentPage === pages.length}>
-              다음 쪽 <img src={pageArrowRight} alt="" />
+            <button type="button" aria-label="다음 쪽" onClick={() => showPage(currentPage + 1)} disabled={currentPage === pages.length}>
+              <img src={currentPage === pages.length ? pageArrowInactive : pageArrowActive} alt="" />
             </button>
           </div>
         </main>
 
-        <aside className={styles.storyInfo} inert={isRemakeOpen}>
-          <section>
-            <h2>동화 설명</h2>
-            <p>{pageGuide?.description || synopsis || title}</p>
-          </section>
-          <section>
-            <h2>부모를 위한 가이드</h2>
-            <p>{pageGuide ? pageGuide.talk : guideFailed ? '대화 가이드를 불러오지 못했어요.' : '대화 가이드를 불러오는 중이에요.'}</p>
-          </section>
-          <p className={styles.remakeNote}>
-            {canRemake ? `다시 만들기는 ${remaining}회 가능해요` : '다시 만들기를 사용했어요'}
-          </p>
+        <aside
+          className={`${styles.guidePanel} ${isGuideOpen && hasGuideContent ? styles.guidePanelOpen : ''} ${isRemakeOpen ? styles.guideSuppressed : ''}`}
+          id="preview-guide"
+          aria-hidden={!isGuideOpen || !hasGuideContent || isRemakeOpen}
+          inert={!isGuideOpen || !hasGuideContent || isRemakeOpen}
+        >
+          <img className={styles.guidePanelBackground} src={guidePanelBackground} alt="" />
+          <div className={styles.guidePanelContent}>
+            <section className={styles.guideScene}>
+              <h2>이번 장면에서는</h2>
+              <p className={styles.guideLead}>{pageGuide?.description}</p>
+              {guideLines[0] && <p className={styles.guideDetail}><img src={guideHand} alt="" />{guideLines[0]}</p>}
+            </section>
+            <section className={styles.guideResponse}>
+              <h2>아이가 대답할 때에는</h2>
+              {guideLines[1] && <p className={styles.guideLead}>{guideLines[1]}</p>}
+              {guideLines.length > 2 && <p className={styles.guideDetail}><img src={guideQuestion} alt="" />{guideLines.slice(2).join(' ')}</p>}
+            </section>
+          </div>
         </aside>
+
+        <aside
+          className={`${styles.guideHint} ${isHintOpen && !hasGuideContent ? styles.guideHintOpen : ''} ${isRemakeOpen ? styles.guideSuppressed : ''}`}
+          id="preview-guide-hint"
+          aria-hidden={!isHintOpen || hasGuideContent || isRemakeOpen}
+          inert={!isHintOpen || hasGuideContent || isRemakeOpen}
+        >
+          {NO_GUIDE_MESSAGE}
+        </aside>
+
+        <button
+          className={`${styles.guideToggle} ${isRemakeOpen ? styles.guideSuppressed : ''}`}
+          type="button"
+          onClick={() => {
+            if (hasGuideContent) {
+              setIsHintOpen(false);
+              setIsGuideOpen((open) => !open);
+            } else if (guide) {
+              setIsHintOpen((open) => !open);
+            }
+          }}
+          aria-label={hasGuideContent ? (isGuideOpen ? '가이드 닫기' : '가이드 열기') : isHintOpen ? '안내 닫기' : '안내 보기'}
+          aria-expanded={hasGuideContent ? isGuideOpen : isHintOpen}
+          aria-disabled={!guide}
+          aria-controls={hasGuideContent ? 'preview-guide' : 'preview-guide-hint'}
+          inert={isRemakeOpen}
+        >
+          {isGuideOpen && hasGuideContent ? (
+            <>
+              <img className={styles.toggleBackground} src={toggleBackground} alt="" />
+              <img className={styles.toggleChevron} src={toggleChevron} alt="" />
+            </>
+          ) : (
+            <>
+              <img className={styles.mascotBase} src={mascotBase} alt="" />
+              <img className={styles.mascotFace} src={mascotFace} alt="" />
+              {hasGuideContent && <img className={styles.guideDot} src={guideDot} alt="" />}
+            </>
+          )}
+        </button>
 
         <div className={styles.actions} inert={isRemakeOpen}>
           <div className={styles.remakeAction}>
@@ -249,7 +319,7 @@ function StoryPreviewPage({ initialRemakeOpen = false }) {
             </button>
           </div>
           <button className={styles.confirm} type="button" onClick={approve} disabled={approving}>
-            {approving ? '확정하는 중…' : '이대로 확정'}
+            {approving ? '확정하는 중…' : '전체 동화 확정'}
           </button>
           {notice && (
             <p className={styles.actionError} role="alert">
@@ -264,7 +334,7 @@ function StoryPreviewPage({ initialRemakeOpen = false }) {
           title={title}
           pages={pages.map((item) => ({ ...item, imageUrl: sourceOf(item) ?? '' }))}
           page={currentPage}
-          onPage={setCurrentPage}
+          onPage={showPage}
           onClose={() => setIsReaderOpen(false)}
           closeLabel="미리보기로 돌아가기"
         />
