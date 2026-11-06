@@ -1,6 +1,6 @@
 // 카드를 눌렀을 때 뜨는 팝업의 공통 문구예요. 카드마다 달라지는 부분(나이, 아이 성향, 제목, 상황, 대화 시작 제안)만 아래에서 채워요.
 const sharedPopupContent = {
-  guideTitle: '이렇게 대화를 시작해 보세요',
+  guideTitle: '동화를 읽으며 이렇게 대화를 시작해 보세요',
 };
 
 // 키는 scenarios.jsx의 시나리오 id예요. (API 연동 시 category id별 응답으로 교체할 수 있도록 분리해 둡니다.)
