@@ -12,9 +12,9 @@
 .dialog {
   position: relative;
   width: min(846px, 100%);
-  min-height: 692px;
+  min-height: 663px;
   max-height: calc(100dvh - 32px);
-  padding: 63px 67px 43px;
+  padding: 63px 66px 45px 67px;
   overflow-y: auto;
   color: #575757;
   background: #fff;
@@ -92,11 +92,53 @@
   line-height: 1.5;
 }
 
+/* 왼쪽에 예시 동화 표지, 오른쪽에 대화 시작 제안이 나란히 놓여요. */
+.body {
+  display: grid;
+  grid-template-columns: 256px minmax(0, 434px);
+  column-gap: 20px;
+  margin: 28px 0 0 -1px;
+}
+
+.sample {
+  margin: 0;
+}
+
+.cover {
+  display: block;
+  width: 256px;
+  height: 256px;
+  object-fit: contain;
+}
+
+/* 표지 그림 둘레에 여백이 있어서 설명이 그림 바로 아래에 오도록 조금 겹쳐요. */
+.sampleCaption {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 5px;
+  margin-top: -11px;
+  color: #989491;
+  font-size: 14px;
+  line-height: 1.21;
+}
+
+.sampleCaption img {
+  display: block;
+  flex: none;
+  width: 15.9px;
+  height: 15.9px;
+}
+
+.guide {
+  padding-top: 25px;
+}
+
 .guideHeading {
   display: flex;
   align-items: center;
-  gap: 12px;
-  margin-top: 35px;
+  gap: 13px;
+  padding-left: 8px;
 }
 
 .guideHeading img {
@@ -116,8 +158,8 @@
 
 .prompts {
   display: grid;
-  gap: 16px;
-  margin: 21px 0 0;
+  gap: 12px;
+  margin: 26px 0 0;
   padding: 0;
   counter-reset: prompt;
   list-style: none;
@@ -164,31 +206,11 @@
   line-height: 1.5;
 }
 
-.closing {
-  margin-top: 50px;
-}
-
-.closing h3 {
-  margin: 0;
-  color: #575757;
-  font-size: 20px;
-  font-weight: 600;
-  letter-spacing: -0.6px;
-  line-height: 24px;
-}
-
-.closing p {
-  margin: 5px 0 0;
-  color: #989491;
-  font-size: 16px;
-  line-height: 1.5;
-}
-
 .actionButton {
   display: block;
   width: 100%;
   min-height: 58px;
-  margin-top: 12px;
+  margin-top: 59px;
   color: #fff;
   background: var(--scenario-accent);
   border: 0;
@@ -218,12 +240,36 @@
     font-size: 15px;
   }
 
+  .body {
+    grid-template-columns: minmax(0, 1fr);
+    row-gap: 20px;
+    margin: 20px 0 0;
+  }
+
+  .cover {
+    width: 200px;
+    height: 200px;
+    margin: 0 auto;
+  }
+
+  .sampleCaption {
+    margin-top: -8px;
+  }
+
+  .guide {
+    padding-top: 0;
+  }
+
   .guideHeading {
-    margin-top: 28px;
+    padding-left: 0;
   }
 
   .guideHeading h3 {
     font-size: 18px;
+  }
+
+  .prompts {
+    margin-top: 16px;
   }
 
   .prompt {
@@ -234,13 +280,8 @@
     font-size: 16px;
   }
 
-  .prompt p,
-  .closing p {
+  .prompt p {
     font-size: 14px;
-  }
-
-  .closing {
-    margin-top: 30px;
   }
 
   .actionButton {
