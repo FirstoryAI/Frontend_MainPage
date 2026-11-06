@@ -76,7 +76,7 @@ function GeneratingStep({ job }) {
       <p className={styles.notice}>
         {scope === 'IMAGES' ? '그림만 다시 만드는 데는 1분 안쪽으로 걸려요.' : '보통 3~4분 정도 걸려요.'} 화면을 나가도 동화는 계속 만들어져요.
       </p>
-      <p className={styles.kakao}>제작이 완료되면 카카오톡으로 알려드려요</p>
+      <p className={styles.kakao}>제작이 완료되면 이메일로 알려드려요</p>
 
       <div className={styles.footer}>
         <CtaButton

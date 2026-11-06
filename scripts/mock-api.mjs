@@ -7,7 +7,7 @@
 // 상태별 예시 동화(제작 중·확인을 기다려요·읽음·실패)가 필요하면 --seed로 실행하세요.
 //
 // - 데이터는 메모리에만 있어서 서버를 끄면 사라져요.
-// - 휴대폰 인증번호는 항상 000000이고, 이메일·비밀번호는 아무 값이나 돼요.
+// - 이메일 인증번호는 항상 000000이고, 이메일·비밀번호는 아무 값이나 돼요.
 // - 동화 만들기는 약 11초(단계당 3초)만에 끝나요. MOCK_STAGE_MS로 바꿀 수 있어요.
 // - 글에 "이별"이 들어가면 분위기 선택 요구(CHOOSE_TONE), "위기"가 들어가면 다시 쓰기 안내(ASK_REVISE), "자해"가 들어가면 차단(BLOCK, 입력 단계),
 //   상황 설명에 "실패테스트"가 들어가면 만드는 중에 실패해요(화면 없이 서재로 가요).
@@ -535,9 +535,10 @@ export function startMockApi({ port = Number(process.env.MOCK_API_PORT) || 8787,
     const meView = (account) => ({
       id: account.id,
       email: account.email,
-      phoneMasked: `${account.phone.slice(0, 3)}-****-${account.phone.slice(-4)}`,
       onboardingSeen: account.onboardingSeen,
-      smsNotify: account.smsNotify,
+      emailNotify: account.emailNotify,
+      kakaoLinked: Boolean(account.kakaoLinked),
+      hasPassword: Boolean(account.password),
     });
 
     const logIn = (account, status) => {
@@ -562,29 +563,26 @@ export function startMockApi({ port = Number(process.env.MOCK_API_PORT) || 8787,
       return json(res, 200, { available: !taken });
     }
 
-    if (method === 'POST' && path === '/api/auth/phone/send-code') {
-      if (!body.phone) return invalid(res, [['phone', '휴대폰 번호를 입력해 주세요.']]);
-      if (body.purpose === 'SIGNUP' && [...users.values()].some((account) => account.phone === body.phone)) {
-        return error(res, 409, 'PHONE_ALREADY_REGISTERED', '이미 가입된 번호예요.');
-      }
-      verifications.set(cookies['XSRF-TOKEN'], { phone: body.phone, purpose: body.purpose, verified: false });
-      return json(res, 200, { expiresInSeconds: 180 });
+    if (method === 'POST' && path === '/api/auth/email/send-code') {
+      if (!body.email) return invalid(res, [['email', '이메일을 입력해 주세요.']]);
+      verifications.set(cookies['XSRF-TOKEN'], { email: body.email, purpose: body.purpose, verified: false });
+      return json(res, 200, { expiresInSeconds: 300 });
     }
-    if (method === 'POST' && path === '/api/auth/phone/verify') {
+    if (method === 'POST' && path === '/api/auth/email/verify') {
       const record = verifications.get(cookies['XSRF-TOKEN']);
-      if (!record || record.phone !== body.phone) return error(res, 400, 'CODE_NOT_REQUESTED', '인증번호를 먼저 받아 주세요.');
+      if (!record || record.email !== body.email) return error(res, 400, 'CODE_NOT_REQUESTED', '인증번호를 먼저 받아 주세요.');
       if (body.code !== '000000') return error(res, 400, 'INVALID_CODE', '인증번호가 맞지 않아요.');
       record.verified = true;
       return empty(res);
     }
     if (method === 'POST' && path === '/api/auth/signup') {
       const record = verifications.get(cookies['XSRF-TOKEN']);
-      if (!record?.verified || record.phone !== body.phone) return error(res, 403, 'PHONE_NOT_VERIFIED', '휴대폰 인증을 먼저 마쳐 주세요.');
+      if (!record?.verified || record.email !== body.email) return error(res, 403, 'EMAIL_NOT_VERIFIED', '이메일 인증을 먼저 마쳐 주세요.');
       if (!body.email || !body.password) return invalid(res, [['email', '이메일과 비밀번호를 입력해 주세요.']]);
       if ([...users.values()].some((account) => account.email === body.email)) return error(res, 409, 'EMAIL_ALREADY_REGISTERED', '이미 가입된 이메일이에요.');
       const account = {
-        id: id(), email: body.email, password: body.password, phone: body.phone,
-        onboardingSeen: false, smsNotify: Boolean(body.consents?.SMS_NOTIFY),
+        id: id(), email: body.email, password: body.password,
+        onboardingSeen: false, emailNotify: Boolean(body.consents?.EMAIL_NOTIFY),
         stories: new Map(), children: new Map(), readingSessions: new Map(),
       };
       users.set(account.id, account);
@@ -594,6 +592,34 @@ export function startMockApi({ port = Number(process.env.MOCK_API_PORT) || 8787,
       const account = [...users.values()].find((candidate) => candidate.email === body.email);
       if (!account || account.password !== body.password) return error(res, 401, 'INVALID_CREDENTIALS', '이메일 또는 비밀번호가 맞지 않아요.');
       return logIn(account, 200);
+    }
+    if (method === 'POST' && path === '/api/auth/password/reset') {
+      const record = verifications.get(cookies['XSRF-TOKEN']);
+      if (!record?.verified || record.email !== body.email || record.purpose !== 'PASSWORD_RESET') return error(res, 403, 'EMAIL_NOT_VERIFIED', '이메일 인증을 먼저 마쳐 주세요.');
+      const account = [...users.values()].find((candidate) => candidate.email === body.email);
+      if (account) account.password = body.newPassword;
+      return empty(res);
+    }
+    if (method === 'POST' && path === '/api/auth/kakao/login') {
+      if (body.code === 'fail') return error(res, 400, 'KAKAO_LOGIN_FAILED', '카카오 로그인을 다시 시도해 주세요.');
+      const email = `kakao-${body.code}@example.com`;
+      const account = [...users.values()].find((candidate) => candidate.email === email && candidate.kakaoLinked);
+      if (account) {
+        const sid = randomUUID(); sessions.set(sid, account.id);
+        return json(res, 200, { status: 'LOGGED_IN', me: meView(account) }, { 'Set-Cookie': `FSESSION=${sid}; Path=/; HttpOnly; SameSite=Lax` });
+      }
+      verifications.set(`kakao:${cookies['XSRF-TOKEN']}`, { email, createdAt: Date.now() });
+      return json(res, 200, { status: 'SIGNUP_REQUIRED', email, emailVerified: true });
+    }
+    if (method === 'POST' && path === '/api/auth/kakao/signup') {
+      const pending = verifications.get(`kakao:${cookies['XSRF-TOKEN']}`);
+      if (!pending || Date.now() - pending.createdAt > 600_000) return error(res, 400, 'KAKAO_SIGNUP_EXPIRED', '카카오 로그인부터 다시 시작해 주세요.');
+      const account = { id: id(), email: body.email || pending.email, password: null,
+        onboardingSeen: false, emailNotify: Boolean(body.consents?.EMAIL_NOTIFY), kakaoLinked: true,
+        stories: new Map(), children: new Map(), readingSessions: new Map() };
+      users.set(account.id, account);
+      verifications.delete(`kakao:${cookies['XSRF-TOKEN']}`);
+      return logIn(account, 201);
     }
     if (method === 'POST' && path === '/api/auth/logout') {
       sessions.delete(cookies.FSESSION);
@@ -605,9 +631,9 @@ export function startMockApi({ port = Number(process.env.MOCK_API_PORT) || 8787,
       if (!requireUser()) return undefined;
       if (method === 'GET' && path === '/api/me') return json(res, 200, meView(user));
       if (method === 'POST' && path === '/api/me/onboarding-seen') { user.onboardingSeen = true; return empty(res); }
-      if (method === 'PUT' && path === '/api/me/consents/sms-notify') {
+      if (method === 'PUT' && path === '/api/me/consents/email-notify') {
         if (typeof body.agreed !== 'boolean') return invalid(res, [['agreed', '동의 여부를 보내 주세요.']]);
-        user.smsNotify = body.agreed;
+        user.emailNotify = body.agreed;
         return empty(res);
       }
       if (method === 'POST' && path === '/api/me/password') {
@@ -616,13 +642,8 @@ export function startMockApi({ port = Number(process.env.MOCK_API_PORT) || 8787,
         user.password = body.newPassword;
         return empty(res);
       }
-      if (method === 'POST' && path === '/api/me/phone') {
-        if (body.currentPassword !== user.password) return error(res, 403, 'INVALID_PASSWORD', '현재 비밀번호가 맞지 않아요.');
-        user.phone = body.phone;
-        return empty(res);
-      }
       if (method === 'POST' && path === '/api/me/withdraw') {
-        if (body.currentPassword !== user.password) return error(res, 403, 'INVALID_PASSWORD', '현재 비밀번호가 맞지 않아요.');
+        if (user.password && body.currentPassword !== user.password) return error(res, 403, 'INVALID_PASSWORD', '현재 비밀번호가 맞지 않아요.');
         users.delete(user.id);
         sessions.delete(cookies.FSESSION);
         return empty(res, 204, { 'Set-Cookie': ['FSESSION=; Path=/; Max-Age=0', 'XSRF-TOKEN=; Path=/; Max-Age=0'] });

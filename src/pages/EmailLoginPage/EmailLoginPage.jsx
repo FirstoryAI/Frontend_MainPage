@@ -55,6 +55,7 @@ function EmailLoginPage() {
           <h1 id="login-title" className={styles.title}>
             이메일로 로그인
           </h1>
+          {location.state?.notice && <p className={styles.notice} role="status">{location.state.notice}</p>}
 
           <form onSubmit={handleSubmit}>
             <label className={`${styles.label} ${styles.emailLabel}`} htmlFor="email">
@@ -99,9 +100,10 @@ function EmailLoginPage() {
             </button>
           </form>
 
-          <p className={styles.signupPrompt}>
-            아직 가입하지 않았나요? <Link to="/auth/email/signup">이메일 회원가입</Link>
-          </p>
+          <div className={styles.signupPrompt}>
+            <Link to="/auth/password/reset">비밀번호 찾기</Link>
+            <p>아직 가입하지 않았나요? <Link to="/auth/email/signup">이메일 회원가입</Link></p>
+          </div>
         </section>
       </main>
     </div>

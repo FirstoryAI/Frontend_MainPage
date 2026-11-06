@@ -19,6 +19,7 @@ import { fromChild, toChildProfile } from '../../features/story/storyMappers';
 import { createChild, getChildren, updateChild } from '../../services/childrenApi';
 import { withdraw } from '../../services/meApi';
 import { initializeCsrf } from '../../services/apiClient';
+import { getCurrentMember } from '../../services/homeApi';
 import styles from './MyPage.module.css';
 
 const menuItems = [
@@ -37,6 +38,7 @@ function MyPage() {
   const [termsOpen, setTermsOpen] = useState(false);
   const [subscriptionOpen, setSubscriptionOpen] = useState(false);
   const [withdrawOpen, setWithdrawOpen] = useState(false);
+  const [hasPassword, setHasPassword] = useState(true);
   // 서버에 저장된 아이 프로필(첫 번째)이에요. 없으면 null이고, 저장하면 새로 만들어요.
   const [childId, setChildId] = useState(null);
   const [child, setChild] = useState(null);
@@ -53,6 +55,10 @@ function MyPage() {
     return () => {
       active = false;
     };
+  }, []);
+
+  useEffect(() => {
+    getCurrentMember().then((member) => setHasPassword(member.hasPassword !== false)).catch(() => {});
   }, []);
 
   // 아이 정보를 서버에 저장해요. 저장하지 못하면 이유를 돌려줘서 팝업에 보여줘요.
@@ -74,7 +80,7 @@ function MyPage() {
   // 탈퇴하면 서버가 모든 기기의 로그인을 끊어요. 쿠키가 지워지므로 CSRF 토큰을 다시 받아 둬요.
   const handleWithdraw = async (password) => {
     try {
-      await withdraw(password);
+      await withdraw(password, hasPassword);
       await initializeCsrf().catch(() => {});
       navigate('/', { replace: true });
       return '';
@@ -222,7 +228,7 @@ function MyPage() {
       {childInfoOpen && (
         <ChildInfoModal child={child} onSave={handleSaveChild} onClose={() => setChildInfoOpen(false)} />
       )}
-      {withdrawOpen && <WithdrawModal onConfirm={handleWithdraw} onClose={() => setWithdrawOpen(false)} />}
+      {withdrawOpen && <WithdrawModal hasPassword={hasPassword} onConfirm={handleWithdraw} onClose={() => setWithdrawOpen(false)} />}
       {termsOpen ? (
         <TermsModal onClose={() => setTermsOpen(false)} />
       ) : subscriptionOpen ? (

@@ -13,6 +13,9 @@ import StoryRemakePage from '../pages/StoryRemakePage/StoryRemakePage';
 import StoryPreviewPage from '../pages/StoryPreviewPage/StoryPreviewPage';
 import NotFoundPage from '../pages/NotFoundPage/NotFoundPage';
 import MyPage from '../pages/MyPage/MyPage';
+import KakaoCallbackPage from '../pages/KakaoCallbackPage/KakaoCallbackPage';
+import KakaoSignUpPage from '../pages/KakaoSignUpPage/KakaoSignUpPage';
+import PasswordResetPage from '../pages/PasswordResetPage/PasswordResetPage';
 
 export const router = createBrowserRouter([
   {
@@ -22,6 +25,9 @@ export const router = createBrowserRouter([
       { path: '/auth', element: <AuthStartPage /> },
       { path: '/auth/email/signup', element: <EmailSignUpPage /> },
       { path: '/auth/email/login', element: <EmailLoginPage /> },
+      { path: '/oauth/kakao', element: <KakaoCallbackPage /> },
+      { path: '/auth/kakao/signup', element: <KakaoSignUpPage /> },
+      { path: '/auth/password/reset', element: <PasswordResetPage /> },
       { path: '/auth/consent', element: <GuardianConsentPage /> },
       { path: '/home', element: <HomePage /> },
       { path: '/mypage', element: <MyPage /> },
