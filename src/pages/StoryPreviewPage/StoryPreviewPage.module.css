@@ -437,10 +437,16 @@
   width: 661px;
 }
 
+/* 다시 만든 뒤에는 '이전/이후 동화로 돌아가기'까지 버튼 3개가 같은 폭으로 놓여요. */
+.actionsWithSwitch {
+  grid-template-columns: repeat(3, 211px);
+  gap: 14px;
+}
+
 .remakeAction { position: relative; }
 
 .actions button {
-  width: 316px;
+  width: 100%;
   height: 58px;
   color: var(--color-text);
   background: #fff;
@@ -489,6 +495,8 @@
   .remakeAction { min-width: 0; }
   .remakeAction { order: 2; }
   .actions .confirm { order: 1; }
+  .actions .switchVersion { order: 3; }
+  .actionsWithSwitch { grid-template-columns: minmax(0, 1fr); gap: 10px; }
   .actions button { width: 100%; min-width: 0; height: 52px; border-radius: 12px; font-size: 15px; }
 
 }

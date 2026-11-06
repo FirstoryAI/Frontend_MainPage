@@ -25,7 +25,7 @@ import { usePageTurn } from '../../features/story/hooks/usePageTurn';
 import { useImageQueue } from '../../features/story/hooks/useImageQueue';
 import { textPositionOf } from '../../features/story/textPosition';
 import { guideFor, NO_GUIDE_MESSAGE } from '../../features/story/guideContent';
-import { approveStory, getGuide, getPreview, regenerateStory } from '../../services/storiesApi';
+import { approveStory, getGuide, getPreview, getVersions, regenerateStory, setCurrentVersion } from '../../services/storiesApi';
 import ErrorText from '../../components/ui/ErrorText';
 import { useNotifications } from '../../features/notifications/useNotifications';
 
@@ -53,6 +53,9 @@ function StoryPreviewPage({ initialRemakeOpen = false }) {
   const [isRemakeOpen, setIsRemakeOpen] = useState(initialRemakeOpen);
   const [approving, setApproving] = useState(false);
   const [notice, setNotice] = useState('');
+  // 다시 만들면 이전 버전도 남아 있어요. 버전이 둘 이상이면 서로 오갈 수 있어요. (버전 번호 순서예요)
+  const [versions, setVersions] = useState([]);
+  const [switchingVersion, setSwitchingVersion] = useState(false);
 
   useEffect(() => {
     let active = true;
@@ -61,6 +64,9 @@ function StoryPreviewPage({ initialRemakeOpen = false }) {
       .catch((error) => active && setLoadError(error.message || '미리보기를 불러오지 못했어요.'));
     getGuide(storyId)
       .then((result) => active && setGuide(result))
+      .catch(() => {});
+    getVersions(storyId)
+      .then((result) => active && setVersions(result))
       .catch(() => {});
     return () => {
       active = false;
@@ -78,6 +84,12 @@ function StoryPreviewPage({ initialRemakeOpen = false }) {
   // 다시 만들기 횟수는 서버가 알려주는 값(regenerateRemaining)을 그대로 써요.
   const remaining = preview?.regenerateRemaining ?? 0;
   const canRemake = remaining > 0;
+  // 마지막 버전을 보고 있으면 이전 버전으로, 이전 버전을 보고 있으면 다음 버전으로 가요. 확정 전에만 바꿀 수 있어요.
+  const versionIndex = versions.findIndex((version) => version.id === preview?.version?.id);
+  const isLatestVersion = versionIndex === versions.length - 1;
+  const switchTarget = preview?.status === 'REVIEWING' && versions.length > 1 && versionIndex >= 0
+    ? versions[versionIndex + (isLatestVersion ? -1 : 1)]
+    : null;
   // 그림 10장(수십 MB)을 한 번에 받지 않고, 지금 쪽에서 가까운 순서로 한 장씩 받아 메모리에 담아 두고 큰 그림·썸네일·크게 보기가 함께 써요.
   const imageSources = useImageQueue(pages.map((item) => item.imageUrl), currentPage);
   const sourceOf = (item) => imageSources.get(item.imageUrl);
@@ -131,6 +143,27 @@ function StoryPreviewPage({ initialRemakeOpen = false }) {
     } catch (error) {
       setNotice(error.message || '확정하지 못했어요. 잠시 뒤에 다시 시도해 주세요.');
       setApproving(false);
+    }
+  };
+
+  // 서버에서 보여 줄 버전을 바꿔요. '전체 동화 확정'은 지금 보고 있는 버전으로 확정돼요.
+  const switchVersion = async () => {
+    if (switchingVersion || !switchTarget) return;
+
+    setSwitchingVersion(true);
+    setNotice('');
+    try {
+      const nextPreview = await setCurrentVersion(storyId, switchTarget.id);
+      setPreview(nextPreview);
+      setCurrentPage((page) => Math.min(page, nextPreview.pages.length));
+      setIsGuideOpen(false);
+      setIsHintOpen(false);
+      // 대화 가이드도 버전마다 달라요.
+      setGuide(await getGuide(storyId).catch(() => null));
+    } catch (error) {
+      setNotice(error.message || '동화를 바꾸지 못했어요. 잠시 뒤에 다시 시도해 주세요.');
+    } finally {
+      setSwitchingVersion(false);
     }
   };
 
@@ -313,12 +346,17 @@ function StoryPreviewPage({ initialRemakeOpen = false }) {
           )}
         </button>
 
-        <div className={styles.actions} inert={isRemakeOpen}>
+        <div className={`${styles.actions} ${switchTarget ? styles.actionsWithSwitch : ''}`} inert={isRemakeOpen}>
           <div className={styles.remakeAction}>
             <button type="button" onClick={() => setIsRemakeOpen(true)} disabled={!canRemake}>
               다시 만들기
             </button>
           </div>
+          {switchTarget && (
+            <button className={styles.switchVersion} type="button" onClick={switchVersion} disabled={switchingVersion}>
+              {isLatestVersion ? '이전 동화로 돌아가기' : '이후 동화로 돌아가기'}
+            </button>
+          )}
           <button className={styles.confirm} type="button" onClick={approve} disabled={approving}>
             {approving ? '확정하는 중…' : '전체 동화 확정'}
           </button>
