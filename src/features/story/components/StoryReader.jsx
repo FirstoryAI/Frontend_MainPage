@@ -28,7 +28,7 @@ const HEADER_VISIBLE_MS = 2000;
 
 // 동화를 화면 가득 크게 읽는 화면이에요. 미리보기(확정 전)와 아이와 읽기(확정 후)가 함께 써요.
 // pages: [{ pageNo, text, imageUrl, imageStatus }], page: 지금 쪽(1부터), children: 쪽 아래에 띄울 보조 영역
-function StoryReader({ title, pages, page, onPage, onClose, closeLabel = '돌아가기', children, guide, previewMode = false }) {
+function StoryReader({ title, pages, page, onPage, onClose, closeLabel = '돌아가기', children, guide, previewMode = false, className = '' }) {
   const current = pages[page - 1];
   const [isGuideOpen, setIsGuideOpen] = useState(false);
   const [isHintOpen, setIsHintOpen] = useState(false);
@@ -103,7 +103,7 @@ function StoryReader({ title, pages, page, onPage, onClose, closeLabel = '돌아
 
   return (
     <section
-      className={`${styles.reader} ${previewMode ? styles.previewReader : ''}`}
+      className={`${styles.reader} ${previewMode ? styles.previewReader : ''} ${className}`}
       data-header-hidden={isHeaderHidden}
       onClick={handleScreenClick}
       aria-label="동화 읽기"

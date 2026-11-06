@@ -22,7 +22,8 @@ export const scenarioPopupContent = {
       },
       {
         title: '할 말 정해서 놀이로 연습하기',
-        question: '“ ‘내가 쓰고 있어’ 하고 말해 볼까? 아빠가 친구 역할 해 볼게.”',
+        question: '“ ‘내가 쓰고 있어’ 하고 말해 볼까? 아빠가 친구 역할 해볼게.”',
+        keepTogether: '친구 역할 해볼게',
       },
     ],
   },
