@@ -56,11 +56,10 @@ function StoryReader({ title, pages, page, onPage, onClose, closeLabel = '돌아
   const pageGuide = guide && previewMode ? guideFor(guide, page, pages.length) : null;
   const prompt = guide?.prompts?.find((item) => item.afterPage === page);
   const hasGuideContent = Boolean(
-    prompt?.question?.trim() || prompt?.parentHint?.trim()
+    prompt?.sceneNote?.trim() || prompt?.question?.trim() || prompt?.parentHint?.trim()
     || (page === 1 && (guide?.beforeReading?.intent?.trim() || guide?.beforeReading?.tips?.some((tip) => tip?.trim())))
     || (page === pages.length && (guide?.afterReading?.bridgeQuestion?.trim() || guide?.afterReading?.ifUndecided?.trim())),
   );
-  const guideLines = pageGuide?.talk?.split('\n').filter(Boolean) ?? [];
 
   useEffect(() => {
     if (previewMode) return undefined;
@@ -183,13 +182,13 @@ function StoryReader({ title, pages, page, onPage, onClose, closeLabel = '돌아
               <div className={styles.previewGuideContent}>
                 <section>
                   <h2>이번 장면에서는</h2>
-                  <p className={styles.previewGuideLead}>{pageGuide?.description}</p>
-                  {guideLines[0] && <p className={styles.previewGuideDetail}><img src={guideHand} alt="" />{guideLines[0]}</p>}
+                  {pageGuide?.description && <p className={styles.previewGuideLead}>{pageGuide.description}</p>}
+                  {pageGuide?.scene && <p className={styles.previewGuideDetail}><img src={guideHand} alt="" />{pageGuide.scene}</p>}
                 </section>
                 <section>
                   <h2>아이가 대답할 때에는</h2>
-                  {guideLines[1] && <p className={styles.previewGuideLead}>{guideLines[1]}</p>}
-                  {guideLines.length > 2 && <p className={styles.previewGuideDetail}><img src={guideQuestion} alt="" />{guideLines.slice(2).join(' ')}</p>}
+                  {pageGuide?.hint && <p className={styles.previewGuideLead}>{pageGuide.hint}</p>}
+                  {pageGuide?.question && <p className={styles.previewGuideDetail}><img src={guideQuestion} alt="" />{pageGuide.question}</p>}
                 </section>
               </div>
             </aside>
