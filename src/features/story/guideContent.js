@@ -21,20 +21,24 @@ export function guideFor(guide, pageNo, pageCount) {
   if (prompt) {
     return {
       description: purposeText(prompt.purpose),
-      talk: [prompt.question, prompt.parentHint].filter(Boolean).join('\n'),
+      scene: prompt.sceneNote,
+      question: prompt.question,
+      hint: prompt.parentHint,
     };
   }
   if (pageNo === 1) {
     return {
       description: guide.beforeReading?.intent ?? '',
-      talk: (guide.beforeReading?.tips ?? []).join('\n'),
+      scene: guide.beforeReading?.tips?.[0],
+      hint: (guide.beforeReading?.tips ?? []).slice(1).join(' '),
     };
   }
   if (pageNo === pageCount) {
     return {
       description: '이야기를 다 읽은 뒤에 아이와 나눠 볼 수 있어요.',
-      talk: [guide.afterReading?.bridgeQuestion, guide.afterReading?.ifUndecided].filter(Boolean).join('\n'),
+      scene: guide.afterReading?.ifUndecided,
+      question: guide.afterReading?.bridgeQuestion,
     };
   }
-  return { description: '이 쪽은 이야기를 그대로 읽어 주세요.', talk: '' };
+  return { description: '이 쪽은 이야기를 그대로 읽어 주세요.' };
 }
