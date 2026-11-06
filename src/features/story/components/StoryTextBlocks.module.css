@@ -14,7 +14,7 @@
   white-space: nowrap;
 }
 
-.block[data-color='LIGHT'] { color: #fff; }
+.block[data-color='LIGHT'] { color: #fff; text-shadow: 0 1px 3px rgb(0 0 0 / 30%); }
 .block[data-color='DARK'] { color: #4a4a4a; }
 
 .paragraph { margin: 0 0 0.6em; }
