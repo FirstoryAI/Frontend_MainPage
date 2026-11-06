@@ -178,7 +178,6 @@ function DashboardPage({ guest = false }) {
       {selectedScenario && (
         <HomeScenarioModal
           scenario={selectedScenario}
-          requiresLogin={guest}
           onClose={() => setSelectedScenario(null)}
           onStart={() => guest
             ? navigate('/auth')

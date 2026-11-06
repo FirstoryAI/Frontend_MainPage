@@ -5,13 +5,19 @@ import dialogueEmotion from '../../../assets/icons/scenario-dialogue-emotion.svg
 import dialogueKindergarten from '../../../assets/icons/scenario-dialogue.svg';
 import dialogueHabit from '../../../assets/icons/scenario-dialogue-habit.svg';
 import dialogueTantrum from '../../../assets/icons/scenario-dialogue-tantrum.svg';
+import iconInfo from '../../../assets/icons/icon-sample-info.svg';
+import sampleStoryCover from '../../../assets/images/sample-story-cover.png';
 import { scenarioPopupContent } from '../scenarioPopupContent';
 import styles from './HomeScenarioModal.module.css';
 
-function HomeScenarioModal({ scenario, onClose, onStart, requiresLogin = false }) {
+// 임시 예시 동화예요. 백엔드가 카드별 표지를 주면 이 값 대신 받은 제목과 표지를 보여줘요. (FirstoryAI/Backend_Mainpage#45)
+const PLACEHOLDER_SAMPLE_STORY = { title: '토리와 빨간 블록', coverUrl: sampleStoryCover };
+
+function HomeScenarioModal({ scenario, onClose, onStart }) {
   const dialogRef = useRef(null);
   const content = scenario.popupContent ?? scenarioPopupContent[scenario.id] ?? scenarioPopupContent.friend;
   const accentStyle = { '--scenario-accent': scenario.accentColor };
+  const sampleStory = PLACEHOLDER_SAMPLE_STORY;
   const dialogueIcons = {
     friend: dialogueFriend,
     emotion: dialogueEmotion,
@@ -72,27 +78,34 @@ function HomeScenarioModal({ scenario, onClose, onStart, requiresLogin = false }
           {content.description.map((line) => <span key={line}>{line}</span>)}
         </p>
 
-        <div className={styles.guideHeading}>
-          <img src={dialogueIcons[scenario.color] ?? dialogueKindergarten} alt="" />
-          <h3>{content.guideTitle}</h3>
-        </div>
+        <div className={styles.body}>
+          <figure className={styles.sample}>
+            <img className={styles.cover} src={sampleStory.coverUrl} alt={`${sampleStory.title} 표지`} />
+            <figcaption className={styles.sampleCaption}>
+              <img src={iconInfo} alt="" />
+              예시 동화 &lt;{sampleStory.title}&gt;
+            </figcaption>
+          </figure>
 
-        <ol className={styles.prompts}>
-          {content.prompts.map((prompt) => (
-            <li className={styles.prompt} key={prompt.title}>
-              <strong>{prompt.title}</strong>
-              <p>{prompt.question}</p>
-            </li>
-          ))}
-        </ol>
+          <div className={styles.guide}>
+            <div className={styles.guideHeading}>
+              <img src={dialogueIcons[scenario.color] ?? dialogueKindergarten} alt="" />
+              <h3>{content.guideTitle}</h3>
+            </div>
 
-        <div className={styles.closing}>
-          <h3>{content.closingTitle}</h3>
-          <p>{content.closingDescription}</p>
+            <ol className={styles.prompts}>
+              {content.prompts.map((prompt) => (
+                <li className={styles.prompt} key={prompt.title}>
+                  <strong>{prompt.title}</strong>
+                  <p>{prompt.question}</p>
+                </li>
+              ))}
+            </ol>
+          </div>
         </div>
 
         <button className={styles.actionButton} type="button" onClick={onStart}>
-          {requiresLogin ? '로그인하고 대화 시작하기 →' : content.actionLabel}
+          예시 동화 읽어보기 →
         </button>
       </section>
     </div>
