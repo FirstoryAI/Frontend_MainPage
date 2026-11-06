@@ -52,7 +52,7 @@
   font-weight: 600;
   line-height: normal;
   letter-spacing: -0.54px;
-  cursor: not-allowed;
+  cursor: pointer;
   opacity: 1;
   text-decoration: none;
 }
@@ -78,6 +78,17 @@
 
 .emailButton:hover {
   box-shadow: 0 0 7px rgb(0 0 0 / 20%);
+}
+
+.error {
+  position: absolute;
+  top: 393px;
+  right: 24px;
+  left: 24px;
+  margin: 0;
+  color: #c83e35;
+  font-size: 13px;
+  text-align: center;
 }
 
 .loginButton {
@@ -188,6 +199,10 @@
 
   .loginButton {
     top: 399px;
+  }
+
+  .error {
+    top: 367px;
   }
 
   .agreement {

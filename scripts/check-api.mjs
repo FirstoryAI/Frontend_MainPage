@@ -99,7 +99,7 @@ async function login() {
 async function readChecks() {
   section('읽기 점검');
   check('GET /api/health', await call('GET', '/api/health', undefined, { auth: false }), 200);
-  check('GET /api/me', await call('GET', '/api/me'), 200, (r) => `phoneMasked=${r.data?.phoneMasked}, smsNotify=${r.data?.smsNotify}`);
+  check('GET /api/me', await call('GET', '/api/me'), 200, (r) => `emailNotify=${r.data?.emailNotify}, kakaoLinked=${r.data?.kakaoLinked}, hasPassword=${r.data?.hasPassword}`);
   check('GET /api/home', await call('GET', '/api/home'), 200, (r) => `개수=${JSON.stringify(r.data?.counts)}`);
   for (const filter of ['ALL', 'CREATING', 'REVIEWING', 'UNREAD', 'READ', 'FAILED']) {
     check(`GET /api/stories?filter=${filter}`, await call('GET', `/api/stories?filter=${filter}&page=0&size=20`), 200, (r) => `${r.data?.totalElements}개`);

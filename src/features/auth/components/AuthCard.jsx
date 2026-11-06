@@ -1,9 +1,27 @@
+import { useState } from 'react';
 import { Link, useLocation } from 'react-router-dom';
 import kakaoSymbol from '../../../assets/icons/kakao-symbol.png';
 import styles from './AuthCard.module.css';
 
+const kakaoRedirectUri = () =>
+  `${window.location.origin}/oauth/kakao`;
+
 function AuthCard() {
   const location = useLocation();
+  const [error, setError] = useState('');
+  const startKakao = () => {
+    const key = import.meta.env.VITE_KAKAO_REST_API_KEY;
+    if (!key) {
+      setError('카카오 로그인 설정이 필요해요.');
+      return;
+    }
+    const params = new URLSearchParams({
+      client_id: key,
+      redirect_uri: kakaoRedirectUri(),
+      response_type: 'code',
+    });
+    window.location.assign(`https://kauth.kakao.com/oauth/authorize?${params}`);
+  };
   return (
     <section className={styles.card} aria-labelledby="auth-card-title">
       <h1 id="auth-card-title" className={styles.logo}>
@@ -20,8 +38,7 @@ function AuthCard() {
         <button
           className={`${styles.actionButton} ${styles.kakaoButton}`}
           type="button"
-          disabled
-          title="카카오 인증 연동 후 활성화됩니다"
+          onClick={startKakao}
         >
           <img src={kakaoSymbol} alt="" width="25" height="22" />
           <span>카카오로 시작하기</span>
@@ -34,6 +51,7 @@ function AuthCard() {
           이메일로 시작하기
         </Link>
       </div>
+      {(error || location.state?.notice) && <p className={styles.error} role="alert">{error || location.state.notice}</p>}
 
       <Link
         className={styles.loginButton}

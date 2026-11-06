@@ -4,14 +4,14 @@ import dialogStyles from '../../story/components/StoryDraftModal.module.css';
 import styles from './WithdrawModal.module.css';
 
 // 탈퇴하려면 현재 비밀번호를 다시 입력해야 해요. onConfirm(password)는 실패하면 이유(문장)를 돌려줘요.
-function WithdrawModal({ onConfirm, onClose }) {
+function WithdrawModal({ onConfirm, onClose, hasPassword = true }) {
   const [password, setPassword] = useState('');
   const [error, setError] = useState('');
   const [submitting, setSubmitting] = useState(false);
 
   const handleSubmit = async (event) => {
     event.preventDefault();
-    if (!password || submitting) return;
+    if ((hasPassword && !password) || submitting) return;
 
     setSubmitting(true);
     setError('');
@@ -26,13 +26,13 @@ function WithdrawModal({ onConfirm, onClose }) {
       description={(
         <>
           <span className={styles.sentence}>탈퇴하면 모든 기기에서 로그아웃되고 만든 동화도 볼 수 없어요.</span>
-          <span className={styles.sentence}>계속하려면 현재 비밀번호를 입력해 주세요.</span>
+          {hasPassword && <span className={styles.sentence}>계속하려면 현재 비밀번호를 입력해 주세요.</span>}
         </>
       )}
       labelId="withdraw-title"
     >
       <form onSubmit={handleSubmit}>
-        <input
+        {hasPassword && <input
           className={styles.input}
           type="password"
           name="currentPassword"
@@ -41,7 +41,7 @@ function WithdrawModal({ onConfirm, onClose }) {
           placeholder="현재 비밀번호"
           value={password}
           onChange={(event) => setPassword(event.target.value)}
-        />
+        />}
         {error && (
           <p className={styles.error} role="alert">
             {error}
@@ -51,7 +51,7 @@ function WithdrawModal({ onConfirm, onClose }) {
           <button className={dialogStyles.secondary} type="button" onClick={onClose}>
             취소
           </button>
-          <button className={dialogStyles.primary} type="submit" disabled={!password || submitting}>
+          <button className={dialogStyles.primary} type="submit" disabled={(hasPassword && !password) || submitting}>
             {submitting ? '처리하는 중…' : '탈퇴하기'}
           </button>
         </div>

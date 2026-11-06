@@ -6,7 +6,8 @@ import checkboxUnchecked from '../../assets/icons/checkbox-unchecked.svg';
 import { useSignupDraft } from '../../features/auth/SignupDraftContext';
 import styles from './GuardianConsentPage.module.css';
 import { loadNotificationSettings, saveNotificationSettings } from '../../features/profile/notificationSettings';
-import { signup } from '../../services/authApi';
+import { kakaoSignup, signup } from '../../services/authApi';
+import { setSignedInStatus } from '../../features/auth/useSignedIn';
 
 const TERMS_VERSION = '2026-10-01';
 
@@ -21,7 +22,7 @@ const agreementItems = [
   { id: 'guardian', label: '(필수) 아이의 보호자(법정 대리인)예요' },
   { id: 'terms', label: '(필수) 서비스 이용약관' },
   { id: 'privacy', label: '(필수) 아이 정보를 포함한 개인정보 수집·이용' },
-  { id: 'notification', label: '(선택) 동화가 완성되면 문자로 알림 받기' },
+  { id: 'notification', label: '(선택) 동화 제작 소식 이메일로 받기' },
 ];
 
 function CheckboxGraphic({ checked }) {
@@ -64,23 +65,22 @@ function GuardianConsentPage() {
     setError('');
 
     try {
-      await signup({
-        email: signupDraft.email,
-        password: signupDraft.password,
-        phone: signupDraft.phone,
-        consents: {
-          GUARDIAN: agreements.guardian,
-          TERMS: agreements.terms,
-          PRIVACY: agreements.privacy,
-          SMS_NOTIFY: agreements.notification,
-        },
-        termsVersion: TERMS_VERSION,
-      });
+      const consents = {
+        GUARDIAN: agreements.guardian,
+        TERMS: agreements.terms,
+        PRIVACY: agreements.privacy,
+        EMAIL_NOTIFY: agreements.notification,
+      };
+      const payload = signupDraft.type === 'kakao'
+        ? { ...(signupDraft.kakaoEmailVerified ? {} : { email: signupDraft.email }), consents, termsVersion: TERMS_VERSION }
+        : { email: signupDraft.email, password: signupDraft.password, consents, termsVersion: TERMS_VERSION };
+      await (signupDraft.type === 'kakao' ? kakaoSignup(payload) : signup(payload));
 
       saveNotificationSettings({
         ...loadNotificationSettings(),
-        sms: agreements.notification,
+        email: agreements.notification,
       });
+      setSignedInStatus(true);
       setIsCompleted(true);
       setSignupDraft(null);
       setSignupFeedback(null);
@@ -95,28 +95,32 @@ function GuardianConsentPage() {
         .join(' ');
 
       const signupFieldError = requestError.fields?.some(({ field }) =>
-        ['email', 'password', 'phone'].some(
+        ['email', 'password'].some(
           (name) => field === name || field?.startsWith(`${name}.`) || field?.startsWith(`${name}[`),
         ),
       );
       const credentialError =
         [
           'DUPLICATE_EMAIL',
-          'DUPLICATE_PHONE',
           'INVALID_PASSWORD_FORMAT',
-          'INVALID_PHONE_FORMAT',
-          'PHONE_NOT_VERIFIED',
+          'EMAIL_NOT_VERIFIED',
         ].includes(requestError.code) ||
         (requestError.code === 'VALIDATION_FAILED' && signupFieldError);
 
       if (credentialError) {
-        if (requestError.code === 'PHONE_NOT_VERIFIED') {
-          setSignupDraft((draft) => ({ ...draft, phoneVerified: false }));
+        if (requestError.code === 'EMAIL_NOT_VERIFIED') {
+          setSignupDraft((draft) => ({ ...draft, emailVerified: false, kakaoEmailVerified: false }));
         }
         setSignupFeedback({
           message: fieldMessages || requestError.message || '가입 정보를 다시 확인해 주세요.',
         });
-        navigate('/auth/email/signup', { replace: true });
+        navigate(signupDraft.type === 'kakao' ? '/auth/kakao/signup' : '/auth/email/signup', { replace: true });
+        return;
+      }
+
+      if (signupDraft.type === 'kakao' && requestError.code === 'KAKAO_SIGNUP_EXPIRED') {
+        setSignupDraft(null);
+        navigate('/auth', { replace: true, state: { notice: '카카오 로그인부터 다시 시작해 주세요.' } });
         return;
       }
 
@@ -127,7 +131,7 @@ function GuardianConsentPage() {
   };
 
   if (!signupDraft) {
-    return isCompleted ? null : <Navigate to="/auth/email/signup" replace />;
+    return isCompleted ? null : <Navigate to="/auth" replace />;
   }
 
   return (
