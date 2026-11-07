@@ -19,7 +19,7 @@
   flex-direction: column;
   width: min(540px, 100%);
   height: fit-content;
-  padding: 45px 52px 40px;
+  padding: 45px 52px 33.5px;
   background: var(--color-surface);
   border-radius: 24px;
   box-shadow: 0 0 8.2px rgb(0 0 0 / 10%);
@@ -39,16 +39,8 @@
   cursor: pointer;
 }
 
-.stepLabel {
-  margin: 44px 0 0;
-  color: var(--color-brand);
-  font-size: 16px;
-  font-weight: 600;
-  line-height: 1.5;
-}
-
 .title {
-  margin: 4px 0 0;
+  margin: 36px 0 0;
   color: var(--color-heading);
   font-size: 33px;
   font-weight: 600;
@@ -56,30 +48,45 @@
   letter-spacing: -0.99px;
 }
 
+/* 뒤로가기 링크가 없는 화면(카카오)에서는 제목이 맨 위에 와요. */
+.title:first-child {
+  margin-top: 0;
+}
+
 .form {
   display: flex;
   flex-direction: column;
-  margin-top: 36px;
+  margin-top: 29px;
 }
 
 .label {
-  margin: 0 0 8px;
+  margin: 0 0 15px;
   color: var(--color-text);
   font-size: 18px;
   font-weight: 600;
   line-height: 1.5;
 }
 
-.form > .input + .label,
-.inlineRow + .label {
-  margin-top: 28px;
+.passwordLabel {
+  margin-bottom: 14px;
 }
 
+.form > .input + .label,
+.emailField + .label {
+  margin-top: 33px;
+}
+
+.fieldStatus + .label {
+  margin-top: 30.5px;
+}
+
+/* 입력 칸은 글자보다 조금 넓게(왼쪽 4px, 오른쪽 3px) 나와요. */
 .input {
-  flex: 1 1 auto;
+  flex: none;
   min-width: 0;
-  width: 100%;
+  width: calc(100% + 7px);
   height: 63px;
+  margin-left: -4px;
   padding: 0 24px;
   color: var(--color-text);
   background: var(--color-surface);
@@ -107,101 +114,187 @@
   cursor: not-allowed;
 }
 
-.inlineRow {
-  display: flex;
-  align-items: center;
-  gap: 14px;
+/* 이메일 칸 안쪽 오른쪽에 인증번호 받기 버튼이 들어가요. */
+.emailField {
+  position: relative;
+  width: calc(100% + 7px);
+  margin-left: -4px;
 }
 
-.verification {
-  display: grid;
-  gap: 10px;
-  margin-top: 16px;
+.emailField .emailInput {
+  display: block;
+  width: 100%;
+  margin-left: 0;
+  padding-right: 136px;
 }
 
-.verification > .inlineRow:first-child {
-  justify-content: space-between;
-}
-
-.verification .inlineButton {
-  flex: 0 0 auto;
-  min-width: 112px;
-  width: auto;
-  height: 42px;
-  padding: 0 14px;
-  border-radius: 10px;
-  font-size: 14px;
-}
-
-.verification .status,
-.verification .hint {
-  margin: 0;
-}
-
-.verification + .label {
-  margin-top: 24px;
-}
-
-.inlineRow .input {
-  height: 56px;
-}
-
-.inlineButton {
-  flex: 0 0 147px;
-  height: 56px;
+.codeRequest,
+.codeResend {
+  position: absolute;
+  top: 12px;
+  right: 14px;
+  height: 39px;
+  padding: 0;
   color: var(--color-brand);
-  background: #fff7f2;
-  border: 1px solid var(--color-brand-light);
-  border-radius: 12px;
+  background: var(--color-surface);
+  border-radius: 14px;
   font-family: var(--font-body);
   font-size: 15px;
-  font-weight: 600;
+  font-weight: 500;
+  line-height: 1.5;
+  white-space: nowrap;
   cursor: pointer;
 }
 
-.inlineButton:disabled {
-  color: var(--color-secondary);
-  border-color: var(--color-card-border);
+.codeRequest {
+  width: 107px;
+  border: 1.5px solid var(--color-brand);
+  box-shadow: inset 0 0 4.2px 2px rgb(255 255 255 / 25%);
+  transition: color 0.2s ease, border-color 0.2s ease;
+}
+
+.codeRequest:disabled {
+  color: #ffccb8;
+  border-color: #ffccb8;
+  cursor: default;
+}
+
+.codeResend {
+  right: 13px;
+  width: 121px;
+  border: 0;
+}
+
+.codeResend:disabled {
+  cursor: default;
+}
+
+.codeRequest:focus-visible,
+.codeResend:focus-visible,
+.codeConfirm:focus-visible {
+  outline: 2px solid rgb(255 138 91 / 55%);
+  outline-offset: 2px;
+}
+
+/* 인증번호 입력 칸, 남은 시간, 확인 버튼이 있는 줄이에요. */
+.codeRow {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  margin: 12px 0 0 -4px;
+}
+
+.codeField {
+  position: relative;
+  flex: 0 1 266px;
+  min-width: 0;
+  height: 52px;
+}
+
+.codeInput {
+  display: block;
+  width: 100%;
+  height: 100%;
+  padding: 0 70px 0 22px;
+  color: var(--color-text);
+  background: var(--color-surface);
+  border: 0;
+  border-radius: 14px;
+  box-shadow: 0 0 5.9px rgb(0 0 0 / 15%);
+  font-family: var(--font-body);
+  font-size: 16px;
+  line-height: 1.5;
+}
+
+.codeInput::placeholder {
+  color: var(--color-placeholder);
+  opacity: 1;
+}
+
+.codeInput:focus {
+  outline: 2px solid rgb(255 138 91 / 45%);
+  outline-offset: 1px;
+}
+
+.codeInput:disabled {
+  background: #faf6f3;
   cursor: not-allowed;
 }
 
-.hint,
-.status {
+.codeTimer {
+  position: absolute;
+  top: 50%;
+  right: 20px;
+  color: #ff6b55;
+  font-size: 15px;
+  font-weight: 500;
+  line-height: 1.5;
+  font-variant-numeric: tabular-nums;
+  pointer-events: none;
+  transform: translateY(-50%);
+}
+
+.codeConfirm {
+  flex: none;
+  width: 71px;
+  height: 41px;
+  padding: 0;
+  color: var(--color-brand);
+  background: transparent;
+  border: 1.5px solid var(--color-brand);
+  border-radius: 14px;
+  font-family: var(--font-body);
+  font-size: 15px;
+  font-weight: 500;
+  line-height: 1.5;
+  cursor: pointer;
+}
+
+.codeConfirm:disabled {
+  color: #ffccb8;
+  border-color: #ffccb8;
+  cursor: default;
+}
+
+.codeVerified {
+  display: block;
+  flex: none;
+  width: 17.85px;
+  height: 14.35px;
+  margin-left: 11px;
+}
+
+/* 이메일·인증번호 칸 아래 안내예요. */
+.fieldStatus {
+  margin: 9px 0 0 -1px;
+  color: var(--color-link);
+  font-size: 13px;
+  line-height: 1.5;
+}
+
+.fieldStatusDone {
+  color: var(--color-secondary-green);
+}
+
+.hint {
   margin: 8px 0 0;
+  color: var(--color-secondary);
   font-size: 14px;
   line-height: 1.5;
 }
 
-.hint {
-  color: var(--color-secondary);
-}
-
-.status {
-  min-height: 21px;
-  margin-top: 4px;
-  color: var(--color-secondary);
-}
-
-.verificationError {
-  color: #c83e35;
-}
-
-.success {
-  color: #27875e;
-}
-
 .error {
-  margin: 12px 0 0;
-  color: #c83e35;
-  font-size: 14px;
-  line-height: 1.45;
+  margin: 12px 0 0 -1px;
+  color: var(--color-link);
+  font-size: 13px;
+  line-height: 1.5;
 }
 
 .submitButton {
   align-self: center;
   width: min(379px, 100%);
   height: 63px;
-  margin-top: 36px;
+  margin-top: 55px;
   color: var(--color-surface);
   background: var(--color-brand);
   border: 0;
@@ -214,12 +307,17 @@
   cursor: pointer;
 }
 
+/* 인증번호 줄이 열리면 위로 조금 당겨 앉아요. */
+.codeRow ~ .submitButton {
+  margin-top: 34px;
+}
+
 .submitButton:hover {
   filter: brightness(0.98);
 }
 
 .loginPrompt {
-  margin: 32px 0 0;
+  margin: 12px 0 0;
   color: var(--color-secondary);
   font-size: 15px;
   font-weight: 400;
@@ -236,6 +334,7 @@
   font-size: 15px;
   font-weight: 500;
   line-height: 1.5;
+  text-decoration: none;
   cursor: pointer;
 }
 
@@ -271,19 +370,25 @@
     padding: 32px 24px 32px;
   }
 
-  .stepLabel {
-    margin-top: 32px;
-  }
-
   .title {
     font-size: clamp(28px, 8vw, 33px);
   }
 
-  .inlineRow {
+  .form {
+    margin-top: 24px;
+  }
+
+  .emailField .emailInput {
+    padding-right: 130px;
+    padding-left: 16px;
+  }
+
+  .codeRow {
     gap: 8px;
   }
 
-  .inlineButton {
-    flex-basis: 110px;
+  .submitButton,
+  .codeRow ~ .submitButton {
+    margin-top: 32px;
   }
 }
