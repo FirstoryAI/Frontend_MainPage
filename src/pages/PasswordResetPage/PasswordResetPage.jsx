@@ -32,11 +32,10 @@ function PasswordResetPage() {
       <h1 id="reset-title" className={styles.title}>비밀번호 찾기</h1>
       <form className={styles.form} onSubmit={submit}>
         <label className={styles.label} htmlFor="reset-email">이메일</label>
-        <input className={styles.input} id="reset-email" type="email" autoComplete="email" value={email}
-          onChange={(event) => { setEmail(event.target.value); setVerifiedEmail(''); }} placeholder="name@example.com" />
-        <EmailVerification key={email.trim()} email={email.trim()} purpose="PASSWORD_RESET"
-          verified={Boolean(verifiedEmail) && verifiedEmail === email.trim()} onVerified={() => setVerifiedEmail(email.trim())} />
-        <label className={styles.label} htmlFor="new-password">새 비밀번호</label>
+        <EmailVerification inputId="reset-email" email={email} purpose="PASSWORD_RESET"
+          onEmailChange={(value) => { setEmail(value); setVerifiedEmail(''); }}
+          verified={Boolean(verifiedEmail) && verifiedEmail === email.trim()} onVerified={setVerifiedEmail} />
+        <label className={`${styles.label} ${styles.passwordLabel}`} htmlFor="new-password">새 비밀번호</label>
         <input className={styles.input} id="new-password" type="password" autoComplete="new-password"
           value={password} onChange={(event) => setPassword(event.target.value)} maxLength={20} />
         {error && <p className={styles.error} role="alert">{error}</p>}

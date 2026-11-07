@@ -27,13 +27,12 @@ function KakaoSignUpPage() {
       <h1 id="kakao-signup-title" className={styles.title}>카카오로 시작하기</h1>
       <form className={styles.form} onSubmit={submit}>
         <label className={styles.label} htmlFor="kakao-email">이메일</label>
-        <input className={styles.input} id="kakao-email" type="email" value={email}
-          readOnly={signupDraft.emailVerified} onChange={(event) => {
-            setEmail(event.target.value); setVerifiedEmail(''); setError('');
-          }} placeholder="name@example.com" />
-        {!signupDraft.emailVerified && <EmailVerification key={email.trim()} email={email.trim()}
-          purpose="SIGNUP" verified={verified} onVerified={() => setVerifiedEmail(email.trim())} />}
-        {signupDraft.emailVerified && <p className={styles.hint}>카카오에서 이메일을 확인했어요.</p>}
+        {signupDraft.emailVerified ? <>
+          <input className={styles.input} id="kakao-email" type="email" value={email} readOnly />
+          <p className={styles.hint}>카카오에서 이메일을 확인했어요.</p>
+        </> : <EmailVerification inputId="kakao-email" email={email} purpose="SIGNUP" verified={verified}
+          onEmailChange={(value) => { setEmail(value); setVerifiedEmail(''); setError(''); }}
+          onVerified={setVerifiedEmail} />}
         {(error || signupFeedback) && <p className={styles.error} role="alert">{error || signupFeedback.message}</p>}
         <button className={styles.submitButton} type="submit">약관 동의로 계속</button>
       </form>

@@ -100,10 +100,7 @@ function EmailLoginPage() {
             </button>
           </form>
 
-          <div className={styles.signupPrompt}>
-            <Link to="/auth/password/reset">비밀번호 찾기</Link>
-            <p>아직 가입하지 않았나요? <Link to="/auth/email/signup">이메일 회원가입</Link></p>
-          </div>
+          <Link className={styles.findLink} to="/auth/password/reset">계정 / 비밀번호 찾기</Link>
         </section>
       </main>
     </div>

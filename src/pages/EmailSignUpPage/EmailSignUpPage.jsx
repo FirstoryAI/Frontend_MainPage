@@ -34,14 +34,14 @@ function EmailSignUpPage() {
       <h1 id="email-signup-title" className={styles.title}>이메일로 시작하기</h1>
       <form className={styles.form} noValidate onSubmit={handleSubmit}>
         <label className={styles.label} htmlFor="email">이메일</label>
-        <input className={styles.input} id="email" type="email" autoComplete="email" value={email}
-          onChange={(event) => { setEmail(event.target.value); setVerifiedEmail(''); setError(''); }} placeholder="name@example.com" />
-        <EmailVerification key={email.trim()} email={email.trim()} verified={verifiedEmail === email.trim() && Boolean(verifiedEmail)}
-          onVerified={() => setVerifiedEmail(email.trim())} purpose="SIGNUP" />
-        <label className={styles.label} htmlFor="password">비밀번호</label>
+        <EmailVerification inputId="email" email={email} purpose="SIGNUP"
+          onEmailChange={(value) => { setEmail(value); setVerifiedEmail(''); setError(''); }}
+          verified={verifiedEmail === email.trim() && Boolean(verifiedEmail)}
+          onVerified={setVerifiedEmail} />
+        <label className={`${styles.label} ${styles.passwordLabel}`} htmlFor="password">비밀번호</label>
         <input className={styles.input} id="password" type="password" autoComplete="new-password"
           value={password} maxLength={20} onChange={(event) => setPassword(event.target.value)}
-          placeholder="8~20자 / 영문·숫자·특수기호 포함" />
+          placeholder="8~20자/ 영문·숫자·특수기호 포함" />
         {(error || signupFeedback) && <p className={styles.error} role="alert">{error || signupFeedback.message}</p>}
         <button className={styles.submitButton} type="submit">회원가입</button>
       </form>
