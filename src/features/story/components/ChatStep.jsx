@@ -169,9 +169,11 @@ function ChatStep({
             <span className={styles.avatarFrame}>
               <img className={styles.avatar} src={avatar} alt="" />
             </span>
-            <p className={`${styles.bubble} ${styles.aiBubble}`} role="status">
-              생각하는 중이에요…
-            </p>
+            <div className={`${styles.bubble} ${styles.aiBubble} ${styles.skeletonBubble}`} role="status" aria-label="AI 답변을 불러오는 중">
+              <span className={styles.skeletonLine} />
+              <span className={styles.skeletonLine} />
+              <span className={styles.skeletonLine} />
+            </div>
           </li>
         )}
       </ol>
