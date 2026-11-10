@@ -23,7 +23,7 @@
 }
 
 .readerHeader {
-  position: absolute;
+  position: fixed;
   z-index: 2;
   inset: 0 0 auto;
   height: 11.35%;
@@ -393,16 +393,12 @@
 
 .previewReader .readerBook { top: 13.85%; left: 8.9%; width: 82.2%; height: 73.5%; }
 @media (min-width: 761px) {
-  /* Keep the header viewport-wide even when the 3:2 reading canvas is narrower. */
+  /* 책 캔버스 비율과 관계없이 헤더를 뷰포트 상단에 붙여 잘림을 막아요. */
   .readerCanvas { overflow: visible; }
   .readerHeader {
-    /* 책 화면(3:2)이 창보다 낮으면(세로 패드 등) 가운데에 놓여요. 상단바는 그래도 창 맨 위에 붙어요. */
-    top: calc((min(100vw, 150vh) * 2 / 3 - 100vh) / 2);
-    right: auto;
-    left: 50%;
-    width: 100vw;
+    inset: 0 0 auto;
+    width: 100%;
     height: var(--header-height);
-    transform: translateX(-50%);
   }
   .readerClose {
     top: 50%;
