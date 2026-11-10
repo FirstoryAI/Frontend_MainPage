@@ -109,24 +109,24 @@ function StoryReader({ title, pages, page, onPage, onClose, closeLabel = '돌아
       aria-modal="true"
       role="dialog"
     >
-      <div className={styles.readerCanvas}>
-        <header
-          className={styles.readerHeader}
-          ref={headerRef}
-          onBlur={previewMode ? undefined : revealHeader}
-        >
-          <button className={styles.readerClose} type="button" onClick={onClose} aria-label={closeLabel}>
-            <img src={readerClose} alt="" />
-          </button>
-          <h1 className={styles.readerTitle}>{title}</h1>
-          <div className={styles.readerProgress} aria-label={`${page} / ${pages.length}쪽`}>
-            <span>{page} / {pages.length}</span>
-            <div className={styles.readerProgressTrack}>
-              <div className={styles.readerProgressFill} style={{ width: `${(page / pages.length) * 100}%` }} />
-            </div>
+      <header
+        className={styles.readerHeader}
+        ref={headerRef}
+        onBlur={previewMode ? undefined : revealHeader}
+      >
+        <button className={styles.readerClose} type="button" onClick={onClose} aria-label={closeLabel}>
+          <img src={readerClose} alt="" />
+        </button>
+        <h1 className={styles.readerTitle}>{title}</h1>
+        <div className={styles.readerProgress} aria-label={`${page} / ${pages.length}쪽`}>
+          <span>{page} / {pages.length}</span>
+          <div className={styles.readerProgressTrack}>
+            <div className={styles.readerProgressFill} style={{ width: `${(page / pages.length) * 100}%` }} />
           </div>
-        </header>
+        </div>
+      </header>
 
+      <div className={styles.readerCanvas}>
         <div className={styles.readerBook}>
           <img className={styles.readerFrame} src={previewMode ? previewFrame : readerFrame} alt="" />
           <div className={styles.readerPage}>
