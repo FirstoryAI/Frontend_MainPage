@@ -175,7 +175,7 @@
   padding: 0.8cqw 1.6cqw;
   color: #4a4a4a;
   font-family: var(--font-title);
-  font-size: clamp(9px, 1.18cqw, 17px);
+  font-size: clamp(12px, 1.32cqw, 19px);
   line-height: 1.34;
   text-align: center;
   background: rgb(255 255 255 / 72%);
@@ -452,7 +452,7 @@
   .readerPage { inset: 0; width: 100%; height: 100%; padding: 10px; border-radius: 12px; }
   .readerPageContent { display: flex; flex-direction: column; overflow-y: auto; border-radius: 6px; }
   .readerPageContent > img { flex: 0 0 auto; width: 100%; height: auto; aspect-ratio: 956.5 / 541; object-fit: cover; }
-  .readerCopy { position: relative; inset: auto; flex: 0 0 auto; padding: 12px 10px; color: #4a4a4a; font-size: clamp(8px, 2.4vw, 12px); text-align: left; background: transparent; border-radius: 0; white-space: pre-line; }
+  .readerCopy { position: relative; inset: auto; flex: 0 0 auto; padding: 12px 10px; color: #4a4a4a; font-size: clamp(14px, 3.8vw, 17px); text-align: left; background: transparent; border-radius: 0; white-space: pre-line; }
   .readerCopy p { margin-bottom: 2px; }
   .readerPageContent > p[role='img'] { flex: 1 0 100px; display: grid; margin: 0; place-items: center; }
   .readerArrow { top: 52.6%; width: 60px; height: 61.54px; transform: translateY(-50%) scale(.7); }

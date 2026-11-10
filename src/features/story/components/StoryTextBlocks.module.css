@@ -8,7 +8,7 @@
   position: absolute;
   color: #4a4a4a;
   font-family: var(--font-title);
-  font-size: 1.5cqw;
+  font-size: 1.65cqw;
   line-height: 1.55;
   text-align: left;
   white-space: nowrap;
@@ -35,7 +35,7 @@
     position: relative;
     top: auto !important;
     left: auto !important;
-    font-size: clamp(14px, 4vw, 18px);
+    font-size: clamp(16px, 4.4vw, 20px);
     line-height: 1.6;
     white-space: normal;
   }
