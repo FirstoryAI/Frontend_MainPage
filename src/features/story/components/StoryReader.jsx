@@ -100,6 +100,12 @@ function StoryReader({ title, pages, page, onPage, onClose, closeLabel = '돌아
     if (!previewMode && !event.target.closest('button')) revealHeader();
   };
 
+  const handlePageClick = (event) => {
+    if (window.getSelection()?.toString()) return;
+    const { left, width } = event.currentTarget.getBoundingClientRect();
+    showPage(page + (event.clientX < left + width / 2 ? -1 : 1));
+  };
+
   return (
     <section
       className={`${styles.reader} ${previewMode ? styles.previewReader : ''} ${className}`}
@@ -130,7 +136,7 @@ function StoryReader({ title, pages, page, onPage, onClose, closeLabel = '돌아
         <div className={styles.readerBook}>
           <img className={styles.readerFrame} src={previewMode ? previewFrame : readerFrame} alt="" />
           <div className={styles.readerPage}>
-            <div className={styles.readerPageContent}>
+            <div className={styles.readerPageContent} onClick={handlePageClick}>
               <SafeImage
                 src={current.imageUrl}
                 alt={`${page}쪽 동화 삽화`}
