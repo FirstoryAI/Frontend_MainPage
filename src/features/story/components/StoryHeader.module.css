@@ -1,5 +1,6 @@
 .header {
-  position: relative;
+  position: sticky;
+  top: 0;
   z-index: var(--z-header);
   height: var(--story-header-height);
   padding: 16.1px 50.3px 0;
