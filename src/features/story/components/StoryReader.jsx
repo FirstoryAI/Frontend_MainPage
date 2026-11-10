@@ -1,4 +1,5 @@
-import { useCallback, useEffect, useRef, useState } from 'react';
+import { useCallback, useEffect, useMemo, useRef, useState } from 'react';
+import HTMLFlipBook from 'react-pageflip';
 import readerFrame from '../../../assets/story-reader/frame.svg';
 import previewFrame from '../../../assets/story-reader/preview-frame.svg';
 import readerArrowLeft from '../../../assets/story-reader/arrow-left.svg';
@@ -14,16 +15,12 @@ import toggleChevron from '../../../assets/story-preview-guide/toggle-chevron.sv
 import mascotBase from '../../../assets/story-preview-guide/mascot-base.svg';
 import mascotFace from '../../../assets/story-preview-guide/mascot-face.png';
 import { guideFor, NO_GUIDE_MESSAGE } from '../guideContent';
-import { usePageTurn } from '../hooks/usePageTurn';
-import PageTurnOverlay from './PageTurnOverlay';
-import SafeImage from './SafeImage';
-import StoryText from './StoryText';
-import StoryTextBlocks from './StoryTextBlocks';
-import { textPositionOf } from '../textPosition';
+import StoryFlipPage from './StoryFlipPage';
 import styles from './StoryReader.module.css';
 
 // 아이와 읽기에서 상단바가 떠 있는 시간이에요.
 const HEADER_VISIBLE_MS = 2000;
+const pageIndexFor = (number, portrait) => (number - 1) * (portrait ? 1 : 2);
 
 // 동화를 화면 가득 크게 읽는 화면이에요. 미리보기(확정 전)와 아이와 읽기(확정 후)가 함께 써요.
 // pages: [{ pageNo, text, imageUrl, imageStatus }], page: 지금 쪽(1부터), children: 쪽 아래에 띄울 보조 영역
@@ -35,6 +32,21 @@ function StoryReader({ title, pages, page, onPage, onClose, closeLabel = '돌아
   const [isHeaderShown, setIsHeaderShown] = useState(true);
   const headerRef = useRef(null);
   const hideTimer = useRef(null);
+  const bookRef = useRef(null);
+  const pageAreaRef = useRef(null);
+  const pageRef = useRef(page);
+  const onPageRef = useRef(onPage);
+  const [pageArea, setPageArea] = useState(null);
+  const [portrait, setPortrait] = useState(() => window.matchMedia('(max-width: 760px)').matches);
+  const portraitRef = useRef(portrait);
+  const bookPages = useMemo(() => pages.flatMap((item, index) => (
+    portrait
+      ? [<StoryFlipPage key={`${index}-single`} storyPage={item} pageNumber={index + 1} portrait />]
+      : [
+        <StoryFlipPage key={`${index}-left`} storyPage={item} pageNumber={index + 1} side="left" />,
+        <StoryFlipPage key={`${index}-right`} storyPage={item} pageNumber={index + 1} side="right" />,
+      ]
+  )), [pages, portrait]);
   const scheduleHeaderHide = useCallback(() => {
     clearTimeout(hideTimer.current);
     hideTimer.current = setTimeout(() => {
@@ -47,12 +59,28 @@ function StoryReader({ title, pages, page, onPage, onClose, closeLabel = '돌아
     scheduleHeaderHide();
   }, [scheduleHeaderHide]);
   const showPage = useCallback((next) => {
+    const target = Math.min(pages.length, Math.max(1, next));
+    if (target === page) return;
     setClosedGuidePage(null);
     setIsHintOpen(false);
-    onPage(Math.min(pages.length, Math.max(1, next)));
-  }, [onPage, pages.length]);
-  const turn = usePageTurn(page, pages.map((item) => item.imageUrl));
+    const book = bookRef.current?.pageFlip();
+    if (book) book.flip(pageIndexFor(target, portrait));
+    else onPage(target);
+  }, [onPage, page, pages.length, portrait]);
+  const handleFlip = useCallback((event) => {
+    const next = Math.floor(event.data / (portraitRef.current ? 1 : 2)) + 1;
+    if (next === pageRef.current) return;
+    setClosedGuidePage(null);
+    setIsHintOpen(false);
+    onPageRef.current(next);
+  }, []);
   const pageGuide = guide && previewMode ? guideFor(guide, page, pages.length) : null;
+
+  useEffect(() => {
+    pageRef.current = page;
+    onPageRef.current = onPage;
+    portraitRef.current = portrait;
+  }, [page, onPage, portrait]);
   const prompt = guide?.prompts?.find((item) => item.afterPage === page);
   const hasGuideContent = Boolean(
     prompt?.sceneNote?.trim() || prompt?.question?.trim() || prompt?.parentHint?.trim()
@@ -66,6 +94,34 @@ function StoryReader({ title, pages, page, onPage, onClose, closeLabel = '돌아
     scheduleHeaderHide();
     return () => clearTimeout(hideTimer.current);
   }, [previewMode, scheduleHeaderHide]);
+
+  useEffect(() => {
+    const area = pageAreaRef.current;
+    if (!area) return undefined;
+    const measure = () => {
+      const { width, height } = area.getBoundingClientRect();
+      setPageArea((old) => old?.width === Math.round(width) && old?.height === Math.round(height)
+        ? old : { width: Math.round(width), height: Math.round(height) });
+    };
+    const observer = new ResizeObserver(measure);
+    observer.observe(area);
+    measure();
+    return () => observer.disconnect();
+  }, []);
+
+  useEffect(() => {
+    const query = window.matchMedia('(max-width: 760px)');
+    const update = () => setPortrait(query.matches);
+    query.addEventListener('change', update);
+    return () => query.removeEventListener('change', update);
+  }, []);
+
+  useEffect(() => {
+    const book = bookRef.current?.pageFlip();
+    if (book && Math.floor(book.getCurrentPageIndex() / (portrait ? 1 : 2)) + 1 !== page) {
+      book.turnToPage(pageIndexFor(page, portrait));
+    }
+  }, [page, portrait, pageArea]);
 
   useEffect(() => {
     const handleKeys = (event) => {
@@ -92,18 +148,11 @@ function StoryReader({ title, pages, page, onPage, onClose, closeLabel = '돌아
 
   if (!current) return null;
 
-  const lines = current.text.split('\n').filter(Boolean);
   const isHeaderHidden = !previewMode && !isHeaderShown;
 
   // 쪽 넘기기 같은 버튼을 뺀 화면 어디든 누르면 상단바가 다시 나와요.
   const handleScreenClick = (event) => {
     if (!previewMode && !event.target.closest('button')) revealHeader();
-  };
-
-  const handlePageClick = (event) => {
-    if (window.getSelection()?.toString()) return;
-    const { left, width } = event.currentTarget.getBoundingClientRect();
-    showPage(page + (event.clientX < left + width / 2 ? -1 : 1));
   };
 
   return (
@@ -136,18 +185,27 @@ function StoryReader({ title, pages, page, onPage, onClose, closeLabel = '돌아
         <div className={styles.readerBook}>
           <img className={styles.readerFrame} src={previewMode ? previewFrame : readerFrame} alt="" />
           <div className={styles.readerPage}>
-            <div className={styles.readerPageContent} onClick={handlePageClick}>
-              <SafeImage
-                src={current.imageUrl}
-                alt={`${page}쪽 동화 삽화`}
-                fallback={<p role="img" aria-label="그림 없음">그림을 아직 준비하지 못했어요.</p>}
-              />
-              {current.textBlocks == null ? (
-                <div className={styles.readerCopy} data-position={textPositionOf(current)}>
-                  {lines.map((line, index) => <p key={`${page}-${index}`}><StoryText text={line} /></p>)}
-                </div>
-              ) : <StoryTextBlocks blocks={current.textBlocks} />}
-              <PageTurnOverlay turn={turn} />
+            <div className={styles.flipHost} ref={pageAreaRef}>
+              {pageArea?.width > 0 && pageArea?.height > 0 && (
+                <HTMLFlipBook
+                  key={portrait ? 'portrait' : 'spread'}
+                  ref={bookRef}
+                  className={styles.flipBook}
+                  width={portrait ? pageArea.width : Math.floor(pageArea.width / 2)}
+                  height={pageArea.height}
+                  size="fixed"
+                  startPage={pageIndexFor(page, portrait)}
+                  usePortrait={portrait}
+                  showCover={false}
+                  drawShadow
+                  maxShadowOpacity={0.35}
+                  flippingTime={720}
+                  mobileScrollSupport={false}
+                  onFlip={handleFlip}
+                >
+                  {bookPages}
+                </HTMLFlipBook>
+              )}
             </div>
           </div>
         </div>
