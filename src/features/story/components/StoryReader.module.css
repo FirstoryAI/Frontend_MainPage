@@ -326,11 +326,36 @@
   cursor: pointer;
 }
 .previewGuideToggle img { position: absolute; max-width: none; pointer-events: none; }
+.previewGuideToggleAttention::before,
+.previewGuideToggleAttention::after {
+  position: absolute;
+  inset: -.7cqw;
+  border-radius: 50%;
+  content: '';
+  pointer-events: none;
+}
+.previewGuideToggleAttention::before {
+  border: 2px solid rgb(255 181 92 / 75%);
+  box-shadow: 0 0 1cqw .28cqw rgb(255 202 104 / 55%);
+  animation: readerGuideGlow 1.8s ease-in-out infinite;
+}
+.previewGuideToggleAttention::after {
+  background:
+    radial-gradient(circle at 10% 32%, #fff1a0 0 3px, transparent 4px),
+    radial-gradient(circle at 88% 14%, #ffd36b 0 4px, transparent 5px),
+    radial-gradient(circle at 84% 86%, #fff1a0 0 3px, transparent 4px);
+  animation: readerGuideSparkle 1.8s ease-in-out infinite;
+}
+@keyframes readerGuideGlow {
+  50% { opacity: .35; transform: scale(1.12); }
+}
+@keyframes readerGuideSparkle {
+  50% { opacity: .3; transform: rotate(12deg) scale(.9); }
+}
 .previewToggleBackground { top: -.3cqw; left: -.36cqw; width: 6cqw; height: 5.93cqw; }
 .previewToggleChevron { top: 2.22cqw; left: 1.88cqw; width: 1.56cqw; height: .87cqw; }
 .previewMascotBase { top: -.4cqw; left: -.47cqw; width: 6.22cqw; height: 6.15cqw; }
 .previewMascotFace { top: .56cqw; left: .44cqw; width: 4.46cqw; height: 4.65cqw; }
-.previewGuideDot { top: 0; left: 4.58cqw; width: .56cqw; height: .56cqw; }
 
 .previewHint {
   position: absolute;
@@ -434,6 +459,7 @@
 
 @media (prefers-reduced-motion: reduce) {
   .previewGuide, .previewGuideOpen, .previewHint, .previewHintOpen { transition: none; }
+  .previewGuideToggleAttention::before, .previewGuideToggleAttention::after { animation: none; }
   /* 움직이지 않고 서서히 나타나고 사라져요. */
   .readerBook, .readerArrow { transition: none; }
   .readerHeader, .reader[data-header-hidden='true'] .readerHeader { translate: none; }
@@ -480,7 +506,7 @@
   .previewToggleChevron { top: 32px; left: 27px; width: 22.5px; height: 12.5px; }
   .previewMascotBase { top: -5.8px; left: -6.8px; width: 89.6px; height: 88.6px; }
   .previewMascotFace { top: 8px; left: 6px; width: 64px; height: 67px; }
-  .previewGuideDot { left: 66px; width: 8px; height: 8px; }
+  .previewGuideToggleAttention::before, .previewGuideToggleAttention::after { inset: -10px; }
   .previewHint { position: fixed; top: auto; right: 16px; bottom: 111px; left: auto; width: min(280px, calc(100vw - 32px)); min-height: 72px; padding: 14px 20px; border-radius: 16px; font-size: 16px; }
   .previewHint::after { right: 25px; bottom: -11px; width: 16px; height: 12px; }
 }

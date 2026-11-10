@@ -13,7 +13,6 @@ import toggleBackground from '../../../assets/story-preview-guide/toggle-bg.svg'
 import toggleChevron from '../../../assets/story-preview-guide/toggle-chevron.svg';
 import mascotBase from '../../../assets/story-preview-guide/mascot-base.svg';
 import mascotFace from '../../../assets/story-preview-guide/mascot-face.png';
-import guideDot from '../../../assets/story-preview-guide/guide-dot.svg';
 import { guideFor, NO_GUIDE_MESSAGE } from '../guideContent';
 import { usePageTurn } from '../hooks/usePageTurn';
 import PageTurnOverlay from './PageTurnOverlay';
@@ -30,7 +29,7 @@ const HEADER_VISIBLE_MS = 2000;
 // pages: [{ pageNo, text, imageUrl, imageStatus }], page: 지금 쪽(1부터), children: 쪽 아래에 띄울 보조 영역
 function StoryReader({ title, pages, page, onPage, onClose, closeLabel = '돌아가기', children, guide, previewMode = false, className = '' }) {
   const current = pages[page - 1];
-  const [isGuideOpen, setIsGuideOpen] = useState(false);
+  const [closedGuidePage, setClosedGuidePage] = useState(null);
   const [isHintOpen, setIsHintOpen] = useState(false);
   // 아이와 읽기에서는 상단바가 잠깐 떠 있다가 사라지고, 화면을 누를 때마다 다시 나와요. 미리보기에서는 항상 떠 있어요.
   const [isHeaderShown, setIsHeaderShown] = useState(true);
@@ -48,7 +47,7 @@ function StoryReader({ title, pages, page, onPage, onClose, closeLabel = '돌아
     scheduleHeaderHide();
   }, [scheduleHeaderHide]);
   const showPage = useCallback((next) => {
-    setIsGuideOpen(false);
+    setClosedGuidePage(null);
     setIsHintOpen(false);
     onPage(Math.min(pages.length, Math.max(1, next)));
   }, [onPage, pages.length]);
@@ -60,6 +59,7 @@ function StoryReader({ title, pages, page, onPage, onClose, closeLabel = '돌아
     || (page === 1 && (guide?.beforeReading?.intent?.trim() || guide?.beforeReading?.tips?.some((tip) => tip?.trim())))
     || (page === pages.length && (guide?.afterReading?.bridgeQuestion?.trim() || guide?.afterReading?.ifUndecided?.trim())),
   );
+  const isGuideOpen = hasGuideContent && closedGuidePage !== page;
 
   useEffect(() => {
     if (previewMode) return undefined;
@@ -202,11 +202,11 @@ function StoryReader({ title, pages, page, onPage, onClose, closeLabel = '돌아
               id="reader-guide-hint" aria-hidden={!isHintOpen || hasGuideContent} inert={!isHintOpen || hasGuideContent}>
               {NO_GUIDE_MESSAGE}
             </aside>
-            <button className={styles.previewGuideToggle} type="button"
+            <button className={`${styles.previewGuideToggle} ${hasGuideContent && !isGuideOpen ? styles.previewGuideToggleAttention : ''}`} type="button"
               onClick={() => {
                 if (hasGuideContent) {
                   setIsHintOpen(false);
-                  setIsGuideOpen((open) => !open);
+                  setClosedGuidePage(isGuideOpen ? page : null);
                 } else if (guide) {
                   setIsHintOpen((open) => !open);
                 }
@@ -221,7 +221,6 @@ function StoryReader({ title, pages, page, onPage, onClose, closeLabel = '돌아
               </> : <>
                 <img className={styles.previewMascotBase} src={mascotBase} alt="" />
                 <img className={styles.previewMascotFace} src={mascotFace} alt="" />
-                {hasGuideContent && <img className={styles.previewGuideDot} src={guideDot} alt="" />}
               </>}
             </button>
           </>

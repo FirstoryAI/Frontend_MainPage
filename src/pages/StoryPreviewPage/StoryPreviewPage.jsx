@@ -5,7 +5,6 @@ import pageArrowActive from '../../assets/story-preview-guide/page-right.svg';
 import headerClose from '../../assets/remake/header-close.svg';
 import mascotBase from '../../assets/story-preview-guide/mascot-base.svg';
 import mascotFace from '../../assets/story-preview-guide/mascot-face.png';
-import guideDot from '../../assets/story-preview-guide/guide-dot.svg';
 import toggleBackground from '../../assets/story-preview-guide/toggle-bg.svg';
 import toggleChevron from '../../assets/story-preview-guide/toggle-chevron.svg';
 import guidePanelBackground from '../../assets/story-preview-guide/guide-panel.svg';
@@ -45,7 +44,7 @@ function StoryPreviewPage({ initialRemakeOpen = false }) {
   const [preview, setPreview] = useState(null);
   // 동화 줄거리(상세)와 대화 가이드예요. 가이드는 확정 전(REVIEWING)에도 받을 수 있어요.
   const [guide, setGuide] = useState(null);
-  const [isGuideOpen, setIsGuideOpen] = useState(false);
+  const [closedGuidePage, setClosedGuidePage] = useState(null);
   const [isHintOpen, setIsHintOpen] = useState(false);
   const [loadError, setLoadError] = useState('');
   const [currentPage, setCurrentPage] = useState(1);
@@ -156,7 +155,7 @@ function StoryPreviewPage({ initialRemakeOpen = false }) {
       const nextPreview = await setCurrentVersion(storyId, switchTarget.id);
       setPreview(nextPreview);
       setCurrentPage((page) => Math.min(page, nextPreview.pages.length));
-      setIsGuideOpen(false);
+      setClosedGuidePage(null);
       setIsHintOpen(false);
       // 대화 가이드도 버전마다 달라요.
       setGuide(await getGuide(storyId).catch(() => null));
@@ -168,7 +167,7 @@ function StoryPreviewPage({ initialRemakeOpen = false }) {
   };
 
   const showPage = (nextPage) => {
-    setIsGuideOpen(false);
+    setClosedGuidePage(null);
     setIsHintOpen(false);
     setCurrentPage(Math.min(pages.length, Math.max(1, nextPage)));
   };
@@ -182,6 +181,7 @@ function StoryPreviewPage({ initialRemakeOpen = false }) {
     || (currentPage === 1 && (guide?.beforeReading?.intent?.trim() || guide?.beforeReading?.tips?.some((tip) => tip?.trim())))
     || (currentPage === pages.length && (guide?.afterReading?.bridgeQuestion?.trim() || guide?.afterReading?.ifUndecided?.trim())),
   );
+  const isGuideOpen = hasGuideContent && closedGuidePage !== currentPage;
   const lines = page ? page.text.split('\n').filter(Boolean) : [];
 
   const renderHeader = () => (
@@ -316,12 +316,12 @@ function StoryPreviewPage({ initialRemakeOpen = false }) {
         </aside>
 
         <button
-          className={`${styles.guideToggle} ${isRemakeOpen ? styles.guideSuppressed : ''}`}
+          className={`${styles.guideToggle} ${hasGuideContent && !isGuideOpen ? styles.guideToggleAttention : ''} ${isRemakeOpen ? styles.guideSuppressed : ''}`}
           type="button"
           onClick={() => {
             if (hasGuideContent) {
               setIsHintOpen(false);
-              setIsGuideOpen((open) => !open);
+              setClosedGuidePage(isGuideOpen ? currentPage : null);
             } else if (guide) {
               setIsHintOpen((open) => !open);
             }
@@ -341,7 +341,6 @@ function StoryPreviewPage({ initialRemakeOpen = false }) {
             <>
               <img className={styles.mascotBase} src={mascotBase} alt="" />
               <img className={styles.mascotFace} src={mascotFace} alt="" />
-              {hasGuideContent && <img className={styles.guideDot} src={guideDot} alt="" />}
             </>
           )}
         </button>
