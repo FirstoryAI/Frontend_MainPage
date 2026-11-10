@@ -407,9 +407,34 @@
 }
 
 .guideToggle img { position: absolute; max-width: none; pointer-events: none; }
+.guideToggleAttention::before,
+.guideToggleAttention::after {
+  position: absolute;
+  inset: -10px;
+  border-radius: 50%;
+  content: '';
+  pointer-events: none;
+}
+.guideToggleAttention::before {
+  border: 2px solid rgb(255 181 92 / 75%);
+  box-shadow: 0 0 14px 4px rgb(255 202 104 / 55%);
+  animation: guideGlow 1.8s ease-in-out infinite;
+}
+.guideToggleAttention::after {
+  background:
+    radial-gradient(circle at 10% 32%, #fff1a0 0 3px, transparent 4px),
+    radial-gradient(circle at 88% 14%, #ffd36b 0 4px, transparent 5px),
+    radial-gradient(circle at 84% 86%, #fff1a0 0 3px, transparent 4px);
+  animation: guideSparkle 1.8s ease-in-out infinite;
+}
+@keyframes guideGlow {
+  50% { opacity: .35; transform: scale(1.12); }
+}
+@keyframes guideSparkle {
+  50% { opacity: .3; transform: rotate(12deg) scale(.9); }
+}
 .mascotBase { top: -5.8px; left: -6.8px; }
 .mascotFace { top: 8.03px; left: 6.38px; width: 64.288px; height: 66.968px; }
-.guideDot { top: 0; left: 66px; }
 .toggleBackground { top: -4.2px; left: -5.2px; }
 .toggleChevron { top: 32px; left: 27px; }
 
@@ -425,6 +450,8 @@
   .guidePanelOpen,
   .guideHint,
   .guideHintOpen { transition: none; }
+  .guideToggleAttention::before,
+  .guideToggleAttention::after { animation: none; }
 }
 
 .actions {
