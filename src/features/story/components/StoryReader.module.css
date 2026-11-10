@@ -152,20 +152,52 @@
   background: #fffcef;
 }
 
-.readerPageContent {
+.flipHost {
   position: relative;
   width: 100%;
   height: 100%;
   overflow: hidden;
-  container-type: inline-size;
-  cursor: pointer;
 }
 
-.readerPageContent > img {
+.flipBook {
+  position: relative;
+  margin: 0 auto;
+}
+
+.flipPage {
+  position: relative;
+  width: 100%;
+  height: 100%;
+  overflow: hidden;
+  background: #fffcef;
+  box-shadow: inset 0 0 12px rgb(93 66 36 / 12%);
+}
+
+.flipScene {
+  position: absolute;
+  top: 0;
+  left: 0;
+  width: 200%;
+  height: 100%;
+  overflow: hidden;
+  container-type: inline-size;
+}
+
+.flipSceneRight { left: -100%; }
+
+.flipScene > img {
   display: block;
   width: 100%;
   height: 100%;
   object-fit: cover;
+}
+
+.flipFallback {
+  display: grid;
+  width: 100%;
+  height: 100%;
+  margin: 0;
+  place-items: center;
 }
 
 /* 글 상자: 그림이 비워 둔 위(top) 또는 아래(bottom) 자리에 놓아요. */
@@ -477,11 +509,12 @@
   .readerBook { top: 17%; left: 5%; width: 90%; height: 76%; }
   .readerFrame { display: none; }
   .readerPage { inset: 0; width: 100%; height: 100%; padding: 10px; border-radius: 12px; }
-  .readerPageContent { display: flex; flex-direction: column; overflow-y: auto; border-radius: 6px; }
-  .readerPageContent > img { flex: 0 0 auto; width: 100%; height: auto; aspect-ratio: 956.5 / 541; object-fit: cover; }
+  .flipHost { border-radius: 6px; }
+  .flipScene { display: flex; flex-direction: column; width: 100%; overflow-y: auto; }
+  .flipScene > img { flex: 0 0 auto; width: 100%; height: auto; aspect-ratio: 956.5 / 541; object-fit: cover; }
+  .flipFallback { flex: 1 0 100px; }
   .readerCopy { position: relative; inset: auto; flex: 0 0 auto; padding: 12px 10px; color: #4a4a4a; font-size: clamp(14px, 3.8vw, 17px); text-align: left; background: transparent; border-radius: 0; white-space: pre-line; }
   .readerCopy p { margin-bottom: 2px; }
-  .readerPageContent > p[role='img'] { flex: 1 0 100px; display: grid; margin: 0; place-items: center; }
   .readerArrow { top: 52.6%; width: 60px; height: 61.54px; transform: translateY(-50%) scale(.7); }
   .readerArrow img { width: 60px; height: 61.5373px; }
   .readerArrowLeft { left: -2px; transform-origin: left center; }
