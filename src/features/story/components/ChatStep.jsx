@@ -49,7 +49,10 @@ function ChatStep({
   const [choices, setChoices] = useState(initialChoices);
   const [draft, setDraft] = useState('');
   const [busy, setBusy] = useState(false);
-  const endRef = useRef(null);
+  const messagesRef = useRef(null);
+  const inputRef = useRef(null);
+  const hasScrolled = useRef(false);
+  const restoreInputFocus = useRef(false);
   // 이전 대화를 이어받으면 말풍선 id가 겹치지 않게 그 개수부터 세요.
   const counter = useRef(initialMessages?.length ?? 0);
   const mounted = useRef(true);
@@ -66,10 +69,22 @@ function ChatStep({
   }, []);
 
   useEffect(() => {
-    if (counter.current > 0) {
-      endRef.current?.scrollIntoView({ block: 'end' });
+    const list = messagesRef.current;
+    if (!list) return;
+    const reduceMotion = window.matchMedia('(prefers-reduced-motion: reduce)').matches;
+    list.scrollTo({
+      top: list.scrollHeight,
+      behavior: hasScrolled.current && !reduceMotion ? 'smooth' : 'auto',
+    });
+    hasScrolled.current = true;
+  }, [messages, busy, choices]);
+
+  useEffect(() => {
+    if (!busy && restoreInputFocus.current && !readOnly) {
+      inputRef.current?.focus({ preventScroll: true });
+      restoreInputFocus.current = false;
     }
-  }, [messages]);
+  }, [busy, readOnly]);
 
   const addMessage = (from, text) => {
     counter.current += 1;
@@ -102,6 +117,7 @@ function ChatStep({
     const trimmed = text.trim();
     if (!trimmed || busy) return;
 
+    restoreInputFocus.current = document.activeElement === inputRef.current;
     addMessage('user', trimmed);
     setDraft('');
     setChoices([]);
@@ -144,7 +160,7 @@ function ChatStep({
     <div className={styles.step}>
       <h1 className={styles.srOnly}>AI와 이야기 나누기</h1>
 
-      <ol className={styles.messages} aria-live="polite" aria-busy={busy}>
+      <ol className={styles.messages} ref={messagesRef} aria-live="polite" aria-busy={busy}>
         {messages.map((message) => (
           <li
             className={`${styles.row} ${message.from === 'user' ? styles.userRow : ''}`}
@@ -169,15 +185,14 @@ function ChatStep({
             <span className={styles.avatarFrame}>
               <img className={styles.avatar} src={avatar} alt="" />
             </span>
-            <div className={`${styles.bubble} ${styles.aiBubble} ${styles.skeletonBubble}`} role="status" aria-label="AI 답변을 불러오는 중">
-              <span className={styles.skeletonLine} />
-              <span className={styles.skeletonLine} />
-              <span className={styles.skeletonLine} />
+            <div className={`${styles.bubble} ${styles.aiBubble} ${styles.typingBubble}`} role="status" aria-label="AI 답변을 불러오는 중">
+              <span className={styles.typingDot} aria-hidden="true" />
+              <span className={styles.typingDot} aria-hidden="true" />
+              <span className={styles.typingDot} aria-hidden="true" />
             </div>
           </li>
         )}
       </ol>
-      <div ref={endRef} />
 
       {readOnly ? (
         <div className={`${styles.composer} ${styles.continue}`}>
@@ -205,6 +220,7 @@ function ChatStep({
 
         <form className={styles.inputBar} onSubmit={handleSubmit}>
           <input
+            ref={inputRef}
             className={styles.input}
             type="text"
             name="reply"
