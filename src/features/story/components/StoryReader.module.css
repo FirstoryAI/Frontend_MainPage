@@ -499,14 +499,14 @@
   .readerBook { top: 17%; left: 5%; width: 90%; height: 76%; }
   .readerFrame { display: none; }
   .readerPage { inset: 0; width: 100%; height: 100%; padding: 10px; border-radius: 12px; }
-  .flipHost { border-radius: 6px; }
-  .flipScene { display: flex; flex-direction: column; width: 100%; overflow-y: auto; }
-  .flipScene > img { flex: 0 0 auto; width: 100%; height: auto; aspect-ratio: 956.5 / 541; object-fit: cover; }
-  .flipFallback { flex: 1 0 100px; }
-  .readerCopy { position: relative; inset: auto; flex: 0 0 auto; padding: 12px 10px; color: #4a4a4a; font-size: clamp(14px, 3.8vw, 17px); text-align: left; background: transparent; border-radius: 0; white-space: pre-line; }
-  .readerCopy p { margin-bottom: 2px; }
+  .reader .flipHost { border-radius: 6px; }
+  .reader .flipScene { display: flex; flex-direction: column; width: 100%; overflow-y: auto; }
+  .reader .flipScene > img { flex: 0 0 auto; width: 100%; height: auto; aspect-ratio: 956.5 / 541; object-fit: cover; }
+  .reader .flipFallback { flex: 1 0 100px; }
+  .reader .readerCopy { position: relative; inset: auto; flex: 0 0 auto; padding: 12px 10px; color: #4a4a4a; font-size: clamp(14px, 3.8vw, 17px); text-align: left; background: transparent; border-radius: 0; white-space: pre-line; }
+  .reader .readerCopy p { margin-bottom: 2px; }
   /* 휴대폰에서는 글이 그림 아래에 이어져서, 위·아래 자리 값으로 밀리지 않게 해요. */
-  .readerCopy[data-position] { top: auto; bottom: auto; }
+  .reader .readerCopy[data-position] { top: auto; bottom: auto; }
   .readerArrow { top: 52.6%; width: 60px; height: 61.54px; transform: translateY(-50%) scale(.7); }
   .readerArrow img { width: 60px; height: 61.5373px; }
   .readerArrowLeft { left: -2px; transform-origin: left center; }
@@ -561,13 +561,14 @@
 
 .reader:not(.previewReader) .flipHost { border-radius: 0; }
 
-/* 쪽 바탕색이 그림 가장자리(소수점 픽셀)에 비쳐 가운데에 밝은 세로줄이 생기지 않게 바탕을 비워요. */
-.reader:not(.previewReader) .flipPage {
+/* seamless: 쪽 바탕색이 그림 가장자리(소수점 픽셀)에 비쳐 가운데에 밝은 세로줄이 생기지 않게 바탕을 비워요.
+   뒤에는 지금 쪽 그림이 깔려 있어요. (StoryFlipBook) */
+.flipHost[data-seamless] .flipPage {
   background: transparent;
   box-shadow: none;
 }
 
-.reader:not(.previewReader) .flipFallback { background: #fffcef; }
+.flipHost[data-seamless] .flipFallback { background: #fffcef; }
 
 @media (min-width: 761px) {
   .reader:not(.previewReader) .readerArrow { top: calc(50% - 2.137cqw); }

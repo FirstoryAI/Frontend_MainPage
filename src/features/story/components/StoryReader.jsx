@@ -1,5 +1,4 @@
-import { useCallback, useEffect, useMemo, useRef, useState } from 'react';
-import HTMLFlipBook from 'react-pageflip';
+import { useCallback, useEffect, useRef, useState } from 'react';
 import readerFrame from '../../../assets/story-reader/frame.svg';
 import previewFrame from '../../../assets/story-reader/preview-frame.svg';
 import readerArrowLeft from '../../../assets/story-reader/arrow-left.svg';
@@ -16,14 +15,13 @@ import mascotBase from '../../../assets/story-preview-guide/mascot-base.svg';
 import mascotFace from '../../../assets/story-preview-guide/mascot-face.png';
 import { guideFor, NO_GUIDE_MESSAGE } from '../guideContent';
 import { useFlipDrag } from '../hooks/useFlipDrag';
-import StoryFlipPage from './StoryFlipPage';
+import StoryFlipBook from './StoryFlipBook';
 import styles from './StoryReader.module.css';
 
 // 이만큼 안 움직이고 떼면 화면을 한 번 누른 것으로 봐요. (넘기려고 끌거나 쓸어 넘긴 것과 구분해요)
 const TAP_MOVE_PX = 10;
 // 아이와 읽기에서 상단바가 내려와 있는 시간이에요. 그 전에 다시 누르면 바로 올라가요.
 const HEADER_VISIBLE_MS = 2000;
-const pageIndexFor = (number, portrait) => (number - 1) * (portrait ? 1 : 2);
 
 // 동화를 화면 가득 크게 읽는 화면이에요. 미리보기(확정 전)와 아이와 읽기(확정 후)가 함께 써요.
 // pages: [{ pageNo, text, imageUrl, imageStatus }], page: 지금 쪽(1부터), children: 쪽 아래에 띄울 보조 영역
@@ -39,52 +37,27 @@ function StoryReader({ title, pages, page, onPage, onClose, closeLabel = '돌아
   const headerRef = useRef(null);
   const tapStart = useRef(null);
   const bookRef = useRef(null);
-  const pageAreaRef = useRef(null);
-  const pageRef = useRef(page);
-  const onPageRef = useRef(onPage);
-  const [pageArea, setPageArea] = useState(null);
   const [portrait, setPortrait] = useState(() => window.matchMedia('(max-width: 760px)').matches);
-  const portraitRef = useRef(portrait);
-  const bookPages = useMemo(() => pages.flatMap((item, index) => (
-    portrait
-      ? [<StoryFlipPage key={`${index}-single`} storyPage={item} pageNumber={index + 1} portrait />]
-      : [
-        <StoryFlipPage key={`${index}-left`} storyPage={item} pageNumber={index + 1} side="left" />,
-        <StoryFlipPage key={`${index}-right`} storyPage={item} pageNumber={index + 1} side="right" />,
-      ]
-  )), [pages, portrait]);
+  // 쪽이 바뀌면 책이 그 쪽으로 책장을 넘겨요.
   const showPage = useCallback((next) => {
     const target = Math.min(pages.length, Math.max(1, next));
     if (target === page) return;
     setClosedGuidePage(null);
     setIsHintOpen(false);
-    const book = bookRef.current?.pageFlip();
-    if (book) book.flip(pageIndexFor(target, portrait));
-    else onPage(target);
-  }, [onPage, page, pages.length, portrait]);
-  const handleFlip = useCallback((event) => {
-    const next = Math.floor(event.data / (portraitRef.current ? 1 : 2)) + 1;
-    if (next === pageRef.current) return;
+    onPage(target);
+  }, [onPage, page, pages.length]);
+  // 손으로 끌어 넘긴 뒤 책이 알려준 쪽이에요.
+  const handleBookPage = useCallback((next) => {
     setClosedGuidePage(null);
     setIsHintOpen(false);
-    onPageRef.current(next);
-  }, []);
+    onPage(next);
+  }, [onPage]);
   const pageGuide = guide && previewMode ? guideFor(guide, page, pages.length) : null;
-  // 책장은 누른 채 끌어야 넘어가요. 미리보기에서는 쪽을 누르면 누른 쪽으로 넘어가요.
+  // 아이와 읽기에서는 책장을 누른 채 끌어서도 넘겨요. 미리보기는 아래 화살표로만 넘어가요.
   const flipDrag = useFlipDrag(bookRef, {
     canPrev: page > 1,
     canNext: page < pages.length,
-    onTap: previewMode ? (event) => {
-      const box = pageAreaRef.current?.getBoundingClientRect();
-      if (box) showPage(event.clientX < box.left + box.width / 2 ? page - 1 : page + 1);
-    } : undefined,
   });
-
-  useEffect(() => {
-    pageRef.current = page;
-    onPageRef.current = onPage;
-    portraitRef.current = portrait;
-  }, [page, onPage, portrait]);
   const prompt = guide?.prompts?.find((item) => item.afterPage === page);
   const hasGuideContent = Boolean(
     prompt?.sceneNote?.trim() || prompt?.question?.trim() || prompt?.parentHint?.trim()
@@ -94,32 +67,11 @@ function StoryReader({ title, pages, page, onPage, onClose, closeLabel = '돌아
   const isGuideOpen = hasGuideContent && closedGuidePage !== page;
 
   useEffect(() => {
-    const area = pageAreaRef.current;
-    if (!area) return undefined;
-    const measure = () => {
-      const { width, height } = area.getBoundingClientRect();
-      setPageArea((old) => old?.width === Math.round(width) && old?.height === Math.round(height)
-        ? old : { width: Math.round(width), height: Math.round(height) });
-    };
-    const observer = new ResizeObserver(measure);
-    observer.observe(area);
-    measure();
-    return () => observer.disconnect();
-  }, []);
-
-  useEffect(() => {
     const query = window.matchMedia('(max-width: 760px)');
     const update = () => setPortrait(query.matches);
     query.addEventListener('change', update);
     return () => query.removeEventListener('change', update);
   }, []);
-
-  useEffect(() => {
-    const book = bookRef.current?.pageFlip();
-    if (book && Math.floor(book.getCurrentPageIndex() / (portrait ? 1 : 2)) + 1 !== page) {
-      book.turnToPage(pageIndexFor(page, portrait));
-    }
-  }, [page, portrait, pageArea]);
 
   useEffect(() => {
     const handleKeys = (event) => {
@@ -212,36 +164,15 @@ function StoryReader({ title, pages, page, onPage, onClose, closeLabel = '돌아
         <div className={styles.readerBook}>
           <img className={styles.readerFrame} src={previewMode ? previewFrame : readerFrame} alt="" />
           <div className={styles.readerPage}>
-            <div
-              className={styles.flipHost}
-              ref={pageAreaRef}
-              {...flipDrag}
-              // 펼친 두 쪽이 만나는 경계(소수점 픽셀)에 바탕이 비쳐 세로줄처럼 보이지 않게, 같은 그림을 뒤에 깔아요.
-              style={!portrait && current.imageUrl ? { backgroundImage: `url("${current.imageUrl}")` } : undefined}
-            >
-              {pageArea?.width > 0 && pageArea?.height > 0 && (
-                <HTMLFlipBook
-                  key={portrait ? 'portrait' : 'spread'}
-                  ref={bookRef}
-                  className={styles.flipBook}
-                  // 화면 폭이 홀수여도 두 쪽 사이에 틈(밝은 세로줄)이 생기지 않게 올림해요. 넘친 1px은 가려져요.
-                  width={portrait ? pageArea.width : Math.ceil(pageArea.width / 2)}
-                  height={pageArea.height}
-                  size="fixed"
-                  startPage={pageIndexFor(page, portrait)}
-                  usePortrait={portrait}
-                  showCover={false}
-                  drawShadow
-                  maxShadowOpacity={0.35}
-                  flippingTime={720}
-                  mobileScrollSupport={false}
-                  useMouseEvents={false}
-                  onFlip={handleFlip}
-                >
-                  {bookPages}
-                </HTMLFlipBook>
-              )}
-            </div>
+            <StoryFlipBook
+              ref={bookRef}
+              pages={pages}
+              page={page}
+              onPage={handleBookPage}
+              portrait={portrait}
+              seamless={!previewMode}
+              {...(previewMode ? {} : flipDrag)}
+            />
           </div>
         </div>
 
