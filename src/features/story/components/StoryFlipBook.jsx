@@ -58,8 +58,11 @@ const StoryFlipBook = forwardRef(function StoryFlipBook({
   useEffect(() => {
     const host = hostRef.current;
     if (!host) return undefined;
+    // 화면에 맞춰 장면을 줄인 미리보기(transform: scale)에서도 줄이기 전 크기로 재요.
+    // (줄어든 크기로 재면 책이 한 번 더 작아져 뒤에 깐 그림과 이중으로 보여요)
     const measure = () => {
-      const { width, height } = host.getBoundingClientRect();
+      const width = host.offsetWidth;
+      const height = host.offsetHeight;
       setArea((old) => (old?.width === Math.round(width) && old?.height === Math.round(height)
         ? old : { width: Math.round(width), height: Math.round(height) }));
     };
