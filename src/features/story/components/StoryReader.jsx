@@ -15,6 +15,7 @@ import toggleChevron from '../../../assets/story-preview-guide/toggle-chevron.sv
 import mascotBase from '../../../assets/story-preview-guide/mascot-base.svg';
 import mascotFace from '../../../assets/story-preview-guide/mascot-face.png';
 import { guideFor, NO_GUIDE_MESSAGE } from '../guideContent';
+import { useFlipDrag } from '../hooks/useFlipDrag';
 import StoryFlipPage from './StoryFlipPage';
 import styles from './StoryReader.module.css';
 
@@ -64,6 +65,13 @@ function StoryReader({ title, pages, page, onPage, onClose, closeLabel = '돌아
     onPageRef.current(next);
   }, []);
   const pageGuide = guide && previewMode ? guideFor(guide, page, pages.length) : null;
+  // 책장은 누른 채 끌어야 넘어가요. 미리보기에서는 쪽을 누르면 누른 쪽으로 넘어가요.
+  const flipDrag = useFlipDrag(bookRef, {
+    onTap: previewMode ? (event) => {
+      const box = pageAreaRef.current?.getBoundingClientRect();
+      if (box) showPage(event.clientX < box.left + box.width / 2 ? page - 1 : page + 1);
+    } : undefined,
+  });
 
   useEffect(() => {
     pageRef.current = page;
@@ -181,6 +189,7 @@ function StoryReader({ title, pages, page, onPage, onClose, closeLabel = '돌아
             <div
               className={styles.flipHost}
               ref={pageAreaRef}
+              {...flipDrag}
               // 펼친 두 쪽이 만나는 경계(소수점 픽셀)에 바탕이 비쳐 세로줄처럼 보이지 않게, 같은 그림을 뒤에 깔아요.
               style={!portrait && current.imageUrl ? { backgroundImage: `url("${current.imageUrl}")` } : undefined}
             >
@@ -200,7 +209,7 @@ function StoryReader({ title, pages, page, onPage, onClose, closeLabel = '돌아
                   maxShadowOpacity={0.35}
                   flippingTime={720}
                   mobileScrollSupport={false}
-                  disableFlipByClick={!previewMode}
+                  useMouseEvents={false}
                   onFlip={handleFlip}
                 >
                   {bookPages}
