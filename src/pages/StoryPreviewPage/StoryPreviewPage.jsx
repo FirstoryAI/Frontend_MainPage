@@ -1,4 +1,4 @@
-import { useEffect, useState } from 'react';
+import { useEffect, useMemo, useState } from 'react';
 import { Link, useLocation, useNavigate, useParams } from 'react-router-dom';
 import pageArrowInactive from '../../assets/story-preview-guide/page-left.svg';
 import pageArrowActive from '../../assets/story-preview-guide/page-right.svg';
@@ -17,12 +17,8 @@ import { useStoryGeneration } from '../../features/story/generation/useStoryGene
 import RemakeDialog from '../../features/story/components/RemakeDialog';
 import StoryReader from '../../features/story/components/StoryReader';
 import SafeImage from '../../features/story/components/SafeImage';
-import StoryText from '../../features/story/components/StoryText';
-import StoryTextBlocks from '../../features/story/components/StoryTextBlocks';
-import PageTurnOverlay from '../../features/story/components/PageTurnOverlay';
-import { usePageTurn } from '../../features/story/hooks/usePageTurn';
+import StoryFlipBook from '../../features/story/components/StoryFlipBook';
 import { useImageQueue } from '../../features/story/hooks/useImageQueue';
-import { textPositionOf } from '../../features/story/textPosition';
 import { guideFor, NO_GUIDE_MESSAGE } from '../../features/story/guideContent';
 import { approveStory, getGuide, getPreview, getVersions, regenerateStory, setCurrentVersion } from '../../services/storiesApi';
 import ErrorText from '../../components/ui/ErrorText';
@@ -33,6 +29,14 @@ const REMAKE_SCOPES = { all: 'CHARACTER_STORY', text: 'TEXT', image: 'IMAGES' };
 
 // 만든 동화를 확정하기 전에 쪽마다 넘겨 보는 화면이에요. (GET /api/stories/{id}/preview)
 // initialRemakeOpen: '다시 만들기' 팝업을 연 채로 시작해요. 이때 팝업을 닫으면 서재로 돌아가요.
+// 그림이 안 보일 때 보여줄 안내예요. (받는 중 / 만들지 못함 / 준비 중 / 받지 못함)
+function imageNoteFor(item, imageSources) {
+  if (item.imageStatus === 'FAILED') return '이 쪽의 그림을 만들지 못했어요.';
+  if (item.imageUrl && !imageSources.has(item.imageUrl)) return '그림을 불러오는 중이에요.';
+  if (item.imageStatus === 'PENDING') return '그림을 준비하는 중이에요.';
+  return '그림을 불러오지 못했어요.';
+}
+
 function StoryPreviewPage({ initialRemakeOpen = false }) {
   const location = useLocation();
   const navigate = useNavigate();
@@ -78,7 +82,7 @@ function StoryPreviewPage({ initialRemakeOpen = false }) {
     return () => window.clearTimeout(timer);
   }, [isHintOpen]);
 
-  const pages = preview?.pages ?? [];
+  const pages = useMemo(() => preview?.pages ?? [], [preview]);
   const title = preview?.version?.title ?? story.title ?? '';
   // 다시 만들기 횟수는 서버가 알려주는 값(regenerateRemaining)을 그대로 써요.
   const remaining = preview?.regenerateRemaining ?? 0;
@@ -92,14 +96,12 @@ function StoryPreviewPage({ initialRemakeOpen = false }) {
   // 그림 10장(수십 MB)을 한 번에 받지 않고, 지금 쪽에서 가까운 순서로 한 장씩 받아 메모리에 담아 두고 큰 그림·썸네일·크게 보기가 함께 써요.
   const imageSources = useImageQueue(pages.map((item) => item.imageUrl), currentPage);
   const sourceOf = (item) => imageSources.get(item.imageUrl);
-  // 그림이 안 보일 때 보여줄 안내예요. (받는 중 / 만들지 못함 / 준비 중 / 받지 못함)
-  const imageNote = (item) => {
-    if (item.imageStatus === 'FAILED') return '이 쪽의 그림을 만들지 못했어요.';
-    if (item.imageUrl && !imageSources.has(item.imageUrl)) return '그림을 불러오는 중이에요.';
-    if (item.imageStatus === 'PENDING') return '그림을 준비하는 중이에요.';
-    return '그림을 불러오지 못했어요.';
-  };
-  const turn = usePageTurn(currentPage, pages.map((item) => sourceOf(item) ?? null));
+  // 책장 넘김 효과가 있는 책에 넣을 쪽이에요. 받아 둔 그림과, 그림이 없을 때의 안내를 함께 담아요.
+  // 그림을 새로 받았을 때만 다시 만들어요. (매번 새로 만들면 책이 쪽을 처음부터 다시 그려요)
+  const bookPages = useMemo(
+    () => pages.map((item) => ({ ...item, imageUrl: imageSources.get(item.imageUrl) ?? '', imageNote: imageNoteFor(item, imageSources) })),
+    [pages, imageSources],
+  );
 
   const closeRemake = () => {
     if (initialRemakeOpen) {
@@ -172,7 +174,6 @@ function StoryPreviewPage({ initialRemakeOpen = false }) {
     setCurrentPage(Math.min(pages.length, Math.max(1, nextPage)));
   };
 
-  const page = pages[currentPage - 1];
   // 실제 가이드 문구가 있는 쪽에서만 안내 표시를 보여줘요.
   const pageGuide = guide ? guideFor(guide, currentPage, pages.length) : null;
   const guidePrompt = guide?.prompts?.find((item) => item.afterPage === currentPage);
@@ -182,7 +183,6 @@ function StoryPreviewPage({ initialRemakeOpen = false }) {
     || (currentPage === pages.length && (guide?.afterReading?.bridgeQuestion?.trim() || guide?.afterReading?.ifUndecided?.trim())),
   );
   const isGuideOpen = hasGuideContent && closedGuidePage !== currentPage;
-  const lines = page ? page.text.split('\n').filter(Boolean) : [];
 
   const renderHeader = () => (
     <header className={styles.header}>
@@ -258,21 +258,14 @@ function StoryPreviewPage({ initialRemakeOpen = false }) {
               }
             }}
           >
-            <SafeImage
-              src={sourceOf(page)}
-              alt={`${currentPage}쪽 동화 삽화`}
-              fallback={(
-                <p className={styles.noImageText}>
-                  {imageNote(page)}
-                </p>
-              )}
+            {/* 아래 화살표나 쪽 목록으로 쪽을 바꾸면 책장이 넘어가요. 그림을 끌거나 눌러서는 넘어가지 않아요. (누르면 크게 보기) */}
+            <StoryFlipBook
+              pages={bookPages}
+              page={currentPage}
+              seamless
+              copyClassName={styles.pageCopy}
+              fallbackClassName={styles.noImageText}
             />
-            {page.textBlocks == null ? (
-              <div className={styles.pageCopy} data-position={textPositionOf(page)}>
-                {lines.map((line) => <p key={line}><StoryText text={line} /></p>)}
-              </div>
-            ) : <StoryTextBlocks blocks={page.textBlocks} />}
-            <PageTurnOverlay turn={turn} />
           </div>
           <div className={styles.pagination}>
             <button type="button" aria-label="이전 쪽" onClick={() => showPage(currentPage - 1)} disabled={currentPage === 1}>
@@ -370,7 +363,7 @@ function StoryPreviewPage({ initialRemakeOpen = false }) {
       {isReaderOpen && (
         <StoryReader
           title={title}
-          pages={pages.map((item) => ({ ...item, imageUrl: sourceOf(item) ?? '' }))}
+          pages={bookPages}
           page={currentPage}
           onPage={showPage}
           onClose={() => setIsReaderOpen(false)}
