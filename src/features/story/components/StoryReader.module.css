@@ -8,11 +8,6 @@
   background: var(--color-page);
 }
 
-/* 상단바가 사라지면 책과 화살표가 이만큼 올라가 화면 가운데에 와요. (디자인 1440 기준 46px) */
-.reader {
-  --reader-header-shift: 3.194cqw;
-}
-
 .readerCanvas {
   position: relative;
   width: min(100vw, 150vh);
@@ -43,16 +38,6 @@
     translate 0.45s ease,
     opacity 0.35s ease,
     visibility 0s linear 0.45s;
-}
-
-.readerBook,
-.readerArrow {
-  transition: translate 0.45s ease;
-}
-
-.reader[data-header-hidden='true'] .readerBook,
-.reader[data-header-hidden='true'] .readerArrow {
-  translate: 0 calc(-1 * var(--reader-header-shift));
 }
 
 .readerClose {
@@ -157,6 +142,8 @@
   width: 100%;
   height: 100%;
   overflow: hidden;
+  background-position: center;
+  background-size: cover;
 }
 
 .flipBook {
@@ -493,12 +480,10 @@
   .previewGuide, .previewGuideOpen, .previewHint, .previewHintOpen { transition: none; }
   .previewGuideToggleAttention::before, .previewGuideToggleAttention::after { animation: none; }
   /* 움직이지 않고 서서히 나타나고 사라져요. */
-  .readerBook, .readerArrow { transition: none; }
   .readerHeader, .reader[data-header-hidden='true'] .readerHeader { translate: none; }
 }
 
 @media (max-width: 760px) {
-  .reader { --reader-header-shift: 5vh; }
   .readerCanvas { width: 100vw; height: 100vh; aspect-ratio: auto; }
   .readerHeader { height: 76px; }
   .readerClose { top: 24px; left: 16px; width: 24px; height: 24px; }
@@ -515,6 +500,8 @@
   .flipFallback { flex: 1 0 100px; }
   .readerCopy { position: relative; inset: auto; flex: 0 0 auto; padding: 12px 10px; color: #4a4a4a; font-size: clamp(14px, 3.8vw, 17px); text-align: left; background: transparent; border-radius: 0; white-space: pre-line; }
   .readerCopy p { margin-bottom: 2px; }
+  /* 휴대폰에서는 글이 그림 아래에 이어져서, 위·아래 자리 값으로 밀리지 않게 해요. */
+  .readerCopy[data-position] { top: auto; bottom: auto; }
   .readerArrow { top: 52.6%; width: 60px; height: 61.54px; transform: translateY(-50%) scale(.7); }
   .readerArrow img { width: 60px; height: 61.5373px; }
   .readerArrowLeft { left: -2px; transform-origin: left center; }
@@ -542,4 +529,67 @@
   .previewGuideToggleAttention::before, .previewGuideToggleAttention::after { inset: -10px; }
   .previewHint { position: fixed; top: auto; right: 16px; bottom: 111px; left: auto; width: min(280px, calc(100vw - 32px)); min-height: 72px; padding: 14px 20px; border-radius: 16px; font-size: 16px; }
   .previewHint::after { right: 25px; bottom: -11px; width: 16px; height: 12px; }
+}
+
+/* 아이와 읽기: 액자 없이 그림이 화면을 가득 채우고, 상단바는 그림 위로 내려와요. */
+.reader:not(.previewReader) .readerCanvas {
+  width: 100%;
+  height: 100%;
+  aspect-ratio: auto;
+}
+
+.reader:not(.previewReader) .readerBook {
+  inset: 0;
+  width: 100%;
+  height: 100%;
+}
+
+.reader:not(.previewReader) .readerFrame { display: none; }
+
+.reader:not(.previewReader) .readerPage {
+  inset: 0;
+  width: 100%;
+  height: 100%;
+  padding: 0;
+  border-radius: 0;
+}
+
+.reader:not(.previewReader) .flipHost { border-radius: 0; }
+
+/* 쪽 바탕색이 그림 가장자리(소수점 픽셀)에 비쳐 가운데에 밝은 세로줄이 생기지 않게 바탕을 비워요. */
+.reader:not(.previewReader) .flipPage {
+  background: transparent;
+  box-shadow: none;
+}
+
+.reader:not(.previewReader) .flipFallback { background: #fffcef; }
+
+@media (min-width: 761px) {
+  .reader:not(.previewReader) .readerArrow { top: calc(50% - 2.137cqw); }
+
+  /* 아이와 읽기 상단바는 기본 상단바의 0.7배 크기예요. 양쪽 여백 위치는 그대로 두고, X와 제목 사이 간격도 0.7배로 줄여요. */
+  .reader:not(.previewReader) .readerHeader { height: calc(var(--header-height) * 0.7); }
+  .reader:not(.previewReader) .readerClose,
+  .reader:not(.previewReader) .readerClose img { width: 18.9px; height: 18.9px; }
+  .reader:not(.previewReader) .readerTitle {
+    left: calc(clamp(24px, 4.03vw, 58px) + (clamp(89px, 9.38vw, 135px) - clamp(24px, 4.03vw, 58px)) * 0.7);
+    font-size: clamp(11.2px, 1.458vw, 21px);
+  }
+  .reader:not(.previewReader) .readerProgress {
+    top: calc(50% + 2px);
+    gap: 0.679cqw;
+    width: min(318.5px, 22.4vw);
+    font-size: clamp(7.7px, 0.875cqw, 12.6px);
+  }
+  .reader:not(.previewReader) .readerProgressTrack { height: 0.63cqw; }
+}
+
+@media (max-width: 760px) {
+  .reader:not(.previewReader) .readerHeader { height: 53.2px; }
+  .reader:not(.previewReader) .readerClose { top: 16.8px; left: 16px; }
+  .reader:not(.previewReader) .readerClose,
+  .reader:not(.previewReader) .readerClose img { width: 16.8px; height: 16.8px; }
+  .reader:not(.previewReader) .readerTitle { top: 16.8px; left: 37.7px; font-size: 11.2px; }
+  .reader:not(.previewReader) .readerProgress { top: 21.7px; gap: 4.2px; width: 22.4%; font-size: 7.7px; }
+  .reader:not(.previewReader) .readerProgressTrack { height: 5.6px; }
 }
