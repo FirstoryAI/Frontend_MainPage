@@ -142,6 +142,10 @@
   width: 100%;
   height: 100%;
   overflow: hidden;
+  /* 옆으로 끄는 건 책장 넘기기에 쓰고, 위아래 스크롤만 브라우저에 맡겨요. */
+  touch-action: pan-y;
+  user-select: none;
+  -webkit-user-select: none;
   background-position: center;
   background-size: cover;
 }
@@ -174,6 +178,7 @@
 
 .flipScene > img {
   display: block;
+  -webkit-user-drag: none;
   width: 100%;
   height: 100%;
   object-fit: cover;
