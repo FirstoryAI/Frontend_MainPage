@@ -18,8 +18,8 @@ import { guideFor, NO_GUIDE_MESSAGE } from '../guideContent';
 import StoryFlipPage from './StoryFlipPage';
 import styles from './StoryReader.module.css';
 
-// 아이와 읽기에서 상단바가 떠 있는 시간이에요.
-const HEADER_VISIBLE_MS = 2000;
+// 이만큼 안 움직이고 떼면 화면을 한 번 누른 것으로 봐요. (넘기려고 끌거나 쓸어 넘긴 것과 구분해요)
+const TAP_MOVE_PX = 10;
 const pageIndexFor = (number, portrait) => (number - 1) * (portrait ? 1 : 2);
 
 // 동화를 화면 가득 크게 읽는 화면이에요. 미리보기(확정 전)와 아이와 읽기(확정 후)가 함께 써요.
@@ -28,10 +28,10 @@ function StoryReader({ title, pages, page, onPage, onClose, closeLabel = '돌아
   const current = pages[page - 1];
   const [closedGuidePage, setClosedGuidePage] = useState(null);
   const [isHintOpen, setIsHintOpen] = useState(false);
-  // 아이와 읽기에서는 상단바가 잠깐 떠 있다가 사라지고, 화면을 누를 때마다 다시 나와요. 미리보기에서는 항상 떠 있어요.
-  const [isHeaderShown, setIsHeaderShown] = useState(true);
-  const headerRef = useRef(null);
-  const hideTimer = useRef(null);
+  // 아이와 읽기에서는 그림이 화면을 가득 채우고, 화면을 한 번 누르면 상단바가 내려오고 다시 누르면 올라가요.
+  // 미리보기에서는 상단바가 항상 떠 있어요.
+  const [isHeaderShown, setIsHeaderShown] = useState(false);
+  const tapStart = useRef(null);
   const bookRef = useRef(null);
   const pageAreaRef = useRef(null);
   const pageRef = useRef(page);
@@ -47,17 +47,6 @@ function StoryReader({ title, pages, page, onPage, onClose, closeLabel = '돌아
         <StoryFlipPage key={`${index}-right`} storyPage={item} pageNumber={index + 1} side="right" />,
       ]
   )), [pages, portrait]);
-  const scheduleHeaderHide = useCallback(() => {
-    clearTimeout(hideTimer.current);
-    hideTimer.current = setTimeout(() => {
-      // 키보드로 닫기 버튼에 가 있는 동안에는 숨기지 않아요.
-      if (!headerRef.current?.contains(document.activeElement)) setIsHeaderShown(false);
-    }, HEADER_VISIBLE_MS);
-  }, []);
-  const revealHeader = useCallback(() => {
-    setIsHeaderShown(true);
-    scheduleHeaderHide();
-  }, [scheduleHeaderHide]);
   const showPage = useCallback((next) => {
     const target = Math.min(pages.length, Math.max(1, next));
     if (target === page) return;
@@ -90,12 +79,6 @@ function StoryReader({ title, pages, page, onPage, onClose, closeLabel = '돌아
   const isGuideOpen = hasGuideContent && closedGuidePage !== page;
 
   useEffect(() => {
-    if (previewMode) return undefined;
-    scheduleHeaderHide();
-    return () => clearTimeout(hideTimer.current);
-  }, [previewMode, scheduleHeaderHide]);
-
-  useEffect(() => {
     const area = pageAreaRef.current;
     if (!area) return undefined;
     const measure = () => {
@@ -125,7 +108,8 @@ function StoryReader({ title, pages, page, onPage, onClose, closeLabel = '돌아
 
   useEffect(() => {
     const handleKeys = (event) => {
-      if (event.key === 'Tab' && !previewMode) revealHeader();
+      // 키보드로 움직이면 닫기 버튼에 갈 수 있게 상단바를 내려요.
+      if (event.key === 'Tab' && !previewMode) setIsHeaderShown(true);
       if (event.key === 'Escape') onClose();
       if (event.key === 'ArrowLeft') showPage(page - 1);
       if (event.key === 'ArrowRight') showPage(page + 1);
@@ -138,7 +122,7 @@ function StoryReader({ title, pages, page, onPage, onClose, closeLabel = '돌아
       document.body.style.overflow = previousOverflow;
       window.removeEventListener('keydown', handleKeys);
     };
-  }, [onClose, page, pages.length, previewMode, revealHeader, showPage]);
+  }, [onClose, page, pages.length, previewMode, showPage]);
 
   useEffect(() => {
     if (!isHintOpen) return undefined;
@@ -150,25 +134,34 @@ function StoryReader({ title, pages, page, onPage, onClose, closeLabel = '돌아
 
   const isHeaderHidden = !previewMode && !isHeaderShown;
 
-  // 쪽 넘기기 같은 버튼을 뺀 화면 어디든 누르면 상단바가 다시 나와요.
-  const handleScreenClick = (event) => {
-    if (!previewMode && !event.target.closest('button')) revealHeader();
+  // 버튼을 뺀 화면 어디든 한 번 누르면 상단바가 내려오거나 올라가요.
+  // 책장 라이브러리가 터치를 막아 click이 오지 않아서, 누르고 뗀 위치로 직접 판단해요.
+  const handlePointerDown = (event) => {
+    tapStart.current = event.target.closest('button') ? null : { x: event.clientX, y: event.clientY };
+  };
+  const handlePointerUp = (event) => {
+    const start = tapStart.current;
+    tapStart.current = null;
+    if (previewMode || !start) return;
+    if (Math.hypot(event.clientX - start.x, event.clientY - start.y) > TAP_MOVE_PX) return;
+    // 책장 모서리를 눌러 넘기기 시작했으면 상단바는 그대로 둬요.
+    setTimeout(() => {
+      const state = bookRef.current?.pageFlip()?.getState();
+      if (!state || state === 'read') setIsHeaderShown((shown) => !shown);
+    }, 0);
   };
 
   return (
     <section
       className={`${styles.reader} ${previewMode ? styles.previewReader : ''} ${className}`}
       data-header-hidden={isHeaderHidden}
-      onClick={handleScreenClick}
+      onPointerDown={handlePointerDown}
+      onPointerUp={handlePointerUp}
       aria-label="동화 읽기"
       aria-modal="true"
       role="dialog"
     >
-      <header
-        className={styles.readerHeader}
-        ref={headerRef}
-        onBlur={previewMode ? undefined : revealHeader}
-      >
+      <header className={styles.readerHeader}>
         <button className={styles.readerClose} type="button" onClick={onClose} aria-label={closeLabel}>
           <img src={readerClose} alt="" />
         </button>
@@ -185,13 +178,19 @@ function StoryReader({ title, pages, page, onPage, onClose, closeLabel = '돌아
         <div className={styles.readerBook}>
           <img className={styles.readerFrame} src={previewMode ? previewFrame : readerFrame} alt="" />
           <div className={styles.readerPage}>
-            <div className={styles.flipHost} ref={pageAreaRef}>
+            <div
+              className={styles.flipHost}
+              ref={pageAreaRef}
+              // 펼친 두 쪽이 만나는 경계(소수점 픽셀)에 바탕이 비쳐 세로줄처럼 보이지 않게, 같은 그림을 뒤에 깔아요.
+              style={!portrait && current.imageUrl ? { backgroundImage: `url("${current.imageUrl}")` } : undefined}
+            >
               {pageArea?.width > 0 && pageArea?.height > 0 && (
                 <HTMLFlipBook
                   key={portrait ? 'portrait' : 'spread'}
                   ref={bookRef}
                   className={styles.flipBook}
-                  width={portrait ? pageArea.width : Math.floor(pageArea.width / 2)}
+                  // 화면 폭이 홀수여도 두 쪽 사이에 틈(밝은 세로줄)이 생기지 않게 올림해요. 넘친 1px은 가려져요.
+                  width={portrait ? pageArea.width : Math.ceil(pageArea.width / 2)}
                   height={pageArea.height}
                   size="fixed"
                   startPage={pageIndexFor(page, portrait)}
@@ -201,6 +200,7 @@ function StoryReader({ title, pages, page, onPage, onClose, closeLabel = '돌아
                   maxShadowOpacity={0.35}
                   flippingTime={720}
                   mobileScrollSupport={false}
+                  disableFlipByClick={!previewMode}
                   onFlip={handleFlip}
                 >
                   {bookPages}
