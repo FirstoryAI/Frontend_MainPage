@@ -15,8 +15,10 @@ const add = (a, b) => ({ x: a.x + b.x, y: a.y + b.y });
 //  - 마우스를 올리기만 해서는 아무 일도 없고, 누른 채 끌 때만 책장이 접혀요.
 //  - 쪽 어디를 잡든(가운데 포함) 그 쪽의 가장자리를 잡은 것처럼 바꿔서, 손가락이 움직인 만큼 책장 끝이 따라와요.
 //    위·아래 모서리가 손가락 자리로 튀어 오지 않고, 옆으로 끌면 책장이 곧게 넘어가요.
-// onTap: 끌지 않고 누르기만 했을 때 불러요.
-export function useFlipDrag(bookRef, { onTap } = {}) {
+//  - 실제 책처럼 잡은 쪽의 책장만 넘어가요. 오른쪽 절반은 왼쪽으로 끌어 다음 쪽으로, 왼쪽 절반은 오른쪽으로 끌어 이전 쪽으로 가요.
+//    반대 방향으로 끌거나, 넘어갈 쪽이 없으면(첫 장의 왼쪽, 마지막 장의 오른쪽) 아무 모션도 나오지 않아요.
+// onTap: 끌지 않고 누르기만 했을 때 불러요. canPrev/canNext: 이전·다음 쪽이 있는지예요.
+export function useFlipDrag(bookRef, { onTap, canPrev = true, canNext = true } = {}) {
   const drag = useRef(null);
 
   const bookOf = () => bookRef.current?.pageFlip?.();
@@ -26,9 +28,16 @@ export function useFlipDrag(bookRef, { onTap } = {}) {
     return { x: event.clientX - box.left, y: event.clientY - box.top };
   };
 
-  const begin = (book, d, dx) => {
+  // 누른 곳이 오른쪽 절반이면 다음 쪽, 왼쪽 절반이면 이전 쪽으로 넘기는 거예요.
+  // (한 쪽씩 보이는 화면은 보이는 쪽이 책의 오른쪽 절반이라, 그 쪽의 가운데를 기준으로 나눠요)
+  const isForwardSide = (book, point) => {
     const rect = book.getBoundsRect();
-    const forward = dx < 0;
+    const x = point.x - rect.left;
+    return book.getOrientation() === 'portrait' ? x >= rect.pageWidth * 1.5 : x >= rect.width / 2;
+  };
+
+  const begin = (book, d, forward) => {
+    const rect = book.getBoundsRect();
     const portrait = book.getOrientation() === 'portrait';
     // 앞으로 넘길 땐 오른쪽 끝, 뒤로 넘길 땐 왼쪽 끝을 잡아요. (한 쪽씩 보이는 화면은 보이는 쪽이 책의 오른쪽 절반이에요)
     const edgeX = forward ? rect.width - 1 : (portrait ? rect.pageWidth + 1 : 1);
@@ -88,7 +97,15 @@ export function useFlipDrag(bookRef, { onTap } = {}) {
         return;
       }
       if (Math.abs(dx) < DRAG_START_PX || Math.abs(dx) < Math.abs(dy)) return;
-      begin(book, d, dx);
+      const forward = isForwardSide(book, d.start);
+      // 넘어갈 쪽이 없으면 이번 누름에서는 넘기지 않아요.
+      if (forward ? !canNext : !canPrev) {
+        drag.current = null;
+        return;
+      }
+      // 잡은 쪽과 반대 방향으로 끄는 동안에는 기다려요.
+      if (forward ? dx > 0 : dx < 0) return;
+      begin(book, d, forward);
       event.currentTarget.setPointerCapture?.(event.pointerId);
     }
 

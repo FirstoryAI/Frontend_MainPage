@@ -72,6 +72,8 @@ function StoryReader({ title, pages, page, onPage, onClose, closeLabel = '돌아
   const pageGuide = guide && previewMode ? guideFor(guide, page, pages.length) : null;
   // 책장은 누른 채 끌어야 넘어가요. 미리보기에서는 쪽을 누르면 누른 쪽으로 넘어가요.
   const flipDrag = useFlipDrag(bookRef, {
+    canPrev: page > 1,
+    canNext: page < pages.length,
     onTap: previewMode ? (event) => {
       const box = pageAreaRef.current?.getBoundingClientRect();
       if (box) showPage(event.clientX < box.left + box.width / 2 ? page - 1 : page + 1);
