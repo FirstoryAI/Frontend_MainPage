@@ -566,4 +566,30 @@
 
 @media (min-width: 761px) {
   .reader:not(.previewReader) .readerArrow { top: calc(50% - 2.137cqw); }
+
+  /* 아이와 읽기 상단바는 기본 상단바의 0.7배 크기예요. 양쪽 여백 위치는 그대로 두고, X와 제목 사이 간격도 0.7배로 줄여요. */
+  .reader:not(.previewReader) .readerHeader { height: calc(var(--header-height) * 0.7); }
+  .reader:not(.previewReader) .readerClose,
+  .reader:not(.previewReader) .readerClose img { width: 18.9px; height: 18.9px; }
+  .reader:not(.previewReader) .readerTitle {
+    left: calc(clamp(24px, 4.03vw, 58px) + (clamp(89px, 9.38vw, 135px) - clamp(24px, 4.03vw, 58px)) * 0.7);
+    font-size: clamp(11.2px, 1.458vw, 21px);
+  }
+  .reader:not(.previewReader) .readerProgress {
+    top: calc(50% + 2px);
+    gap: 0.679cqw;
+    width: min(318.5px, 22.4vw);
+    font-size: clamp(7.7px, 0.875cqw, 12.6px);
+  }
+  .reader:not(.previewReader) .readerProgressTrack { height: 0.63cqw; }
+}
+
+@media (max-width: 760px) {
+  .reader:not(.previewReader) .readerHeader { height: 53.2px; }
+  .reader:not(.previewReader) .readerClose { top: 16.8px; left: 16px; }
+  .reader:not(.previewReader) .readerClose,
+  .reader:not(.previewReader) .readerClose img { width: 16.8px; height: 16.8px; }
+  .reader:not(.previewReader) .readerTitle { top: 16.8px; left: 37.7px; font-size: 11.2px; }
+  .reader:not(.previewReader) .readerProgress { top: 21.7px; gap: 4.2px; width: 22.4%; font-size: 7.7px; }
+  .reader:not(.previewReader) .readerProgressTrack { height: 5.6px; }
 }
