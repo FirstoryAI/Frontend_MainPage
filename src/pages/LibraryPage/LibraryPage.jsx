@@ -44,6 +44,40 @@ function formatStoryDate(value) {
   return new Intl.DateTimeFormat('ko-KR', { month: 'long', day: 'numeric' }).format(date);
 }
 
+// 만들다 멈춘(임시저장) 동화예요. 서재에는 실제로 만들고 있는 동화부터 보여줘서 이 동화들은 빼요.
+// 서버는 '전체'와 '제작 중'에 이 동화들도 함께 보내서, 목록과 탭 숫자에서 화면이 직접 빼요.
+const DRAFT_STATUSES = ['DRAFT', 'INTERVIEWING', 'CONFIRMING'];
+const isDraft = (story) => DRAFT_STATUSES.includes(String(story.status ?? '').toUpperCase());
+const PAGE_SIZE = 20;
+const DRAFT_COUNT_PAGE_SIZE = 50;
+const DRAFT_COUNT_MAX_PAGES = 20;
+
+// 임시저장 동화를 빼고, 보여줄 동화가 하나라도 나올 때까지 다음 쪽을 이어서 불러와요.
+async function loadVisibleStories(filter, startPage) {
+  let pageNo = startPage;
+  let items = [];
+  let result;
+  do {
+    result = await getStories({ filter, page: pageNo, size: PAGE_SIZE });
+    items = items.concat((result.items || []).filter((story) => !isDraft(story)));
+    pageNo = (result.page ?? pageNo) + 1;
+  } while (items.length === 0 && result.hasNext);
+  return { items, page: pageNo - 1, hasNext: Boolean(result.hasNext), totalElements: result.totalElements };
+}
+
+// 탭 숫자에서 뺄 임시저장 동화 수예요.
+async function countDrafts() {
+  let pageNo = 0;
+  let count = 0;
+  let result;
+  do {
+    result = await getStories({ filter: 'CREATING', page: pageNo, size: DRAFT_COUNT_PAGE_SIZE });
+    count += (result.items || []).filter(isDraft).length;
+    pageNo += 1;
+  } while (result.hasNext && pageNo < DRAFT_COUNT_MAX_PAGES);
+  return count;
+}
+
 function LibraryPage() {
   const navigate = useNavigate();
   const location = useLocation();
@@ -58,6 +92,7 @@ function LibraryPage() {
   });
   const [stories, setStories] = useState([]);
   const [counts, setCounts] = useState({});
+  const [draftCount, setDraftCount] = useState(0);
   const [page, setPage] = useState(0);
   const [hasNext, setHasNext] = useState(false);
   const [isLoading, setIsLoading] = useState(true);
@@ -87,13 +122,16 @@ function LibraryPage() {
     }).catch(() => {
       // The list is still usable when tab counts are unavailable.
     });
+    countDrafts().then(setDraftCount).catch(() => {
+      // 못 세면 서버 숫자를 그대로 보여줘요.
+    });
   }, [isSignedIn]);
 
   useEffect(() => {
     if (!isSignedIn) return undefined;
     let active = true;
 
-    getStories({ filter: activeFilter, page: 0, size: 20 }).then((result) => {
+    loadVisibleStories(activeFilter, 0).then((result) => {
       if (!active) return;
       setStories(result.items || []);
       setPage(result.page ?? 0);
@@ -124,7 +162,7 @@ function LibraryPage() {
   };
 
   // 동화 상태에 따라 열리는 화면이 달라요.
-  // 확인을 기다려요 → 미리보기, 읽을 수 있는 동화 → 동화 상세, 만들던 동화 → 이어 만들기·진행 보기
+  // 확인을 기다려요 → 미리보기, 읽을 수 있는 동화 → 동화 상세, 만들고 있는 동화 → 진행 보기
   const openStory = (story) => {
     const state = { story };
     const group = libraryGroup(story);
@@ -132,7 +170,6 @@ function LibraryPage() {
     if (group === 'REVIEWING') navigate(`/story/${story.id}/preview`, { state });
     else if (group === 'UNREAD' || group === 'READ') navigate(`/library/${story.id}`, { state });
     else if (GENERATING_STATUSES.includes(story.status)) navigate('/story/new', { state: { generation: { storyId: story.id } } });
-    else if (group === 'CREATING') navigate('/story/new', { state: { draftStoryId: story.id } });
   };
 
   // 만들지 못한 동화는 같은 범위로 다시 만들어요. (다시 만들기 횟수에 넣지 않아요)
@@ -150,7 +187,7 @@ function LibraryPage() {
     setIsLoadingMore(true);
     setError('');
     try {
-      const result = await getStories({ filter: activeFilter, page: page + 1, size: 20 });
+      const result = await loadVisibleStories(activeFilter, page + 1);
       setStories((current) => [...current, ...(result.items || [])]);
       setPage(result.page ?? page + 1);
       setHasNext(Boolean(result.hasNext));
@@ -163,6 +200,10 @@ function LibraryPage() {
 
   // 로그인했어도 보여줄 동화가 없으면 비로그인과 같은 빈 서재 화면을 보여줘요. (로그인 버튼만 없어요)
   // 전체 보기에서 비었으면 '아직 제작된 동화가 없어요', 카테고리(상태) 필터에서 비었으면 '조건에 해당하는 동화가 없어요'예요.
+  // 서버 숫자에는 임시저장 동화가 들어 있어서 '전체'와 '제작 중'에서 빼요.
+  const withoutDrafts = (value) => (value == null ? value : Math.max(0, value - draftCount));
+  const shownCounts = { ...counts, all: withoutDrafts(counts.all), creating: withoutDrafts(counts.creating) };
+
   const isLibraryEmpty = isSignedIn && !isLoading && !error && stories.length === 0;
   const showEmptyScreen = guest || isLibraryEmpty;
   const emptyTitle = guest || activeFilter === 'ALL' ? '아직 제작된 동화가 없어요' : '조건에 해당하는 동화가 없어요';
@@ -210,7 +251,7 @@ function LibraryPage() {
                     }
                   }}
                 >
-                  {filter.label}{counts[filter.countKey || 'all'] != null && ` ${counts[filter.countKey || 'all']}`}
+                  {filter.label}{shownCounts[filter.countKey || 'all'] != null && ` ${shownCounts[filter.countKey || 'all']}`}
                 </button>
               ))}
             </div>
