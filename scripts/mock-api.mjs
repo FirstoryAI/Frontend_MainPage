@@ -25,15 +25,16 @@ const EDITABLE = ['DRAFT', 'CONFIRMING'];
 const emailChecks = new Map(); // IP별 이메일 확인 시각
 const CREATING = ['DRAFT', 'INTERVIEWING', 'CONFIRMING', 'REQUESTED', 'GENERATING_TEXT', 'GENERATING_IMAGES'];
 const GENERATING = ['REQUESTED', 'GENERATING_TEXT', 'GENERATING_IMAGES'];
+// 서버(SituationCategory)의 문구와 같아요.
 const CATEGORY_LABELS = {
-  FRIEND_CONFLICT: '친구 관계',
+  FRIEND_CONFLICT: '친구와 다툼',
   NEW_ENVIRONMENT: '새로운 환경',
   SEPARATION: '이별',
   SAFETY: '안전',
-  RULES: '규칙·훈육',
-  FAMILY_CHANGE: '가족 변화',
+  RULES: '규칙',
+  FAMILY_CHANGE: '가족의 변화',
   FEAR: '두려움',
-  OTHER: '그 밖의 일',
+  OTHER: '기타',
 };
 const STORY_TITLES = {
   FRIEND_CONFLICT: '토리와 빨간 블록',
@@ -276,6 +277,10 @@ function card(story) {
     title: version?.title ?? null,
     status: story.status,
     label: statusLabel(story),
+    // 서버처럼 기타(OTHER)면 직접 적은 분류를, 상황을 아직 받지 않았으면 null을 줘요.
+    categoryLabel: story.situation
+      ? (story.situation.category === 'OTHER' ? story.situation.customCategory : story.situation.categoryLabel) ?? null
+      : null,
     coverUrl: version ? coverUrl(story, version) : null,
     childDisplayName: story.child?.displayName ?? null,
     createdAt: story.createdAt,
