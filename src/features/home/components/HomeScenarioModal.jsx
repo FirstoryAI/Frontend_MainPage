@@ -1,4 +1,5 @@
 import { useEffect, useRef, useState } from 'react';
+import { useLocation, useNavigate } from 'react-router-dom';
 import closeIcon from '../../../assets/icons/scenario-modal-close.svg';
 import dialogueFriend from '../../../assets/icons/scenario-dialogue-friend.svg';
 import dialogueEmotion from '../../../assets/icons/scenario-dialogue-emotion.svg';
@@ -19,7 +20,12 @@ const PLACEHOLDER_SAMPLE_STORY = { title: '토리와 빨간 블록', coverUrl: s
 function HomeScenarioModal({ scenario, onClose, onStart }) {
   const dialogRef = useRef(null);
   const coverButtonRef = useRef(null);
+  const location = useLocation();
+  const navigate = useNavigate();
   const [samplePage, setSamplePage] = useState(null);
+  // 예시 동화는 브라우저 기록에 한 칸을 더해서 열어요. 그래서 브라우저 뒤로가기를 누르면 페이지를 떠나지 않고
+  // 예시 동화만 닫혀요. (이 팝업과 읽던 쪽은 그대로 남고, 앞으로가기를 누르면 읽던 쪽이 다시 열려요)
+  const readerOpen = samplePage !== null && location.state?.sampleReader === scenario.id;
   const content = scenario.popupContent ?? scenarioPopupContent[scenario.id] ?? scenarioPopupContent.friend;
   const accentStyle = { '--scenario-accent': scenario.accentColor };
   const sampleStory = sampleStories[scenario.id] ?? PLACEHOLDER_SAMPLE_STORY;
@@ -44,12 +50,23 @@ function HomeScenarioModal({ scenario, onClose, onStart }) {
 
   useEffect(() => {
     const handleKeyDown = (event) => {
-      if (event.key === 'Escape' && samplePage === null) onClose();
+      if (event.key === 'Escape' && !readerOpen) onClose();
     };
 
     window.addEventListener('keydown', handleKeyDown);
     return () => window.removeEventListener('keydown', handleKeyDown);
-  }, [onClose, samplePage]);
+  }, [onClose, readerOpen]);
+
+  const openReader = () => {
+    setSamplePage(1);
+    navigate(`${location.pathname}${location.search}`, { state: { sampleReader: scenario.id } });
+  };
+
+  // 닫기 버튼도 뒤로가기와 같게, 예시 동화를 열 때 더한 기록 한 칸을 되돌려요.
+  const closeReader = () => {
+    navigate(-1);
+    requestAnimationFrame(() => coverButtonRef.current?.focus());
+  };
 
   return (
     <div
@@ -64,7 +81,7 @@ function HomeScenarioModal({ scenario, onClose, onStart }) {
         tabIndex={-1}
         style={accentStyle}
         role="dialog"
-        inert={samplePage !== null}
+        inert={readerOpen}
         aria-modal="true"
         aria-labelledby="scenario-dialog-title"
         aria-describedby="scenario-dialog-description"
@@ -95,7 +112,7 @@ function HomeScenarioModal({ scenario, onClose, onStart }) {
                 className={styles.coverButton}
                 type="button"
                 ref={coverButtonRef}
-                onClick={() => setSamplePage(1)}
+                onClick={openReader}
                 aria-label={`${sampleStory.title} 예시 동화 읽기`}
               >
                 <span
@@ -137,21 +154,18 @@ function HomeScenarioModal({ scenario, onClose, onStart }) {
           </div>
         </div>
 
-        <button className={styles.actionButton} type="button" onClick={hasSample ? () => setSamplePage(1) : onStart}>
+        <button className={styles.actionButton} type="button" onClick={hasSample ? openReader : onStart}>
           예시 동화 읽어보기 →
         </button>
       </section>
-      {samplePage !== null && (
+      {readerOpen && (
         <StoryReader
           className={styles.sampleReader}
           title={sampleStory.title}
           pages={sampleStory.pages}
           page={samplePage}
           onPage={setSamplePage}
-          onClose={() => {
-            setSamplePage(null);
-            requestAnimationFrame(() => coverButtonRef.current?.focus());
-          }}
+          onClose={closeReader}
           closeLabel="예시 동화 닫기"
         />
       )}
