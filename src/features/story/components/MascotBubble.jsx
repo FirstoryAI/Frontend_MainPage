@@ -12,8 +12,9 @@ function MascotBubble({
 }) {
   return (
     <div className={`${styles.row} ${className}`}>
+      {/* data-story-mascot: '다음'을 누르면 이 캐릭터가 버튼으로 날아가요. (MascotTravel) */}
       {showMascot && (
-        <div className={`${styles.mascotFrame} ${mascotFrameClassName}`}>
+        <div className={`${styles.mascotFrame} ${mascotFrameClassName}`} data-story-mascot>
           <img className={styles.mascot} src={mascotImage} alt="" width="148" height="148" />
         </div>
       )}

@@ -9,6 +9,7 @@
 // - 데이터는 메모리에만 있어서 서버를 끄면 사라져요.
 // - 이메일 인증번호는 항상 000000이고, 이메일·비밀번호는 아무 값이나 돼요.
 // - 동화 만들기는 약 11초(단계당 3초)만에 끝나요. MOCK_STAGE_MS로 바꿀 수 있어요.
+// - MOCK_SAVE_DELAY_MS를 주면 동화 저장·인터뷰 요청(/api/stories의 GET 아닌 요청)이 그만큼 늦게 끝나요. '다음'을 누른 뒤 기다리는 화면을 볼 때 써요.
 // - 글에 "이별"이 들어가면 분위기 선택 요구(CHOOSE_TONE), "위기"가 들어가면 다시 쓰기 안내(ASK_REVISE), "자해"가 들어가면 차단(BLOCK, 입력 단계),
 //   상황 설명에 "실패테스트"가 들어가면 만드는 중에 실패해요(화면 없이 서재로 가요).
 // - 상황 설명에 "유사테스트"가 들어가면 동화 만들기를 처음 누를 때 409 DUPLICATE_STORY(이전 동화와 비슷)가 오고, 다시 누르면 진행돼요.
@@ -18,6 +19,7 @@ import { randomUUID } from 'node:crypto';
 import { fileURLToPath } from 'node:url';
 
 const STAGE_MS = Number(process.env.MOCK_STAGE_MS) || 3000;
+const SAVE_DELAY_MS = Number(process.env.MOCK_SAVE_DELAY_MS) || 0;
 // 입력을 고칠 수 있는 상태예요. 인터뷰를 마친 뒤(생성 전 확인)에도 고칠 수 있어요.
 const EDITABLE = ['DRAFT', 'CONFIRMING'];
 const emailChecks = new Map(); // IP별 이메일 확인 시각
@@ -510,6 +512,7 @@ export function startMockApi({ port = Number(process.env.MOCK_API_PORT) || 8787,
 
     const body = needsCsrf ? await readBody(req) : {};
     if (body === null) return error(res, 400, 'MALFORMED_JSON', '요청 형식이 올바르지 않아요.');
+    if (SAVE_DELAY_MS && needsCsrf && path.startsWith('/api/stories')) await new Promise((resolve) => setTimeout(resolve, SAVE_DELAY_MS));
 
     const requireUser = () => {
       if (!user) {
