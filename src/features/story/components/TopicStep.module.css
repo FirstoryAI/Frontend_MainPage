@@ -2,16 +2,17 @@
   --field-border: var(--color-field-border-strong);
 
   width: min(895px, 100%);
+  min-height: var(--story-step-height);
   margin: 0 auto;
-  padding-top: 65px;
+  padding-top: 68px;
 }
 
+/* 캐릭터·말풍선은 네 입력 단계에서 같은 자리에 있어요. (아이 정보 단계 기준) */
 .intro {
-  --bubble-gap: 3.73px;
-  --bubble-top: 28.52px;
-  --bubble-text-left: 79.04px;
+  --bubble-gap: 8.6px;
+  --bubble-top: 24px;
 
-  margin-left: -16.5px;
+  margin-left: -27px;
 }
 
 .storyField {
@@ -110,6 +111,7 @@
 
 @media (max-width: 900px) {
   .step {
+    min-height: 0;
     padding: 24px 16px 0;
   }
 
@@ -130,7 +132,7 @@
 
 @media (max-height: 850px) {
   .step {
-    padding-top: 36px;
+    padding-top: 32px;
   }
 
   .storyField {

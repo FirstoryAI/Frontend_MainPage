@@ -1,4 +1,4 @@
-import { useEffect, useLayoutEffect, useRef, useState } from 'react';
+import { useEffect, useLayoutEffect, useRef, useState, useSyncExternalStore } from 'react';
 import { useLocation, useNavigate } from 'react-router-dom';
 import CtaButton from '../../components/ui/CtaButton';
 import StoryHeader from '../../features/story/components/StoryHeader';
@@ -81,6 +81,21 @@ function inputsKey({ situation, detail, child, undecided, message }) {
   return JSON.stringify([situation, detail, child, undecided, message]);
 }
 
+const INPUT_STEPS = [STEP.SITUATION, STEP.DETAIL, STEP.CHILD, STEP.TOPIC];
+const PHONE_QUERY = '(max-width: 760px)';
+
+// 휴대폰 화면 폭인지 알려줘요. 창 크기가 바뀌면 다시 알려줘요.
+function usePhoneLayout() {
+  return useSyncExternalStore(
+    (onChange) => {
+      const query = window.matchMedia(PHONE_QUERY);
+      query.addEventListener('change', onChange);
+      return () => query.removeEventListener('change', onChange);
+    },
+    () => window.matchMedia(PHONE_QUERY).matches,
+  );
+}
+
 function StoryCreatePage() {
   const location = useLocation();
   const navigate = useNavigate();
@@ -137,7 +152,11 @@ function StoryCreatePage() {
 
   // 고정된 단계 화면은 콘텐츠 비율을 유지한 채 뷰포트 안에 맞춰요.
   // 생성 중·제작 완료 화면도 같은 방식으로 맞춰 데스크톱에서 스크롤 없이 보여줘요.
-  const fitStageToViewport = [STEP.CHILD, STEP.TOPIC, STEP.SUMMARY, STEP.GENERATING].includes(step);
+  // 입력 단계(상황·설명·아이 정보·이야기)는 높이를 같게 맞춰 둬서(--story-step-height) 같은 비율로 줄어요.
+  // 휴대폰에서는 줄이면 글자가 너무 작아져서, 입력 단계는 줄이지 않고 아래로 스크롤해요.
+  const isPhone = usePhoneLayout();
+  const isInputStep = INPUT_STEPS.includes(step);
+  const fitStageToViewport = (isInputStep && !isPhone) || [STEP.SUMMARY, STEP.GENERATING].includes(step);
 
   useLayoutEffect(() => {
     if (!fitStageToViewport) {
@@ -156,7 +175,7 @@ function StoryCreatePage() {
         + (Number.parseFloat(mainStyle.marginTop) || 0);
       const bottomMargin = main.classList.contains(styles.centerComplete)
         ? 0
-        : ([STEP.CHILD, STEP.TOPIC].includes(step) ? 4 : 16);
+        : (INPUT_STEPS.includes(step) ? 4 : 16);
       const availableHeight = stageGroup.clientHeight - mainTop - bottomMargin;
       const widthScale = availableWidth / main.scrollWidth;
       const heightScale = availableHeight / main.scrollHeight;
@@ -174,7 +193,7 @@ function StoryCreatePage() {
       window.removeEventListener('resize', updateScale);
       observer.disconnect();
     };
-  }, [fitStageToViewport, loadingDraft]);
+  }, [fitStageToViewport, loadingDraft, step]);
 
   // 서버에 만들고 있는 동화. 화면 곳곳의 async 함수가 같은 값을 보도록 ref에 두고, id만 화면용으로 따로 보관해요.
   const session = useRef(emptySession());

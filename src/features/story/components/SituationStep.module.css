@@ -1,14 +1,22 @@
 .step {
   width: min(1005.3px, 100%);
+  min-height: var(--story-step-height);
   margin: 0 auto;
-  padding-top: 91px;
+  padding-top: 68px;
 }
 
+/* 캐릭터·말풍선은 네 입력 단계에서 같은 자리에 있어요. (아이 정보 단계 기준) */
 .intro {
-  --bubble-gap: 7.9px;
-  --bubble-top: 3px;
+  --bubble-gap: 8.6px;
+  --bubble-top: 24px;
 
-  margin-left: 19.65px;
+  margin-left: 28px;
+}
+
+@media (max-height: 850px) {
+  .step {
+    padding-top: 32px;
+  }
 }
 
 .cards {
@@ -95,8 +103,10 @@
   color: var(--color-brand-light);
 }
 
-@media (max-width: 1100px) {
+/* 카드 세 장(1005px)이 들어가지 않는 폭에서는 한 줄에 한 장씩 놓아요. */
+@media (max-width: 1020px) {
   .step {
+    min-height: 0;
     padding-top: 48px;
   }
 

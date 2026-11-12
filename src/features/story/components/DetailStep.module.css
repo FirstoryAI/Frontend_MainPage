@@ -1,14 +1,17 @@
 .step {
   width: min(895px, 100%);
+  min-height: var(--story-step-height);
   margin: 0 auto;
-  padding-top: 74px;
+  /* 아래쪽은 마지막 칸 밑의 글자 수 자리예요. */
+  padding: 88px 0 24px;
 }
 
+/* 캐릭터·말풍선은 네 입력 단계에서 같은 자리에 있어요. (아이 정보 단계 기준, 이 캐릭터는 그림이 꽉 차서 칸이 작아요) */
 .intro {
-  --bubble-gap: 17.35px;
-  --bubble-top: 9px;
+  --bubble-gap: 19.5px;
+  --bubble-top: 4px;
 
-  margin-left: -6.5px;
+  margin-left: -9px;
 }
 
 .intro > div:first-child {
@@ -58,8 +61,27 @@
   height: 87px;
 }
 
+@media (max-height: 850px) {
+  .step {
+    padding-top: 52px;
+  }
+
+  .field {
+    margin-top: 36px;
+  }
+
+  .categoryField {
+    margin-top: 20px;
+  }
+
+  .textarea {
+    height: 72px;
+  }
+}
+
 @media (max-width: 900px) {
   .step {
+    min-height: 0;
     padding: 24px 16px 0;
   }
 
