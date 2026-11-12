@@ -229,3 +229,86 @@
     margin-top: 20px;
   }
 }
+
+/* 휴대폰: 한 화면에 들어가도록 간격과 칸을 줄이고, 성별은 한 줄에 놓아요. */
+@media (max-width: 760px) {
+  .step {
+    min-height: var(--story-step-height);
+    padding: 16px 16px 0;
+  }
+
+  .intro > div:first-child {
+    width: 76px;
+    height: 68px;
+  }
+
+  .topRow {
+    row-gap: 14px;
+    margin-top: 18px;
+  }
+
+  .topRow > div > p,
+  .traitsHeading {
+    margin-bottom: 8px;
+  }
+
+  .selectBox {
+    height: 44px;
+  }
+
+  .select {
+    font-size: 15px;
+  }
+
+  .genders {
+    flex-wrap: nowrap;
+    gap: 8px;
+  }
+
+  .traitsField,
+  .likesField {
+    margin-top: 16px;
+  }
+
+  .traits {
+    gap: 8px;
+  }
+
+  .customTrait {
+    margin-top: 8px;
+  }
+
+  .likesField > label {
+    margin-bottom: 8px;
+  }
+
+  .helper {
+    margin-top: 4px;
+    font-size: 13px;
+  }
+}
+
+@media (max-width: 760px) and (max-height: 700px) {
+  .step {
+    padding-top: 10px;
+  }
+
+  .intro > div:first-child {
+    width: 63px;
+    height: 56px;
+  }
+
+  .topRow {
+    row-gap: 10px;
+    margin-top: 12px;
+  }
+
+  .selectBox {
+    height: 40px;
+  }
+
+  .traitsField,
+  .likesField {
+    margin-top: 12px;
+  }
+}

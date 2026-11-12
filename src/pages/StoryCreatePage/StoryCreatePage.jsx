@@ -1,4 +1,4 @@
-import { useEffect, useLayoutEffect, useRef, useState, useSyncExternalStore } from 'react';
+import { useEffect, useLayoutEffect, useRef, useState } from 'react';
 import { useLocation, useNavigate } from 'react-router-dom';
 import CtaButton from '../../components/ui/CtaButton';
 import StoryHeader from '../../features/story/components/StoryHeader';
@@ -82,20 +82,6 @@ function inputsKey({ situation, detail, child, undecided, message }) {
 }
 
 const INPUT_STEPS = [STEP.SITUATION, STEP.DETAIL, STEP.CHILD, STEP.TOPIC];
-const PHONE_QUERY = '(max-width: 760px)';
-
-// 휴대폰 화면 폭인지 알려줘요. 창 크기가 바뀌면 다시 알려줘요.
-function usePhoneLayout() {
-  return useSyncExternalStore(
-    (onChange) => {
-      const query = window.matchMedia(PHONE_QUERY);
-      query.addEventListener('change', onChange);
-      return () => query.removeEventListener('change', onChange);
-    },
-    () => window.matchMedia(PHONE_QUERY).matches,
-  );
-}
-
 function StoryCreatePage() {
   const location = useLocation();
   const navigate = useNavigate();
@@ -153,10 +139,8 @@ function StoryCreatePage() {
   // 고정된 단계 화면은 콘텐츠 비율을 유지한 채 뷰포트 안에 맞춰요.
   // 생성 중·제작 완료 화면도 같은 방식으로 맞춰 데스크톱에서 스크롤 없이 보여줘요.
   // 입력 단계(상황·설명·아이 정보·이야기)는 높이를 같게 맞춰 둬서(--story-step-height) 같은 비율로 줄어요.
-  // 휴대폰에서는 줄이면 글자가 너무 작아져서, 입력 단계는 줄이지 않고 아래로 스크롤해요.
-  const isPhone = usePhoneLayout();
-  const isInputStep = INPUT_STEPS.includes(step);
-  const fitStageToViewport = (isInputStep && !isPhone) || [STEP.SUMMARY, STEP.GENERATING].includes(step);
+  // 휴대폰은 화면을 촘촘하게 짜 둬서, 줄여도 글자가 읽을 만한 크기로 남아요.
+  const fitStageToViewport = [...INPUT_STEPS, STEP.SUMMARY, STEP.GENERATING].includes(step);
 
   useLayoutEffect(() => {
     if (!fitStageToViewport) {
@@ -869,7 +853,7 @@ function StoryCreatePage() {
         </div>
       )}
       <main
-        className={`${styles.main} ${visibleStep === STEP.COMPLETE ? styles.centerComplete : ''} ${fitStageToViewport && !toneOpen && step > STEP.SITUATION && step < STEP.CHAT ? styles.withBackButton : ''}`}
+        className={`${styles.main} ${visibleStep === STEP.COMPLETE ? styles.centerComplete : ''} ${fitStageToViewport && !toneOpen && step >= STEP.SITUATION && step < STEP.CHAT ? styles.withBackButton : ''}`}
         ref={stageMainRef}
         inert={editing !== null}
       >

@@ -229,3 +229,12 @@
     margin-top: 20px;
   }
 }
+
+/* 휴대폰: 다른 단계처럼 작은 캐릭터를 말풍선 옆에 둬요. */
+@media (max-width: 760px) {
+  .summaryMascotFrame {
+    width: 70px;
+    height: 68px;
+    margin-top: 0;
+  }
+}

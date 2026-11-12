@@ -110,3 +110,48 @@
     line-height: 1.5;
   }
 }
+
+/* 휴대폰: 동화 만들기 화면이 한 화면에 들어가도록, 작은 캐릭터를 말풍선 옆에 둬요. */
+@media (max-width: 760px) {
+  .row {
+    flex-direction: row;
+    align-items: center;
+    gap: 10px;
+  }
+
+  .mascotFrame {
+    width: 68px;
+    height: 68px;
+  }
+
+  .bubble {
+    flex: 1 1 auto;
+    width: auto;
+    min-width: 0;
+    min-height: 0;
+    padding: 14px 16px;
+    border-radius: 18px;
+  }
+
+  .title {
+    font-size: 18px;
+    line-height: 1.35;
+  }
+
+  .description {
+    margin-top: 4px;
+    font-size: 13.5px;
+    line-height: 1.45;
+  }
+}
+
+@media (max-width: 760px) and (max-height: 700px) {
+  .mascotFrame {
+    width: 56px;
+    height: 56px;
+  }
+
+  .bubble {
+    padding: 10px 14px;
+  }
+}
