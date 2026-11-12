@@ -17,6 +17,7 @@ import StoryDraftModal from '../../features/story/components/StoryDraftModal';
 import ToneStep from '../../features/story/components/ToneStep';
 import BlockedStep from '../../features/story/components/BlockedStep';
 import GenerationFailedStep from '../../features/story/components/GenerationFailedStep';
+import MascotTravel from '../../features/story/components/MascotTravel';
 import {
   EVENT_MAX_LENGTH,
   INTERVIEW_QUESTION_LIMIT,
@@ -121,6 +122,9 @@ function StoryCreatePage() {
   const [exitPromptOpen, setExitPromptOpen] = useState(false);
   const [loadingDraft, setLoadingDraft] = useState(Boolean(draftStoryId));
   const [busy, setBusy] = useState(false);
+  // '다음'·'동화 만들기'를 눌러 다음 단계를 기다리는 중이에요. 이때 캐릭터가 버튼으로 날아가요.
+  const [leaping, setLeaping] = useState(false);
+  const ctaRef = useRef(null);
   const [notice, setNotice] = useState('');
   const [blocked, setBlocked] = useState(null);
   // 이전 동화와 거의 같은 내용이라 만들지 못했을 때 true예요.
@@ -771,6 +775,16 @@ function StoryCreatePage() {
   // 만드는 중·제작 완료 화면은 진행 바와 아래 버튼 없이 로고만 있는 헤더를 써요.
   const progress = visibleStep >= STEP.GENERATING ? null : (toneOpen ? toneProgress(step) : progressByStep[step]);
   const showFooter = step !== STEP.CHAT && step < STEP.GENERATING;
+  const leap = async (handler) => {
+    if (busy) return;
+    setLeaping(true);
+    try {
+      await handler();
+    } finally {
+      setLeaping(false);
+    }
+  };
+  const waitingNext = busy && leaping;
 
   // 위기 신호가 있어 동화를 만들 수 없을 때는 안내 화면만 보여줘요.
   if (blocked || activeJob?.status === 'blocked') {
@@ -919,16 +933,18 @@ function StoryCreatePage() {
             </p>
           )}
           {step === STEP.SUMMARY ? (
-            <CtaButton pill disabled={busy} onClick={handleStartGeneration}>
+            <CtaButton pill ref={ctaRef} className={waitingNext ? styles.ctaLifted : ''} disabled={busy} onClick={() => leap(handleStartGeneration)}>
               {busy ? '준비하는 중…' : '동화 만들기'}
             </CtaButton>
           ) : (
-            <CtaButton pill disabled={!canProceed || busy} onClick={handleNext}>
+            <CtaButton pill ref={ctaRef} className={waitingNext ? styles.ctaLifted : ''} disabled={!canProceed || busy} onClick={() => leap(handleNext)}>
               {busy ? '저장하는 중…' : '다음'}
             </CtaButton>
           )}
         </footer>
       )}
+
+      <MascotTravel active={waitingNext} scopeRef={stageMainRef} targetRef={ctaRef} />
 
       {editing === 'child' && (
         <ChildEditModal child={child} onSave={handleSaveChild} onClose={closeEditing} />
