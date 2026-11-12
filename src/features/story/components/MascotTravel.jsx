@@ -4,25 +4,26 @@ import styles from './MascotTravel.module.css';
 // 저장이 바로 끝나면 아무것도 보이지 않게, 조금 기다렸다가 시작해요.
 const START_DELAY_MS = 120;
 const LEAVE_MS = 260;
-// 날아가는 시간이에요. 너무 빠르면 어디로 갔는지 놓쳐서, 천천히 따라볼 수 있게 했어요.
-const FLY_MS = 1100;
-// 버튼 위에 앉을 때 보이는 캐릭터 높이(px)예요. 원래보다 크면 이만큼으로 줄여요.
+// 화면 가운데로 날아오는 시간이에요.
+const FLY_MS = 1000;
+// 가운데에 앉았을 때 보이는 캐릭터 높이(px)예요. 작은 화면에서는 화면 크기에 맞춰 줄여요.
 // 이미지마다 둘레 여백이 달라서, 칸 크기가 아니라 실제로 그려진 캐릭터(--mascot-art) 기준으로 맞춰요.
-// 그래서 어느 단계에서 날아가도 버튼 위 캐릭터 크기가 같아요.
-const LANDED_ART_HEIGHT = 84;
-// 캐릭터 발밑이 버튼 윗변에 살짝 걸치게 해요.
-const LANDING_OVERLAP = 4;
+const LANDED_ART_HEIGHT = 128;
+// 캐릭터와 아래 글자 사이 간격, 글자 줄 높이(px)예요. 둘을 한 덩어리로 보고 화면 가운데에 놓아요.
+const CAPTION_GAP = 14;
+const CAPTION_HEIGHT = 34;
 
 // '다음'을 누르고 저장을 기다리는 동안:
-//  - 뒤 화면을 살짝 흐리게 덮고, 버튼은 그 위로 올려 또렷하게 보여줘요.
-//  - 화면의 캐릭터([data-story-mascot])가 버튼 위로 폴짝 날아가서, 기다리는 동안 통통 뛰어요.
-// active: 기다리는 중인지, scopeRef: 캐릭터를 찾을 곳, targetRef: 다음 버튼
-// immediate: 기다리지 않고 바로 날아가요. (저장 없이 넘어가는 단계)
-// onLanded: 버튼에 내려앉으면 불러요. 캐릭터를 찾지 못했으면 바로 불러요.
-function MascotTravel({ active, scopeRef, targetRef, immediate = false, onLanded }) {
+//  - 뒤 화면을 살짝 흐리게 덮어요.
+//  - 화면의 캐릭터([data-story-mascot])가 화면 가운데로 날아와서 통통 뛰고, 그 아래에 label을 보여줘요.
+// active: 기다리는 중인지, scopeRef: 캐릭터를 찾을 곳, label: 캐릭터 아래 글자(없으면 안 보여요)
+// immediate: 기다리지 않고 바로 날아와요. (저장 없이 넘어가는 단계)
+// onLanded: 가운데에 내려앉으면 불러요. 캐릭터를 찾지 못했으면 바로 불러요.
+function MascotTravel({ active, scopeRef, label = '', immediate = false, onLanded }) {
   // idle → in(보이는 중) → out(사라지는 중) → idle
   const [phase, setPhase] = useState('idle');
   const travelRef = useRef(null);
+  const captionRef = useRef(null);
   const onLandedRef = useRef(onLanded);
 
   useEffect(() => {
@@ -47,17 +48,16 @@ function MascotTravel({ active, scopeRef, targetRef, immediate = false, onLanded
   useLayoutEffect(() => {
     if (phase !== 'in') return undefined;
     const travel = travelRef.current;
+    const caption = captionRef.current;
     const source = scopeRef.current?.querySelector('[data-story-mascot]');
-    const target = targetRef.current;
     const landed = () => onLandedRef.current?.();
-    if (!travel || !source || !target) {
+    if (!travel || !source) {
       landed();
       return undefined;
     }
 
     // 화면이 비율대로 줄어 있을 수 있어서, 실제로 보이는 크기와 원래 크기의 비율로 크기를 맞춰요.
     const from = source.getBoundingClientRect();
-    const to = target.getBoundingClientRect();
     const width = source.offsetWidth;
     const height = source.offsetHeight;
     if (!width || !height || !from.width) {
@@ -76,30 +76,32 @@ function MascotTravel({ active, scopeRef, targetRef, immediate = false, onLanded
     travel.querySelector(`.${styles.hop}`).replaceChildren(clone);
 
     const art = parseFloat(getComputedStyle(source).getPropertyValue('--mascot-art')) || 1;
+    const viewWidth = window.innerWidth;
+    const viewHeight = window.innerHeight;
+    const artHeight = Math.min(LANDED_ART_HEIGHT, viewWidth * 0.32, viewHeight * 0.2);
     const startScale = from.width / width;
-    const endScale = Math.min(startScale, LANDED_ART_HEIGHT / (height * art));
-    const startX = from.left;
-    const startY = from.top;
-    const endX = to.left + to.width / 2 - (width * endScale) / 2;
-    const endY = to.top + LANDING_OVERLAP - height * endScale;
-    // 위로 솟았다가 버튼에 내려앉는 포물선이에요. 꼭대기가 화면 위로 나가지 않게 해요.
-    const peakY = Math.max(Math.min(8, startY), Math.min(startY, endY) - 90);
+    const endScale = artHeight / (height * art);
+    // 캐릭터와 글자를 한 덩어리로 화면 가운데에 놓아요.
+    const captionSpace = caption ? CAPTION_GAP + CAPTION_HEIGHT : 0;
+    const artBottom = (viewHeight - artHeight - captionSpace) / 2 + artHeight;
+    const endX = viewWidth / 2 - (width * endScale) / 2;
+    const endY = artBottom - height * endScale;
     const at = (x, y, scale) => `translate(${x}px, ${y}px) scale(${scale})`;
+    if (caption) caption.style.top = `${artBottom + CAPTION_GAP}px`;
 
     source.style.visibility = 'hidden';
     const reduced = window.matchMedia('(prefers-reduced-motion: reduce)').matches;
+    // 곧게 미끄러지듯 날아와서 가운데에 사뿐히 멈춰요.
     const flight = travel.animate(
-      reduced
-        ? [{ transform: at(endX, endY, endScale) }, { transform: at(endX, endY, endScale) }]
-        : [
-          { transform: at(startX, startY, startScale), offset: 0 },
-          { transform: at((startX + endX) / 2, peakY, (startScale + endScale) / 2), offset: 0.5, easing: 'cubic-bezier(.3,0,.6,1)' },
-          { transform: at(endX, endY, endScale), offset: 1 },
-        ],
-      { duration: reduced ? 0 : FLY_MS, easing: 'cubic-bezier(.33,0,.4,1)', fill: 'forwards' },
+      [
+        { transform: reduced ? at(endX, endY, endScale) : at(from.left, from.top, startScale) },
+        { transform: at(endX, endY, endScale) },
+      ],
+      { duration: reduced ? 0 : FLY_MS, easing: 'cubic-bezier(.45, 0, .2, 1)', fill: 'forwards' },
     );
     flight.finished.then(() => {
       travel.setAttribute('data-landed', '');
+      caption?.setAttribute('data-landed', '');
       landed();
     }, () => {});
 
@@ -108,11 +110,10 @@ function MascotTravel({ active, scopeRef, targetRef, immediate = false, onLanded
     return () => {
       source.style.visibility = '';
     };
-  }, [phase, scopeRef, targetRef]);
+  }, [phase, scopeRef]);
 
   if (phase === 'idle') return null;
 
-  // 흐린 막은 버튼 아래, 캐릭터는 버튼 위에 놓여요. (버튼은 z-index 31로 그 사이에 올려 줘요)
   const leaving = phase === 'out' || undefined;
   return (
     <>
@@ -120,6 +121,11 @@ function MascotTravel({ active, scopeRef, targetRef, immediate = false, onLanded
       <div className={styles.travel} data-leaving={leaving} ref={travelRef} aria-hidden="true">
         <div className={styles.hop} />
       </div>
+      {label && (
+        <p className={styles.caption} data-leaving={leaving} ref={captionRef} role="status">
+          {label}
+        </p>
+      )}
     </>
   );
 }

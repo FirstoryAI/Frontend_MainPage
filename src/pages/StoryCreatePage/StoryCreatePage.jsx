@@ -127,7 +127,6 @@ function StoryCreatePage() {
   const [leaping, setLeaping] = useState(false);
   // 저장 없이 넘어가는 첫 단계(상황 선택)에서는 캐릭터가 버튼에 내려앉은 뒤 넘어가요.
   const [hopping, setHopping] = useState(false);
-  const ctaRef = useRef(null);
   const [notice, setNotice] = useState('');
   const [blocked, setBlocked] = useState(null);
   // 이전 동화와 거의 같은 내용이라 만들지 못했을 때 true예요.
@@ -947,13 +946,14 @@ function StoryCreatePage() {
               아이와 비슷한 일을 겪는 동물 친구의 이야기로 만들어요. 아이 이름은 동화에 나오지 않아요.
             </p>
           )}
+          {/* 기다리는 동안에도 버튼 모양·글자는 그대로 두고, 흐린 화면 가운데 캐릭터 아래에 '저장하는 중…'을 보여줘요. */}
           {step === STEP.SUMMARY ? (
-            <CtaButton pill ref={ctaRef} className={waitingNext ? styles.ctaLifted : ''} disabled={busy} onClick={() => leap(handleStartGeneration)}>
-              {busy ? '준비하는 중…' : '동화 만들기'}
+            <CtaButton pill disabled={busy && !waitingNext} onClick={() => leap(handleStartGeneration)}>
+              동화 만들기
             </CtaButton>
           ) : (
-            <CtaButton pill ref={ctaRef} className={waitingNext ? styles.ctaLifted : ''} disabled={!canProceed || busy || hopping} onClick={() => leap(handleNext)}>
-              {busy ? '저장하는 중…' : '다음'}
+            <CtaButton pill disabled={!canProceed || (busy && !waitingNext)} onClick={() => leap(handleNext)}>
+              다음
             </CtaButton>
           )}
         </footer>
@@ -963,8 +963,8 @@ function StoryCreatePage() {
         active={waitingNext}
         immediate={hopping}
         onLanded={hopping ? finishHop : undefined}
+        label={step === STEP.SUMMARY ? '준비하는 중…' : '저장하는 중…'}
         scopeRef={stageMainRef}
-        targetRef={ctaRef}
       />
 
       {editing === 'child' && (
