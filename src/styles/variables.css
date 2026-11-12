@@ -86,6 +86,9 @@
   /* 동화 만들기 화면의 상단바예요. 상단바가 줄어도 본문은 제자리에 있도록, 줄어든 만큼(offset)을 본문 위에 비워요. */
   --story-header-height: 85.5px;
   --story-header-offset: 29.5px;
+  /* 동화 만들기 입력 단계(상황·설명·아이 정보·이야기)의 높이예요. 가장 긴 아이 정보 단계에 맞춰서,
+     화면에 맞춰 줄일 때 네 단계가 같은 비율로 줄어 글자·캐릭터 크기가 같아요. */
+  --story-step-height: 698px;
   --z-content: 1;
   --z-header: 10;
 }
@@ -100,5 +103,26 @@
 @media (min-width: 761px) and (max-height: 850px) {
   :root {
     --header-height: 88px;
+  }
+}
+
+/* 낮은 화면에서는 입력 단계의 간격을 줄여요. (네 단계 모두 같은 만큼) */
+@media (max-height: 850px) {
+  :root {
+    --story-step-height: 598px;
+  }
+}
+
+/* 휴대폰 입력 단계 높이예요. (가장 긴 아이 정보 단계 기준) */
+@media (max-width: 760px) {
+  :root {
+    --story-step-height: 628px;
+  }
+}
+
+/* 키가 작은 휴대폰(높이 700px 이하)은 더 촘촘하게 짜요. */
+@media (max-width: 760px) and (max-height: 700px) {
+  :root {
+    --story-step-height: 580px;
   }
 }

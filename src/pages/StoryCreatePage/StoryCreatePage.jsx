@@ -81,6 +81,7 @@ function inputsKey({ situation, detail, child, undecided, message }) {
   return JSON.stringify([situation, detail, child, undecided, message]);
 }
 
+const INPUT_STEPS = [STEP.SITUATION, STEP.DETAIL, STEP.CHILD, STEP.TOPIC];
 function StoryCreatePage() {
   const location = useLocation();
   const navigate = useNavigate();
@@ -137,7 +138,9 @@ function StoryCreatePage() {
 
   // 고정된 단계 화면은 콘텐츠 비율을 유지한 채 뷰포트 안에 맞춰요.
   // 생성 중·제작 완료 화면도 같은 방식으로 맞춰 데스크톱에서 스크롤 없이 보여줘요.
-  const fitStageToViewport = [STEP.CHILD, STEP.TOPIC, STEP.SUMMARY, STEP.GENERATING].includes(step);
+  // 입력 단계(상황·설명·아이 정보·이야기)는 높이를 같게 맞춰 둬서(--story-step-height) 같은 비율로 줄어요.
+  // 휴대폰은 화면을 촘촘하게 짜 둬서, 줄여도 글자가 읽을 만한 크기로 남아요.
+  const fitStageToViewport = [...INPUT_STEPS, STEP.SUMMARY, STEP.GENERATING].includes(step);
 
   useLayoutEffect(() => {
     if (!fitStageToViewport) {
@@ -156,7 +159,7 @@ function StoryCreatePage() {
         + (Number.parseFloat(mainStyle.marginTop) || 0);
       const bottomMargin = main.classList.contains(styles.centerComplete)
         ? 0
-        : ([STEP.CHILD, STEP.TOPIC].includes(step) ? 4 : 16);
+        : (INPUT_STEPS.includes(step) ? 4 : 16);
       const availableHeight = stageGroup.clientHeight - mainTop - bottomMargin;
       const widthScale = availableWidth / main.scrollWidth;
       const heightScale = availableHeight / main.scrollHeight;
@@ -174,7 +177,7 @@ function StoryCreatePage() {
       window.removeEventListener('resize', updateScale);
       observer.disconnect();
     };
-  }, [fitStageToViewport, loadingDraft]);
+  }, [fitStageToViewport, loadingDraft, step]);
 
   // 서버에 만들고 있는 동화. 화면 곳곳의 async 함수가 같은 값을 보도록 ref에 두고, id만 화면용으로 따로 보관해요.
   const session = useRef(emptySession());
@@ -796,7 +799,7 @@ function StoryCreatePage() {
   const finishHop = () => setTimeout(() => {
     setHopping(false);
     goTo(STEP.DETAIL);
-  }, 450);
+  }, 900);
 
   // 위기 신호가 있어 동화를 만들 수 없을 때는 안내 화면만 보여줘요.
   if (blocked || activeJob?.status === 'blocked') {
@@ -850,7 +853,7 @@ function StoryCreatePage() {
         </div>
       )}
       <main
-        className={`${styles.main} ${visibleStep === STEP.COMPLETE ? styles.centerComplete : ''} ${fitStageToViewport && !toneOpen && step > STEP.SITUATION && step < STEP.CHAT ? styles.withBackButton : ''}`}
+        className={`${styles.main} ${visibleStep === STEP.COMPLETE ? styles.centerComplete : ''} ${fitStageToViewport && !toneOpen && step >= STEP.SITUATION && step < STEP.CHAT ? styles.withBackButton : ''}`}
         ref={stageMainRef}
         inert={editing !== null}
       >

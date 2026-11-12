@@ -50,3 +50,11 @@
   clip-path: inset(50%);
   white-space: nowrap;
 }
+
+@media (max-width: 760px) {
+  .chip {
+    height: 36px;
+    padding: 0 14px;
+    font-size: 15px;
+  }
+}

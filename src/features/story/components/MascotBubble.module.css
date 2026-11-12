@@ -3,8 +3,12 @@
   align-items: flex-start;
 }
 
-/* Figma에서 1024×683 원본을 148×148 칸에 그대로 맞춰 넣은 비율을 따라요. */
+/* Figma에서 1024×683 원본을 148×148 칸에 그대로 맞춰 넣은 비율을 따라요.
+   --mascot-art: 칸 높이 중 캐릭터가 실제로 그려진 비율이에요. 이미지마다 둘레 여백이 달라서,
+   단계마다 보이는 캐릭터 크기를 맞출 때와 버튼 위로 날아갈 때(MascotTravel) 써요. */
 .mascotFrame {
+  --mascot-art: 0.83;
+
   position: relative;
   flex: none;
   width: 148px;
@@ -108,5 +112,52 @@
   .description {
     margin-top: 8px;
     line-height: 1.5;
+  }
+}
+
+/* 휴대폰: 동화 만들기 화면이 한 화면에 들어가도록, 작은 캐릭터를 말풍선 옆에 둬요. */
+@media (max-width: 760px) {
+  .row {
+    flex-direction: row;
+    align-items: center;
+    gap: 10px;
+  }
+
+  /* 보이는 캐릭터 높이를 약 56px로 맞춰요. (68 × 0.83) */
+  .mascotFrame {
+    width: 68px;
+    height: 68px;
+  }
+
+  .bubble {
+    flex: 1 1 auto;
+    width: auto;
+    min-width: 0;
+    min-height: 0;
+    padding: 14px 16px;
+    border-radius: 18px;
+  }
+
+  .title {
+    font-size: 18px;
+    line-height: 1.35;
+  }
+
+  .description {
+    margin-top: 4px;
+    font-size: 13.5px;
+    line-height: 1.45;
+  }
+}
+
+@media (max-width: 760px) and (max-height: 700px) {
+  /* 보이는 캐릭터 높이 약 46px (56 × 0.83) */
+  .mascotFrame {
+    width: 56px;
+    height: 56px;
+  }
+
+  .bubble {
+    padding: 10px 14px;
   }
 }

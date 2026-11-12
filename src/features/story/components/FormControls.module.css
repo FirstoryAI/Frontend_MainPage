@@ -40,3 +40,29 @@
   height: 57px;
   padding: 0 21px;
 }
+
+@media (max-width: 760px) {
+  .label {
+    margin-bottom: 8px;
+    font-size: 17px;
+  }
+
+  .control {
+    font-size: 15px;
+  }
+
+  .textarea {
+    padding: 10px 14px;
+  }
+
+  .textInput {
+    height: 46px;
+    padding: 0 14px;
+  }
+}
+
+@media (max-width: 760px) and (max-height: 700px) {
+  .textInput {
+    height: 40px;
+  }
+}

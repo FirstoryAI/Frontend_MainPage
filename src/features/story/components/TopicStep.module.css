@@ -2,16 +2,17 @@
   --field-border: var(--color-field-border-strong);
 
   width: min(895px, 100%);
+  min-height: var(--story-step-height);
   margin: 0 auto;
-  padding-top: 65px;
+  padding-top: 68px;
 }
 
+/* 캐릭터·말풍선은 네 입력 단계에서 같은 자리에 있어요. (아이 정보 단계 기준) */
 .intro {
-  --bubble-gap: 3.73px;
-  --bubble-top: 28.52px;
-  --bubble-text-left: 79.04px;
+  --bubble-gap: 8.6px;
+  --bubble-top: 24px;
 
-  margin-left: -16.5px;
+  margin-left: -27px;
 }
 
 .storyField {
@@ -110,6 +111,7 @@
 
 @media (max-width: 900px) {
   .step {
+    min-height: 0;
     padding: 24px 16px 0;
   }
 
@@ -130,7 +132,7 @@
 
 @media (max-height: 850px) {
   .step {
-    padding-top: 36px;
+    padding-top: 32px;
   }
 
   .storyField {
@@ -153,5 +155,56 @@
 
   .option {
     margin-top: 14px;
+  }
+}
+
+/* 휴대폰: 한 화면에 들어가도록 간격과 입력 칸을 줄여요. */
+@media (max-width: 760px) {
+  .step {
+    min-height: var(--story-step-height);
+    padding: 16px 16px 0;
+  }
+
+  .storyField {
+    margin-top: 18px;
+  }
+
+  .textarea {
+    height: 120px;
+  }
+
+  .option {
+    min-height: 0;
+    margin-top: 12px;
+    padding: 12px 16px 12px 48px;
+  }
+
+  .radio {
+    top: 13px;
+    left: 17px;
+  }
+
+  .optionTitle {
+    font-size: 16px;
+    line-height: 21px;
+  }
+
+  .optionDescription {
+    margin-top: 2px;
+    font-size: 14px;
+  }
+}
+
+@media (max-width: 760px) and (max-height: 700px) {
+  .step {
+    padding-top: 10px;
+  }
+
+  .storyField {
+    margin-top: 12px;
+  }
+
+  .textarea {
+    height: 96px;
   }
 }
