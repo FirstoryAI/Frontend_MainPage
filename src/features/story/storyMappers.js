@@ -146,6 +146,30 @@ export const GENERATING_STATUSES = ['REQUESTED', 'GENERATING_TEXT', 'GENERATING_
 export const CREATING_STATUSES = ['DRAFT', 'INTERVIEWING', 'CONFIRMING', ...GENERATING_STATUSES];
 
 // 서재 카드가 어느 묶음인지 정해요. (API는 COMPLETED 하나로 보내고 label로 읽음 여부를 알려줘요)
+// 서재의 주제 칩이에요. 동화 만들기 '어떤 일인가요?'의 분류와 같아요.
+export const LIBRARY_TOPICS = Object.keys(CATEGORY_CODES);
+const OTHER_TOPIC = '그 밖의 일';
+// 서재 목록은 분류 코드 없이 서버 문구(categoryLabel)만 줘요. 서버 문구와 화면 문구를 모두 받아서 주제로 바꿔요.
+// '그 밖의 일'(OTHER)이면 서버가 직접 적은 분류를 주므로, 모르는 문구는 모두 '그 밖의 일'로 봐요.
+const TOPIC_BY_LABEL = {
+  ...Object.fromEntries(LIBRARY_TOPICS.map((topic) => [topic, topic])),
+  '친구와 다툼': '친구 관계',
+  '새로운 환경': '등원 · 적응',
+  '가족의 변화': '가족',
+  '규칙': '떼쓰기 · 훈육',
+  '이별': '이별 · 죽음',
+};
+const compact = (text) => String(text ?? '').replace(/\s+/g, '');
+const TOPIC_BY_COMPACT_LABEL = Object.fromEntries(
+  Object.entries(TOPIC_BY_LABEL).map(([label, topic]) => [compact(label), topic]),
+);
+
+export function libraryTopic(story) {
+  const code = story.category ?? story.situationCategory ?? story.situation?.category;
+  if (code && CATEGORY_LABELS[code]) return CATEGORY_LABELS[code];
+  return TOPIC_BY_COMPACT_LABEL[compact(story.categoryLabel)] ?? OTHER_TOPIC;
+}
+
 export function libraryGroup(story) {
   const status = String(story.status ?? '').toUpperCase();
   if (CREATING_STATUSES.includes(status)) return 'CREATING';

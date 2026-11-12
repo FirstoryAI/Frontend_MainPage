@@ -13,22 +13,23 @@ import emptyMascot from '../../assets/images/library-empty-mascot.png';
 import SafeImage from '../../features/story/components/SafeImage';
 import { setCoverFrameRatio } from '../../features/story/coverLayout';
 import bookCoverStyles from '../../features/story/components/BookCover.module.css';
-import { getHome } from '../../services/homeApi';
 import { getStories } from '../../services/libraryApi';
 import { retryStory } from '../../services/storiesApi';
-import { GENERATING_STATUSES, libraryGroup } from '../../features/story/storyMappers';
+import { GENERATING_STATUSES, LIBRARY_TOPICS, libraryGroup, libraryTopic } from '../../features/story/storyMappers';
 import { useStoryGeneration } from '../../features/story/generation/useStoryGeneration';
 import { useSignedIn } from '../../features/auth/useSignedIn';
 import styles from './LibraryPage.module.css';
 
-const filters = [
-  { value: 'ALL', label: '전체' },
-  { value: 'CREATING', label: '제작 중', countKey: 'creating' },
-  { value: 'REVIEWING', label: '확인을 기다려요', countKey: 'reviewing' },
-  { value: 'UNREAD', label: '아직 읽지 않았어요', countKey: 'unread' },
-  { value: 'READ', label: '함께 읽었어요', countKey: 'read' },
-  { value: 'FAILED', label: '만들지 못했어요', countKey: 'failed' },
-];
+// 서재 칩은 주제별로 나눠요. (동화 책 위의 상태 표시는 그대로예요)
+const ALL_FILTER = 'ALL';
+const filters = [{ value: ALL_FILTER, label: '전체' }, ...LIBRARY_TOPICS.map((topic) => ({ value: topic, label: topic }))];
+const isTopicFilter = (value) => filters.some((filter) => filter.value === value);
+// 주소의 filter가 주제가 아니면(알림에서 넘어온 상태 이름 등) 전체를 보여줘요.
+const filterFromSearch = (search) => {
+  const requested = new URLSearchParams(search).get('filter');
+  if (requested == null) return null;
+  return isTopicFilter(requested) ? requested : ALL_FILTER;
+};
 
 const groupLabels = {
   CREATING: '제작 중', REVIEWING: '확인을 기다려요',
@@ -47,37 +48,25 @@ function formatStoryDate(value) {
 }
 
 // 만들다 멈춘(임시저장) 동화예요. 서재에는 실제로 만들고 있는 동화부터 보여줘서 이 동화들은 빼요.
-// 서버는 '전체'와 '제작 중'에 이 동화들도 함께 보내서, 목록과 탭 숫자에서 화면이 직접 빼요.
+// 서버는 '전체'에 이 동화들도 함께 보내서, 목록과 칩 숫자에서 화면이 직접 빼요.
 const DRAFT_STATUSES = ['DRAFT', 'INTERVIEWING', 'CONFIRMING'];
 const isDraft = (story) => DRAFT_STATUSES.includes(String(story.status ?? '').toUpperCase());
-const PAGE_SIZE = 20;
-const DRAFT_COUNT_PAGE_SIZE = 50;
-const DRAFT_COUNT_MAX_PAGES = 20;
+// 서버는 주제로 거르지 못해서, 서재 전체를 받아 화면에서 주제별로 나눠요. (50개씩, 최대 1,000개)
+const LOAD_PAGE_SIZE = 50;
+const LOAD_MAX_PAGES = 20;
+// 한 번에 보여주는 동화 수예요. '더 보기'를 누르면 이만큼 더 보여줘요.
+const SHOW_STEP = 20;
 
-// 임시저장 동화를 빼고, 보여줄 동화가 하나라도 나올 때까지 다음 쪽을 이어서 불러와요.
-async function loadVisibleStories(filter, startPage) {
-  let pageNo = startPage;
+async function loadLibrary() {
+  let pageNo = 0;
   let items = [];
   let result;
   do {
-    result = await getStories({ filter, page: pageNo, size: PAGE_SIZE });
+    result = await getStories({ filter: 'ALL', page: pageNo, size: LOAD_PAGE_SIZE });
     items = items.concat((result.items || []).filter((story) => !isDraft(story)));
-    pageNo = (result.page ?? pageNo) + 1;
-  } while (items.length === 0 && result.hasNext);
-  return { items, page: pageNo - 1, hasNext: Boolean(result.hasNext), totalElements: result.totalElements };
-}
-
-// 탭 숫자에서 뺄 임시저장 동화 수예요.
-async function countDrafts() {
-  let pageNo = 0;
-  let count = 0;
-  let result;
-  do {
-    result = await getStories({ filter: 'CREATING', page: pageNo, size: DRAFT_COUNT_PAGE_SIZE });
-    count += (result.items || []).filter(isDraft).length;
     pageNo += 1;
-  } while (result.hasNext && pageNo < DRAFT_COUNT_MAX_PAGES);
-  return count;
+  } while (result.hasNext && pageNo < LOAD_MAX_PAGES);
+  return items;
 }
 
 function LibraryPage() {
@@ -88,29 +77,23 @@ function LibraryPage() {
   // 미리보기에서 '이대로 확정'으로 넘어오면 '서재에 저장했어요' 팝업을 보여줘요.
   const [savedStory] = useState(() => (location.state?.newlyCreated ? (location.state.story ?? {}) : null));
   const [savedModalOpen, setSavedModalOpen] = useState(savedStory !== null);
-  const [activeFilter, setActiveFilter] = useState(() => {
-    const requestedFilter = new URLSearchParams(location.search).get('filter');
-    return filters.some((filter) => filter.value === requestedFilter) ? requestedFilter : 'ALL';
-  });
-  const [stories, setStories] = useState([]);
-  const [counts, setCounts] = useState({});
-  const [draftCount, setDraftCount] = useState(0);
-  const [page, setPage] = useState(0);
-  const [hasNext, setHasNext] = useState(false);
+  const [activeFilter, setActiveFilter] = useState(() => filterFromSearch(location.search) ?? ALL_FILTER);
+  const [library, setLibrary] = useState([]);
+  const [shownCount, setShownCount] = useState(SHOW_STEP);
   const [isLoading, setIsLoading] = useState(true);
-  const [isLoadingMore, setIsLoadingMore] = useState(false);
   const [error, setError] = useState('');
   const { resumeGeneration } = useStoryGeneration();
 
-  // Keep the selected tab in sync when a notification changes only the query string.
-  useEffect(() => {
-    const requestedFilter = new URLSearchParams(location.search).get('filter');
-    if (filters.some((filter) => filter.value === requestedFilter)) {
-      setActiveFilter(requestedFilter);
-      setIsLoading(true);
-      setError('');
+  // 알림을 눌러 주소의 filter만 바뀌어도 칩을 맞춰요. (그리는 중에 주소가 바뀐 것을 보고 바로 맞춰요)
+  const [seenSearch, setSeenSearch] = useState(location.search);
+  if (seenSearch !== location.search) {
+    setSeenSearch(location.search);
+    const requested = filterFromSearch(location.search);
+    if (requested) {
+      setActiveFilter(requested);
+      setShownCount(SHOW_STEP);
     }
-  }, [location.search]);
+  }
 
   // 새로고침했을 때 만드는 중인 동화가 있으면 다시 따라가서, 끝나면 알림이 오게 해요.
   useEffect(() => {
@@ -118,41 +101,23 @@ function LibraryPage() {
   }, [isSignedIn, resumeGeneration]);
 
   useEffect(() => {
-    if (!isSignedIn) return;
-    getHome().then((home) => {
-      if (home?.counts) setCounts((previous) => ({ ...previous, ...home.counts }));
-    }).catch(() => {
-      // The list is still usable when tab counts are unavailable.
-    });
-    countDrafts().then(setDraftCount).catch(() => {
-      // 못 세면 서버 숫자를 그대로 보여줘요.
-    });
-  }, [isSignedIn]);
-
-  useEffect(() => {
     if (!isSignedIn) return undefined;
     let active = true;
 
-    loadVisibleStories(activeFilter, 0).then((result) => {
+    loadLibrary().then((items) => {
       if (!active) return;
-      setStories(result.items || []);
-      setPage(result.page ?? 0);
-      setHasNext(Boolean(result.hasNext));
-      if (activeFilter === 'ALL') {
-        setCounts((previous) => ({ ...previous, all: result.totalElements }));
-      }
+      setLibrary(items);
       setError('');
       setIsLoading(false);
     }).catch((requestError) => {
       if (!active) return;
-      setStories([]);
-      setHasNext(false);
+      setLibrary([]);
       setError(requestError.message || '서재 목록을 불러오지 못했어요.');
       setIsLoading(false);
     });
 
     return () => { active = false; };
-  }, [activeFilter, isSignedIn]);
+  }, [isSignedIn]);
 
   const closeSavedModal = () => {
     setSavedModalOpen(false);
@@ -185,26 +150,17 @@ function LibraryPage() {
     }
   };
 
-  const handleLoadMore = async () => {
-    setIsLoadingMore(true);
-    setError('');
-    try {
-      const result = await loadVisibleStories(activeFilter, page + 1);
-      setStories((current) => [...current, ...(result.items || [])]);
-      setPage(result.page ?? page + 1);
-      setHasNext(Boolean(result.hasNext));
-    } catch (requestError) {
-      setError(requestError.message || '동화를 더 불러오지 못했어요.');
-    } finally {
-      setIsLoadingMore(false);
-    }
-  };
+  // 칩 숫자와 지금 칩의 동화예요. 모두 받아 둔 서재에서 화면이 직접 나눠요.
+  const topicCounts = library.reduce((result, story) => {
+    const topic = libraryTopic(story);
+    return { ...result, [topic]: (result[topic] ?? 0) + 1 };
+  }, { [ALL_FILTER]: library.length });
+  const filtered = activeFilter === ALL_FILTER ? library : library.filter((story) => libraryTopic(story) === activeFilter);
+  const stories = filtered.slice(0, shownCount);
+  const hasNext = filtered.length > stories.length;
 
   // 로그인했어도 보여줄 동화가 없으면 비로그인과 같은 빈 서재 화면을 보여줘요. (로그인 버튼만 없어요)
-  // 전체 보기에서 비었으면 '아직 제작된 동화가 없어요', 카테고리(상태) 필터에서 비었으면 '조건에 해당하는 동화가 없어요'예요.
-  // 서버 숫자에는 임시저장 동화가 들어 있어서 '전체'와 '제작 중'에서 빼요.
-  const withoutDrafts = (value) => (value == null ? value : Math.max(0, value - draftCount));
-  const shownCounts = { ...counts, all: withoutDrafts(counts.all), creating: withoutDrafts(counts.creating) };
+  // 전체 보기에서 비었으면 '아직 제작된 동화가 없어요', 주제 칩에서 비었으면 '조건에 해당하는 동화가 없어요'예요.
 
   const isLibraryEmpty = isSignedIn && !isLoading && !error && stories.length === 0;
   const showEmptyScreen = guest || isLibraryEmpty;
@@ -238,7 +194,7 @@ function LibraryPage() {
           <main className={styles.content}>
             <h1 className={styles.title}>서재</h1>
 
-            <div className={styles.filters} aria-label="동화 상태 필터">
+            <div className={styles.filters} aria-label="동화 주제 필터">
               {filters.map((filter) => (
                 <button
                   key={filter.value}
@@ -247,13 +203,10 @@ function LibraryPage() {
                   aria-pressed={activeFilter === filter.value}
                   onClick={() => {
                     setActiveFilter(filter.value);
-                    if (!guest) {
-                      setIsLoading(true);
-                      setError('');
-                    }
+                    setShownCount(SHOW_STEP);
                   }}
                 >
-                  {filter.label}{shownCounts[filter.countKey || 'all'] != null && ` ${shownCounts[filter.countKey || 'all']}`}
+                  {filter.label}{isSignedIn && !isLoading && !error && ` ${topicCounts[filter.value] ?? 0}`}
                 </button>
               ))}
             </div>
@@ -330,8 +283,8 @@ function LibraryPage() {
             </section>
             )}
             {!guest && hasNext && !isLoading && (
-              <button className={styles.loadMore} type="button" onClick={handleLoadMore} disabled={isLoadingMore}>
-                {isLoadingMore ? '불러오는 중…' : '더 보기'}
+              <button className={styles.loadMore} type="button" onClick={() => setShownCount((count) => count + SHOW_STEP)}>
+                더 보기
               </button>
             )}
           </main>
