@@ -123,10 +123,9 @@ function StoryCreatePage() {
   const [exitPromptOpen, setExitPromptOpen] = useState(false);
   const [loadingDraft, setLoadingDraft] = useState(Boolean(draftStoryId));
   const [busy, setBusy] = useState(false);
-  // '다음'·'동화 만들기'를 눌러 다음 단계를 기다리는 중이에요. 이때 캐릭터가 버튼으로 날아가요.
+  // '다음'·'동화 만들기'를 눌러 다음 단계를 기다리는 중이에요. 저장하는 동안 캐릭터가 화면 가운데로 날아와요.
+  // 저장 없이 넘어가는 상황 선택 단계는 기다리지 않아서 바로 넘어가요.
   const [leaping, setLeaping] = useState(false);
-  // 저장 없이 넘어가는 첫 단계(상황 선택)에서는 캐릭터가 버튼에 내려앉은 뒤 넘어가요.
-  const [hopping, setHopping] = useState(false);
   // '다음'을 누른 단계예요. 기다리는 동안 단계가 바뀌어도 캐릭터 아래 글자는 누른 단계 기준으로 보여줘요.
   const [leapStep, setLeapStep] = useState(null);
   const [notice, setNotice] = useState('');
@@ -782,12 +781,8 @@ function StoryCreatePage() {
   const progress = visibleStep >= STEP.GENERATING ? null : (toneOpen ? toneProgress(step) : progressByStep[step]);
   const showFooter = step !== STEP.CHAT && step < STEP.GENERATING;
   const leap = async (handler) => {
-    if (busy || hopping) return;
+    if (busy) return;
     setLeapStep(step);
-    if (step === STEP.SITUATION) {
-      setHopping(true);
-      return;
-    }
     setLeaping(true);
     try {
       await handler();
@@ -796,12 +791,7 @@ function StoryCreatePage() {
     }
   };
   // 다음 단계를 기다리는 동안(흐린 화면)에는 나가기·뒤로가기를 포함해 아무것도 누를 수 없어요.
-  const waitingNext = (busy && leaping) || hopping;
-  // 내려앉아 한 번 통통 뛴 다음 넘어가요.
-  const finishHop = () => setTimeout(() => {
-    setHopping(false);
-    goTo(STEP.DETAIL);
-  }, 900);
+  const waitingNext = busy && leaping;
 
   // 위기 신호가 있어 동화를 만들 수 없을 때는 안내 화면만 보여줘요.
   if (blocked || activeJob?.status === 'blocked') {
@@ -964,8 +954,6 @@ function StoryCreatePage() {
 
       <MascotTravel
         active={waitingNext}
-        immediate={hopping}
-        onLanded={hopping ? finishHop : undefined}
         label={leapStep === STEP.SUMMARY ? '준비하는 중…' : '저장하는 중…'}
         scopeRef={stageMainRef}
       />
