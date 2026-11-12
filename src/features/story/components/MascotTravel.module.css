@@ -42,7 +42,7 @@
 }
 
 .travel[data-landed] .hop {
-  animation: hop 900ms cubic-bezier(.3, 0, .5, 1) infinite;
+  animation: hop 1300ms cubic-bezier(.3, 0, .5, 1) infinite;
 }
 
 @keyframes fade-in {

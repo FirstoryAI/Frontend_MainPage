@@ -815,7 +815,7 @@ function StoryCreatePage() {
   const finishHop = () => setTimeout(() => {
     setHopping(false);
     goTo(STEP.DETAIL);
-  }, 450);
+  }, 900);
 
   // 위기 신호가 있어 동화를 만들 수 없을 때는 안내 화면만 보여줘요.
   if (blocked || activeJob?.status === 'blocked') {
