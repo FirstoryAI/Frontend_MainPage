@@ -127,6 +127,8 @@ function StoryCreatePage() {
   const [leaping, setLeaping] = useState(false);
   // 저장 없이 넘어가는 첫 단계(상황 선택)에서는 캐릭터가 버튼에 내려앉은 뒤 넘어가요.
   const [hopping, setHopping] = useState(false);
+  // '다음'을 누른 단계예요. 기다리는 동안 단계가 바뀌어도 캐릭터 아래 글자는 누른 단계 기준으로 보여줘요.
+  const [leapStep, setLeapStep] = useState(null);
   const [notice, setNotice] = useState('');
   const [blocked, setBlocked] = useState(null);
   // 이전 동화와 거의 같은 내용이라 만들지 못했을 때 true예요.
@@ -781,6 +783,7 @@ function StoryCreatePage() {
   const showFooter = step !== STEP.CHAT && step < STEP.GENERATING;
   const leap = async (handler) => {
     if (busy || hopping) return;
+    setLeapStep(step);
     if (step === STEP.SITUATION) {
       setHopping(true);
       return;
@@ -963,7 +966,7 @@ function StoryCreatePage() {
         active={waitingNext}
         immediate={hopping}
         onLanded={hopping ? finishHop : undefined}
-        label={step === STEP.SUMMARY ? '준비하는 중…' : '저장하는 중…'}
+        label={leapStep === STEP.SUMMARY ? '준비하는 중…' : '저장하는 중…'}
         scopeRef={stageMainRef}
       />
 
