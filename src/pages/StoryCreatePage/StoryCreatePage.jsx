@@ -963,7 +963,7 @@ function StoryCreatePage() {
         active={waitingNext}
         immediate={hopping}
         onLanded={hopping ? finishHop : undefined}
-        label={hopping ? '' : (step === STEP.SUMMARY ? '준비하는 중…' : '저장하는 중…')}
+        label={step === STEP.SUMMARY ? '준비하는 중…' : '저장하는 중…'}
         scopeRef={stageMainRef}
       />
 
