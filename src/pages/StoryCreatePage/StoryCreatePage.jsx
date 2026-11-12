@@ -790,6 +790,7 @@ function StoryCreatePage() {
       setLeaping(false);
     }
   };
+  // 다음 단계를 기다리는 동안(흐린 화면)에는 나가기·뒤로가기를 포함해 아무것도 누를 수 없어요.
   const waitingNext = (busy && leaping) || hopping;
   // 내려앉아 한 번 통통 뛴 다음 넘어가요.
   const finishHop = () => setTimeout(() => {
@@ -835,13 +836,13 @@ function StoryCreatePage() {
 
   return (
     <div className={`${styles.page} ${fitStageToViewport ? styles.fitPage : ''}`}>
-      <StoryHeader progress={progress} onExit={() => setExitPromptOpen(true)} inert={visibleStep === STEP.COMPLETE} complete={visibleStep === STEP.COMPLETE} />
+      <StoryHeader progress={progress} onExit={() => setExitPromptOpen(true)} inert={visibleStep === STEP.COMPLETE || waitingNext} complete={visibleStep === STEP.COMPLETE} />
 
       <div
         className={styles.stageGroup}
         ref={stageGroupRef}
         style={{ '--stage-scale': stageScale }}
-        inert={visibleStep === STEP.COMPLETE}
+        inert={visibleStep === STEP.COMPLETE || waitingNext}
       >
       {fitStageToViewport && !toneOpen && step > STEP.SITUATION && step < STEP.CHAT && (
         <div className={styles.backButtonAnchor}>
@@ -920,7 +921,7 @@ function StoryCreatePage() {
       {!toneOpen && showFooter && (
         <footer
           className={`${styles.footer} ${step === STEP.SUMMARY ? styles.summaryFooter : ''}`}
-          inert={editing !== null}
+          inert={editing !== null || waitingNext}
         >
           {notice && (
             <p className={styles.error} role="alert">

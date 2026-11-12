@@ -1,5 +1,5 @@
 /* 흐린 막(30) < 다음 버튼(31, 쓰는 쪽에서 올려 줘요) < 날아가는 캐릭터(32) */
-/* 뒤 화면을 살짝 흐리게 덮어요. 누르는 건 막지 않아요. (나가기 버튼 등은 그대로 눌려요) */
+/* 뒤 화면을 살짝 흐리게 덮고, 그 아래는 누를 수 없게 막아요. */
 .backdrop {
   position: fixed;
   z-index: 30;
@@ -7,7 +7,6 @@
   background: rgb(255 249 244 / 35%);
   -webkit-backdrop-filter: blur(3px);
   backdrop-filter: blur(3px);
-  pointer-events: none;
   animation: fade-in 280ms ease both;
 }
 
@@ -24,6 +23,11 @@
 .travel[data-leaving] {
   opacity: 0;
   transition: opacity 240ms ease;
+}
+
+/* 사라지는 중에는 다음 화면을 바로 누를 수 있어요. */
+.backdrop[data-leaving] {
+  pointer-events: none;
 }
 
 .hop {
