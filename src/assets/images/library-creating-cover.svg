@@ -1,0 +1,32 @@
+<svg xmlns="http://www.w3.org/2000/svg" width="201" height="199" viewBox="0 0 201 199" fill="none">
+  <!-- 제작 중인 동화 표지: 회색 종이 위에 연필이 그림을 그리는 중이고, 제목 자리는 아직 비어 있어요. -->
+  <defs>
+    <linearGradient id="paper" x1="0" y1="0" x2="201" y2="199" gradientUnits="userSpaceOnUse">
+      <stop offset="0" stop-color="#EEECE9"/>
+      <stop offset="1" stop-color="#DAD6D1"/>
+    </linearGradient>
+  </defs>
+  <rect width="201" height="199" fill="url(#paper)"/>
+
+  <!-- 그리다 만 선 -->
+  <path d="M38 126c8-15 18-17 24-8s14 12 21 1" stroke="#ABA59F" stroke-width="3" stroke-linecap="round" stroke-dasharray="1 7"/>
+
+  <!-- 연필 -->
+  <g transform="translate(83 119) rotate(-45)">
+    <path d="M20 -9L0 0L20 9Z" fill="#E4D9CB"/>
+    <path d="M7 -3.2L0 0L7 3.2Z" fill="#7F7973"/>
+    <rect x="20" y="-9" width="62" height="18" fill="#B9B3AC"/>
+    <rect x="20" y="-9" width="62" height="6" fill="#C8C2BB"/>
+    <rect x="82" y="-9" width="9" height="18" fill="#9D9790"/>
+    <path d="M91 -9H99A6 6 0 0 1 105 -3V3A6 6 0 0 1 99 9H91Z" fill="#CDBFB6"/>
+  </g>
+
+  <!-- 반짝임 -->
+  <path d="M152 112Q152 120 160 120Q152 120 152 128Q152 120 144 120Q152 120 152 112Z" fill="#C3BDB6"/>
+  <path d="M58 58Q58 63 63 63Q58 63 58 68Q58 63 53 63Q58 63 58 58Z" fill="#C9C3BC"/>
+  <path d="M164 70Q164 73.5 167.5 73.5Q164 73.5 164 77Q164 73.5 160.5 73.5Q164 73.5 164 70Z" fill="#CFC9C2"/>
+
+  <!-- 아직 비어 있는 제목 자리 -->
+  <rect x="48" y="152" width="105" height="8" rx="4" fill="#CBC6C0"/>
+  <rect x="66" y="167" width="69" height="8" rx="4" fill="#D2CDC7"/>
+</svg>

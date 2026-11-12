@@ -7,6 +7,8 @@ import StorySavedModal from '../../features/library/components/StorySavedModal';
 import avatarCircle from '../../assets/icons/avatar-circle.svg';
 import avatarPerson from '../../assets/icons/avatar-person.svg';
 import bookCover from '../../assets/images/library-cover-sample.png';
+import creatingCover from '../../assets/images/library-creating-cover.svg';
+import failedCover from '../../assets/images/library-failed-cover.svg';
 import emptyMascot from '../../assets/images/library-empty-mascot.png';
 import SafeImage from '../../features/story/components/SafeImage';
 import { setCoverFrameRatio } from '../../features/story/coverLayout';
@@ -272,6 +274,12 @@ function LibraryPage() {
             <section className={styles.storyGrid} aria-live="polite" aria-busy={isLoading}>
               {isLoading ? <p className={styles.message}>서재를 불러오는 중이에요.</p> : stories.map((story) => {
                 const group = libraryGroup(story);
+                // 제작 중이거나 만들지 못한 동화는 표지가 없어서, 상태에 맞는 회색 표지를 보여줘요.
+                //  - 제작 중: 연필이 그림을 그리는 중이에요. (빛이 지나가요)
+                //  - 만들지 못했어요: 연필이 부러졌고, 그리던 선이 엉켜 있어요.
+                const creating = group === 'CREATING';
+                const stateCover = creating ? creatingCover : group === 'FAILED' ? failedCover : null;
+                const coverAlt = story.title ? `${story.title} 표지` : '동화 표지';
                 const storyTitle = story.title || '제목을 준비하고 있어요';
                 const meta = [story.categoryLabel, story.childDisplayName, formatStoryDate(story.updatedAt || story.createdAt)]
                   .filter(Boolean).join(' · ');
@@ -283,17 +291,21 @@ function LibraryPage() {
                     <div
                       className={`${styles.coverFrame} ${bookCoverStyles.bookCover}`}
                       data-cover-frame
-                      style={{ '--cover': `url(${JSON.stringify(story.coverUrl || bookCover)})` }}
+                      style={{ '--cover': `url(${JSON.stringify(stateCover || story.coverUrl || bookCover)})` }}
                     >
                       <div className={bookCoverStyles.bookFace}>
-                        <div className={bookCoverStyles.bookArt}>
-                          <SafeImage
-                            className={styles.cover}
-                            onLoad={setCoverFrameRatio}
-                            src={story.coverUrl}
-                            alt={story.title ? `${story.title} 표지` : '동화 표지'}
-                            fallback={<img className={styles.cover} src={bookCover} alt={story.title ? `${story.title} 표지` : '동화 표지'} />}
-                          />
+                        <div className={`${bookCoverStyles.bookArt} ${creating ? styles.creatingArt : ''}`}>
+                          {stateCover ? (
+                            <img className={styles.cover} src={stateCover} alt={creating ? '제작 중인 동화 표지' : '만들지 못한 동화 표지'} />
+                          ) : (
+                            <SafeImage
+                              className={styles.cover}
+                              onLoad={setCoverFrameRatio}
+                              src={story.coverUrl}
+                              alt={coverAlt}
+                              fallback={<img className={styles.cover} src={bookCover} alt={coverAlt} />}
+                            />
+                          )}
                         </div>
                       </div>
                     </div>

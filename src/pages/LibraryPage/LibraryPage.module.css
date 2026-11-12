@@ -235,6 +235,25 @@
   user-select: none;
 }
 
+/* 제작 중인 동화 표지 위로 빛이 천천히 지나가서, 아직 만드는 중인 것처럼 보여요. */
+.creatingArt::after {
+  position: absolute;
+  inset: 0;
+  background: linear-gradient(105deg, rgb(255 255 255 / 0%) 30%, rgb(255 255 255 / 45%) 50%, rgb(255 255 255 / 0%) 70%);
+  transform: translateX(-100%);
+  animation: creating-shine 2.4s ease-in-out infinite;
+  content: '';
+  pointer-events: none;
+}
+
+@keyframes creating-shine {
+  60%, 100% { transform: translateX(100%); }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .creatingArt::after { animation: none; content: none; }
+}
+
 .storyTitle {
   box-sizing: border-box;
   flex: none;
