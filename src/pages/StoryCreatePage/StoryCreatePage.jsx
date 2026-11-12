@@ -124,6 +124,8 @@ function StoryCreatePage() {
   const [busy, setBusy] = useState(false);
   // '다음'·'동화 만들기'를 눌러 다음 단계를 기다리는 중이에요. 이때 캐릭터가 버튼으로 날아가요.
   const [leaping, setLeaping] = useState(false);
+  // 저장 없이 넘어가는 첫 단계(상황 선택)에서는 캐릭터가 버튼에 내려앉은 뒤 넘어가요.
+  const [hopping, setHopping] = useState(false);
   const ctaRef = useRef(null);
   const [notice, setNotice] = useState('');
   const [blocked, setBlocked] = useState(null);
@@ -776,7 +778,11 @@ function StoryCreatePage() {
   const progress = visibleStep >= STEP.GENERATING ? null : (toneOpen ? toneProgress(step) : progressByStep[step]);
   const showFooter = step !== STEP.CHAT && step < STEP.GENERATING;
   const leap = async (handler) => {
-    if (busy) return;
+    if (busy || hopping) return;
+    if (step === STEP.SITUATION) {
+      setHopping(true);
+      return;
+    }
     setLeaping(true);
     try {
       await handler();
@@ -784,7 +790,12 @@ function StoryCreatePage() {
       setLeaping(false);
     }
   };
-  const waitingNext = busy && leaping;
+  const waitingNext = (busy && leaping) || hopping;
+  // 내려앉아 한 번 통통 뛴 다음 넘어가요.
+  const finishHop = () => setTimeout(() => {
+    setHopping(false);
+    goTo(STEP.DETAIL);
+  }, 450);
 
   // 위기 신호가 있어 동화를 만들 수 없을 때는 안내 화면만 보여줘요.
   if (blocked || activeJob?.status === 'blocked') {
@@ -937,14 +948,20 @@ function StoryCreatePage() {
               {busy ? '준비하는 중…' : '동화 만들기'}
             </CtaButton>
           ) : (
-            <CtaButton pill ref={ctaRef} className={waitingNext ? styles.ctaLifted : ''} disabled={!canProceed || busy} onClick={() => leap(handleNext)}>
+            <CtaButton pill ref={ctaRef} className={waitingNext ? styles.ctaLifted : ''} disabled={!canProceed || busy || hopping} onClick={() => leap(handleNext)}>
               {busy ? '저장하는 중…' : '다음'}
             </CtaButton>
           )}
         </footer>
       )}
 
-      <MascotTravel active={waitingNext} scopeRef={stageMainRef} targetRef={ctaRef} />
+      <MascotTravel
+        active={waitingNext}
+        immediate={hopping}
+        onLanded={hopping ? finishHop : undefined}
+        scopeRef={stageMainRef}
+        targetRef={ctaRef}
+      />
 
       {editing === 'child' && (
         <ChildEditModal child={child} onSave={handleSaveChild} onClose={closeEditing} />

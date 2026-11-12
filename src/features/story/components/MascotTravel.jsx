@@ -15,19 +15,26 @@ const LANDING_OVERLAP = 4;
 //  - 뒤 화면을 살짝 흐리게 덮고, 버튼은 그 위로 올려 또렷하게 보여줘요.
 //  - 화면의 캐릭터([data-story-mascot])가 버튼 위로 폴짝 날아가서, 기다리는 동안 통통 뛰어요.
 // active: 기다리는 중인지, scopeRef: 캐릭터를 찾을 곳, targetRef: 다음 버튼
-function MascotTravel({ active, scopeRef, targetRef }) {
+// immediate: 기다리지 않고 바로 날아가요. (저장 없이 넘어가는 단계)
+// onLanded: 버튼에 내려앉으면 불러요. 캐릭터를 찾지 못했으면 바로 불러요.
+function MascotTravel({ active, scopeRef, targetRef, immediate = false, onLanded }) {
   // idle → in(보이는 중) → out(사라지는 중) → idle
   const [phase, setPhase] = useState('idle');
   const travelRef = useRef(null);
+  const onLandedRef = useRef(onLanded);
+
+  useEffect(() => {
+    onLandedRef.current = onLanded;
+  }, [onLanded]);
 
   useEffect(() => {
     if (!active) return undefined;
-    const timer = setTimeout(() => setPhase('in'), START_DELAY_MS);
+    const timer = setTimeout(() => setPhase('in'), immediate ? 0 : START_DELAY_MS);
     return () => {
       clearTimeout(timer);
       setPhase((current) => (current === 'in' ? 'out' : 'idle'));
     };
-  }, [active]);
+  }, [active, immediate]);
 
   useEffect(() => {
     if (phase !== 'out') return undefined;
@@ -40,14 +47,21 @@ function MascotTravel({ active, scopeRef, targetRef }) {
     const travel = travelRef.current;
     const source = scopeRef.current?.querySelector('[data-story-mascot]');
     const target = targetRef.current;
-    if (!travel || !source || !target) return undefined;
+    const landed = () => onLandedRef.current?.();
+    if (!travel || !source || !target) {
+      landed();
+      return undefined;
+    }
 
     // 화면이 비율대로 줄어 있을 수 있어서, 실제로 보이는 크기와 원래 크기의 비율로 크기를 맞춰요.
     const from = source.getBoundingClientRect();
     const to = target.getBoundingClientRect();
     const width = source.offsetWidth;
     const height = source.offsetHeight;
-    if (!width || !height || !from.width) return undefined;
+    if (!width || !height || !from.width) {
+      landed();
+      return undefined;
+    }
 
     const clone = source.cloneNode(true);
     clone.removeAttribute('data-story-mascot');
@@ -78,7 +92,10 @@ function MascotTravel({ active, scopeRef, targetRef }) {
         ],
       { duration: reduced ? 0 : FLY_MS, easing: 'cubic-bezier(.33,0,.4,1)', fill: 'forwards' },
     );
-    flight.finished.then(() => travel.setAttribute('data-landed', ''), () => {});
+    flight.finished.then(() => {
+      travel.setAttribute('data-landed', '');
+      landed();
+    }, () => {});
 
     // 사라지는 동안에는 날던 자리 그대로 흐려져요. (애니메이션은 레이어와 함께 없어져요)
     // 같은 화면에 남아 있으면(저장 실패) 캐릭터를 제자리에 다시 보여줘요.
