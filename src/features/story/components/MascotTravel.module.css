@@ -20,8 +20,7 @@
 }
 
 .backdrop[data-leaving],
-.travel[data-leaving],
-.caption[data-leaving] {
+.travel[data-leaving] {
   opacity: 0;
   transition: opacity 240ms ease;
 }
