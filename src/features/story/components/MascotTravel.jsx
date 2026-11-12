@@ -4,7 +4,8 @@ import styles from './MascotTravel.module.css';
 // 저장이 바로 끝나면 아무것도 보이지 않게, 조금 기다렸다가 시작해요.
 const START_DELAY_MS = 120;
 const LEAVE_MS = 260;
-const FLY_MS = 720;
+// 날아가는 시간이에요. 너무 빠르면 어디로 갔는지 놓쳐서, 천천히 따라볼 수 있게 했어요.
+const FLY_MS = 1100;
 // 버튼 위에 앉을 때 캐릭터 높이(px)예요. 원래보다 크면 이만큼으로 줄여요.
 const LANDED_HEIGHT = 96;
 // 캐릭터 발밑이 버튼 윗변에 살짝 걸치게 해요.
