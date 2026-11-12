@@ -121,8 +121,9 @@ function MascotTravel({ active, scopeRef, label = '', immediate = false, onLande
       <div className={styles.travel} data-leaving={leaving} ref={travelRef} aria-hidden="true">
         <div className={styles.hop} />
       </div>
-      {label && (
-        <p className={styles.caption} data-leaving={leaving} ref={captionRef} role="status">
+      {/* 글자는 화면이 바뀌는 순간 바로 없애요. (흐린 막이 걷힌 새 화면 위에 글자만 남지 않게) */}
+      {label && !leaving && (
+        <p className={styles.caption} ref={captionRef} role="status">
           {label}
         </p>
       )}
