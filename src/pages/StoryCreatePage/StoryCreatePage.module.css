@@ -74,12 +74,6 @@
   padding: 16px 74px 75px;
 }
 
-/* 다음 단계를 기다리는 동안 버튼을 흐린 막(MascotTravel, z-index 30) 위로 올려요. */
-.ctaLifted {
-  position: relative;
-  z-index: 31;
-}
-
 .error {
   margin: 0 auto 0 0;
   color: #a34439;
