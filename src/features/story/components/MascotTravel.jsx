@@ -6,8 +6,10 @@ const START_DELAY_MS = 120;
 const LEAVE_MS = 260;
 // 날아가는 시간이에요. 너무 빠르면 어디로 갔는지 놓쳐서, 천천히 따라볼 수 있게 했어요.
 const FLY_MS = 1100;
-// 버튼 위에 앉을 때 캐릭터 높이(px)예요. 원래보다 크면 이만큼으로 줄여요.
-const LANDED_HEIGHT = 96;
+// 버튼 위에 앉을 때 보이는 캐릭터 높이(px)예요. 원래보다 크면 이만큼으로 줄여요.
+// 이미지마다 둘레 여백이 달라서, 칸 크기가 아니라 실제로 그려진 캐릭터(--mascot-art) 기준으로 맞춰요.
+// 그래서 어느 단계에서 날아가도 버튼 위 캐릭터 크기가 같아요.
+const LANDED_ART_HEIGHT = 84;
 // 캐릭터 발밑이 버튼 윗변에 살짝 걸치게 해요.
 const LANDING_OVERLAP = 4;
 
@@ -66,12 +68,16 @@ function MascotTravel({ active, scopeRef, targetRef, immediate = false, onLanded
     const clone = source.cloneNode(true);
     clone.removeAttribute('data-story-mascot');
     clone.style.margin = '0';
+    // 단계마다 칸 크기를 바꾸는 규칙(.intro > div)은 복제본에 닿지 않아서, 원래 칸 크기를 그대로 줘요.
+    clone.style.width = '100%';
+    clone.style.height = '100%';
     travel.style.width = `${width}px`;
     travel.style.height = `${height}px`;
     travel.querySelector(`.${styles.hop}`).replaceChildren(clone);
 
+    const art = parseFloat(getComputedStyle(source).getPropertyValue('--mascot-art')) || 1;
     const startScale = from.width / width;
-    const endScale = Math.min(startScale, LANDED_HEIGHT / height);
+    const endScale = Math.min(startScale, LANDED_ART_HEIGHT / (height * art));
     const startX = from.left;
     const startY = from.top;
     const endX = to.left + to.width / 2 - (width * endScale) / 2;

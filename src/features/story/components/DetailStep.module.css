@@ -15,6 +15,8 @@
 }
 
 .intro > div:first-child {
+  --mascot-art: 1;
+
   width: 119px;
   height: 124px;
 }
@@ -110,9 +112,10 @@
     padding: 16px 16px 22px;
   }
 
+  /* 여백 없는 이미지라, 다른 단계와 보이는 크기(약 56px)가 같게 칸을 줄여요. */
   .intro > div:first-child {
-    width: 65px;
-    height: 68px;
+    width: 55px;
+    height: 57px;
   }
 
   .field,
@@ -144,8 +147,8 @@
   }
 
   .intro > div:first-child {
-    width: 54px;
-    height: 56px;
+    width: 45px;
+    height: 47px;
   }
 
   .field,
