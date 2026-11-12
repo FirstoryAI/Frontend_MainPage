@@ -6,11 +6,14 @@
   place-items: center;
   overflow: hidden;
   background: var(--color-page);
+  /* 책 캔버스 크기를 실제로 보이는 화면 크기(cqw·cqh)에 맞춰요. */
+  container-type: size;
 }
 
 .readerCanvas {
   position: relative;
-  width: min(100vw, 150vh);
+  /* 아이패드·아이폰 Safari는 vh를 주소창·탭 막대를 뺀 실제 높이보다 크게 잡아서, vh로 재면 책 아래 화살표가 화면 밖으로 잘려요. */
+  width: min(100cqw, 150cqh);
   aspect-ratio: 3 / 2;
   overflow: hidden;
   background: var(--color-page);
@@ -489,7 +492,7 @@
 }
 
 @media (max-width: 760px) {
-  .readerCanvas { width: 100vw; height: 100vh; aspect-ratio: auto; }
+  .readerCanvas { width: 100cqw; height: 100cqh; aspect-ratio: auto; }
   .readerHeader { height: 76px; }
   .readerClose { top: 24px; left: 16px; width: 24px; height: 24px; }
   .readerClose img { width: 24px; height: 24px; }
@@ -517,7 +520,7 @@
   .previewPagination { top: auto; bottom: 7%; width: 150px; height: 44px; padding: 6px 12px; border-radius: 12px; }
   .previewPagination button, .previewPagination button img { width: 22px; height: 33px; }
   .previewPagination strong { font-size: 14px; }
-  .previewGuide { position: fixed; top: auto; bottom: 15%; left: auto; right: 16px; width: min(437px, calc(100vw - 32px)); height: min(662px, 66vh); }
+  .previewGuide { position: fixed; top: auto; bottom: 15%; left: auto; right: 16px; width: min(437px, calc(100vw - 32px)); height: min(662px, 66cqh); }
   .previewGuideBackground { top: 0; left: 0; width: 100%; height: 100%; }
   .previewGuideContent { top: 9%; right: 7%; bottom: 10%; left: 9%; font-size: 14px; }
   .previewGuideContent section:first-child { min-height: 190px; }
