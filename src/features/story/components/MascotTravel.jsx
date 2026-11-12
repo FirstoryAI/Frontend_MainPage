@@ -114,7 +114,9 @@ function MascotTravel({ active, scopeRef, label = '', immediate = false, onLande
 
   if (phase === 'idle') return null;
 
-  const leaving = phase === 'out' || undefined;
+  // 기다림이 끝난 바로 그 화면(새 단계가 처음 그려지는 순간)부터 사라지는 중으로 봐요.
+  // phase는 그린 다음에야 'out'으로 바뀌어서, 그것만 보면 새 화면 위에 글자가 한 번 보여요.
+  const leaving = phase === 'out' || !active || undefined;
   return (
     <>
       <div className={styles.backdrop} data-leaving={leaving} aria-hidden="true" />
