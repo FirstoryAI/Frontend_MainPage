@@ -1,4 +1,5 @@
 // 화면에서 쓰는 값(한글 문구·연/월 선택)과 API 코드(FRIEND_CONFLICT, 2022-05 …)를 서로 바꿔 줘요.
+import { educationTopics } from './constants.js';
 // 화면의 '어떤 일인가요?' → API category
 const CATEGORY_CODES = {
   '친구 관계': 'FRIEND_CONFLICT',
@@ -46,8 +47,11 @@ const CUSTOM_CATEGORY_MAX = 30;
 
 export function toSituationRequest(situation, detail) {
   const reaction = detail.reaction.trim();
-  const description = detail.event.trim();
-  const category = CATEGORY_CODES[detail.category] ?? 'OTHER';
+  const isEducation = situation === 'proactive';
+  const description = isEducation
+    ? `교육 주제: ${detail.category}\n핵심 가치: ${detail.coreValue}${detail.event.trim() ? `\n${detail.event.trim()}` : ''}`
+    : detail.event.trim();
+  const category = isEducation ? 'OTHER' : (CATEGORY_CODES[detail.category] ?? 'OTHER');
   const timing = SITUATION_TIMING[situation] ?? 'PAST';
   // 아이의 반응은 '있었던 일'에서만 받아요. 앞으로 겪을 일에 보내면 서버가 400(MOMENT_ONLY_FOR_PAST)으로 막아요.
   const sendReaction = timing === 'PAST' && Boolean(reaction);
@@ -55,11 +59,50 @@ export function toSituationRequest(situation, detail) {
     // API에는 '먼저 알려주고 싶은 일'이 따로 없어서 '앞으로 겪을 일'과 같이 보내요.
     timing,
     category,
-    ...(category === 'OTHER' ? { customCategory: description.slice(0, CUSTOM_CATEGORY_MAX) } : {}),
+    ...(category === 'OTHER' ? { customCategory: (isEducation ? `교육 · ${detail.category}` : description).slice(0, CUSTOM_CATEGORY_MAX) } : {}),
     description,
     reactions: sendReaction ? ['OTHER'] : [],
     ...(sendReaction ? { customReaction: reaction } : {}),
     emotions: [],
+  };
+}
+
+export function fromDraftSituation(serverSituation, fallbackEvent = '', parentMessage = '') {
+  const description = serverSituation?.description ?? fallbackEvent;
+  const match = /^교육 주제: ([^\n]+)\n핵심 가치: ([^\n]+)(?:\n([\s\S]*))?$/.exec(description);
+  if (match && educationTopics[match[1]]?.includes(match[2])) {
+    return {
+      situation: 'proactive',
+      detail: { category: match[1], coreValue: match[2], event: match[3] ?? '', reaction: '' },
+    };
+  }
+  const categoryLabel = serverSituation?.categoryLabel ?? '';
+  const educationCategory = /^교육 · (.+)$/.exec(categoryLabel)?.[1]
+    ?? (educationTopics[categoryLabel]?.some(
+      (value) => parentMessage === value || parentMessage.startsWith(`${value}: `),
+    ) ? categoryLabel : null);
+  if (educationCategory && educationTopics[educationCategory]) {
+    const coreValue = educationTopics[educationCategory].find(
+      (value) => parentMessage === value || parentMessage.startsWith(`${value}: `),
+    ) ?? '';
+    return {
+      situation: 'proactive',
+      detail: {
+        category: educationCategory,
+        coreValue,
+        event: coreValue ? parentMessage.slice(coreValue.length).replace(/^: /, '') : '',
+        reaction: '',
+      },
+    };
+  }
+  return {
+    situation: fromSituationTiming(serverSituation?.timing),
+    detail: {
+      category: fromCategory(serverSituation?.category),
+      coreValue: '',
+      event: description,
+      reaction: '',
+    },
   };
 }
 
