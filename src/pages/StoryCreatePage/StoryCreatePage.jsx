@@ -28,9 +28,8 @@ import {
 } from '../../features/story/constants';
 import {
   GENERATING_STATUSES,
-  fromCategory,
+  fromDraftSituation,
   fromChild,
-  fromSituationTiming,
   interestPairs,
   toChildProfile,
   toSituationRequest,
@@ -55,7 +54,7 @@ import { getChildOptions, getChildren } from '../../services/childrenApi';
 import iconNotice from '../../assets/icons/icon-notice.svg';
 import styles from './StoryCreatePage.module.css';
 
-const initialDetail = { category: '', event: '', reaction: '' };
+const initialDetail = { category: '', coreValue: '', event: '', reaction: '' };
 const initialChild = {
   birthYear: '',
   birthMonth: '',
@@ -251,14 +250,12 @@ function StoryCreatePage() {
           tone: draft.tone ?? null,
         });
 
-        if (draft.situation) {
-          setSituation(fromSituationTiming(draft.situation.timing));
-          setDetail({
-            category: fromCategory(draft.situation.category),
-            // 상황 설명은 situation.description이에요. parent.concern은 인터뷰가 정리한 부모의 고민이라 상황이 아니에요.
-            event: draft.situation.description ?? draft.parent?.concern ?? '',
-            reaction: draft.parent?.response ?? '',
-          });
+        const restored = draft.situation
+          ? fromDraftSituation(draft.situation, draft.parent?.concern ?? '', draft.parent?.message ?? '')
+          : null;
+        if (restored) {
+          setSituation(restored.situation);
+          setDetail({ ...restored.detail, reaction: draft.parent?.response ?? '' });
         }
         if (draft.child) {
           const saved = children.find((item) => item.id === draft.child.childId);
@@ -272,14 +269,13 @@ function StoryCreatePage() {
         setSituationSummary(draft.interview?.situationSummary ?? '');
         setInterviewTurns(draft.interview?.turns ?? []);
         setInterviewDone(draft.status === 'CONFIRMING');
-        setHadInterview(Boolean(draft.interview?.turns?.some((turn) => turn.answer)));
+        setHadInterview(restored?.situation !== 'proactive' && Boolean(draft.interview?.turns?.some((turn) => turn.answer)));
         if (draft.status === 'INTERVIEWING' || draft.status === 'CONFIRMING') {
           interviewedKey.current = inputsKey({
-            situation: draft.situation ? fromSituationTiming(draft.situation.timing) : '',
+            situation: restored?.situation ?? '',
             detail: draft.situation
               ? {
-                  category: fromCategory(draft.situation.category),
-                  event: draft.situation.description ?? draft.parent?.concern ?? '',
+                  ...restored.detail,
                   reaction: draft.parent?.response ?? '',
                 }
               : initialDetail,
@@ -291,7 +287,9 @@ function StoryCreatePage() {
           });
         }
 
-        const early = [STEP.SITUATION, STEP.DETAIL, STEP.CHILD, STEP.TOPIC];
+        const early = restored?.situation === 'proactive'
+          ? [STEP.SITUATION, STEP.DETAIL, STEP.CHILD]
+          : [STEP.SITUATION, STEP.DETAIL, STEP.CHILD, STEP.TOPIC];
         if (GENERATING_STATUSES.includes(draft.status)) {
           setStep(STEP.GENERATING);
           startGeneration(draft.storyId);
@@ -312,8 +310,8 @@ function StoryCreatePage() {
             setHistory([STEP.SITUATION, STEP.DETAIL]);
             setStep(STEP.CHILD);
           } else {
-            setHistory([STEP.SITUATION, STEP.DETAIL, STEP.CHILD]);
-            setStep(STEP.TOPIC);
+            setHistory([STEP.SITUATION, STEP.DETAIL]);
+            setStep(early.includes(STEP.TOPIC) ? STEP.TOPIC : STEP.CHILD);
           }
         } else {
           navigate('/library', { replace: true });
@@ -357,7 +355,9 @@ function StoryCreatePage() {
 
   const canProceed = {
     [STEP.SITUATION]: Boolean(situation),
-    [STEP.DETAIL]: Boolean(detail.category && detail.event.trim()),
+    [STEP.DETAIL]: situation === 'proactive'
+      ? Boolean(detail.category && detail.coreValue)
+      : Boolean(detail.category && detail.event.trim()),
     [STEP.CHILD]: Boolean(child.birthYear && child.birthMonth && child.gender),
     [STEP.TOPIC]: topic.undecided || Boolean(topic.message.trim()),
   }[step];
@@ -453,7 +453,10 @@ function StoryCreatePage() {
 
   const isHiddenBlocked = () => blockedKey.current !== null && blockedKey.current === currentKey();
 
-  const messageText = topic.undecided ? '' : topic.message.trim();
+  const educationGoal = `${detail.coreValue}${detail.event.trim() ? `: ${detail.event.trim()}` : ''}`;
+  const messageText = situation === 'proactive'
+    ? educationGoal
+    : (topic.undecided ? '' : topic.message.trim());
 
   // 프로필로 처음 저장했다면(응답에는 id가 없어서) 동화 정보에서 프로필 id를 알아 둬요. 그래야 다음에 고칠 때 새 프로필이 또 생기지 않고 같은 프로필이 갱신돼요.
   const rememberChildId = async (storyId) => {
@@ -566,6 +569,8 @@ function StoryCreatePage() {
         interviewKept ||
         (await run(async () => {
           if (!(await syncStory('situation'))) return false;
+          if (situation === 'proactive' && !isHiddenBlocked()
+            && !checkSafety(await saveMessage(session.current.id, messageText))) return false;
           // 이별·죽음 이야기는 서버가 분위기 선택을 따로 요구하지 않아도, 부모가 먼저 분위기를 고르고 다음으로 가요.
           if (detail.category === '이별 · 죽음' && !session.current.tone && !(await pickTone())) return false;
           return true;
@@ -574,7 +579,30 @@ function StoryCreatePage() {
       return;
     }
     if (step === STEP.CHILD) {
-      if (interviewKept || (await run(() => syncStory('child')))) goTo(STEP.TOPIC);
+      if (situation === 'proactive') {
+        const ready = await run(async () => {
+          const summaryNeedsRefresh = session.current.status === 'CONFIRMING'
+            && interviewedKey.current !== currentKey();
+          if (!(await syncStory('child'))) return false;
+          if (!(await syncStory('message'))) return false;
+          if (!isHiddenBlocked() && session.current.status !== 'CONFIRMING') {
+            // 서버는 확인 단계로 전환할 때 인터뷰 종료 응답을 요구해요.
+            // 교육 흐름에서는 질문 화면을 열지 않고 모두 건너뛰어요.
+            if ((await runInterview({ mode: 'skip' })) !== 'summary') return false;
+          } else if (!isHiddenBlocked() && summaryNeedsRefresh) {
+            const response = await saveSummary(session.current.id, educationGoalFallback);
+            if (!checkSafety(response)) return false;
+            setChatGoal(educationGoalFallback);
+            setSituationSummary('');
+          }
+          setHadInterview(false);
+          interviewedKey.current = currentKey();
+          return true;
+        });
+        if (ready) goTo(STEP.SUMMARY);
+      } else if (interviewKept || (await run(() => syncStory('child')))) {
+        goTo(STEP.TOPIC);
+      }
       return;
     }
     if (step === STEP.TOPIC) {
@@ -763,7 +791,11 @@ function StoryCreatePage() {
     navigate('/home');
   };
 
-  const summaryGoal = chatGoal || (topic.undecided ? '' : topic.message.trim()) || SUMMARY_FALLBACK_GOAL;
+  const educationSituationFallback = `아이와 ${detail.category}, 특히 '${detail.coreValue}'에 대해 이야기하고 싶어요.`;
+  const educationGoalFallback = `아이에게 '${detail.coreValue}'의 의미를 전하고 싶어요.${detail.event.trim() ? ` 더 전하고 싶은 말은 '${detail.event.trim()}'예요.` : ''}`;
+  const summaryGoal = (situation === 'proactive' && (!chatGoal || chatGoal === educationGoal)
+    ? educationGoalFallback
+    : chatGoal || (topic.undecided ? '' : topic.message.trim())) || SUMMARY_FALLBACK_GOAL;
 
   const activeJob = job && job.storyId === storyId ? job : null;
   // 동화 만드는 중 화면에 있다가 제작이 끝나면 제작 완료 화면으로 넘어가요.
@@ -874,7 +906,16 @@ function StoryCreatePage() {
         {toneOpen && <ToneStep category={detail.category} selected={selectedTone} onSelect={setSelectedTone} />}
 
         {!toneOpen && step === STEP.SITUATION && (
-          <SituationStep selected={situation} onSelect={setSituation} />
+          <SituationStep selected={situation} onSelect={(selected) => {
+            if (selected !== situation) {
+              setDetail(initialDetail);
+              setTopic(initialTopic);
+              setChatGoal('');
+              setSituationSummary('');
+              interviewedKey.current = null;
+            }
+            setSituation(selected);
+          }} />
         )}
         {!toneOpen && step === STEP.DETAIL && (
           <DetailStep situation={situation} detail={detail} onChange={merge(setDetail)} />
@@ -906,10 +947,14 @@ function StoryCreatePage() {
         {!toneOpen && step === STEP.SUMMARY && (
           <SummaryStep
             child={child}
-            situation={situationSummary || detail.event.trim()}
+            situation={situation === 'proactive'
+              ? (situationSummary && !situationSummary.includes("부모님이 '교육 주제:")
+                ? situationSummary
+                : educationSituationFallback)
+              : situationSummary || detail.event.trim()}
             goal={summaryGoal}
             onEditChild={() => setEditing('child')}
-            onEditSituation={() => setEditing('situation')}
+            onEditSituation={() => situation === 'proactive' ? goTo(STEP.DETAIL) : setEditing('situation')}
             onEditGoal={() => setEditing('goal')}
           />
         )}

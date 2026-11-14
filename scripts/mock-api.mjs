@@ -360,9 +360,14 @@ function interviewResponse(story, extra = {}) {
   if (isConfirm) {
     story.status = 'CONFIRMING';
     story.interview.endReason = 'SUFFICIENT';
+    const education = /^교육 주제: ([^\n]+)\n핵심 가치: ([^\n]+)(?:\n([\s\S]*))?$/.exec(story.situation?.description ?? '');
     // 상황 정리 문장은 인터뷰가 끝날 때 만들어져요. 상황을 고치면 서버가 비워요.
-    story.interview.situationSummary = `부모님이 '${(story.situation?.description ?? '').slice(0, 24)}' 일로 아이가 마음이 많이 힘들었다고 들려주셨어요.`;
-    story.interview.summary = story.message
+    story.interview.situationSummary = education
+      ? `아이와 ${education[1]}, 특히 '${education[2]}'에 대해 이야기하고 싶어요.`
+      : `부모님이 '${(story.situation?.description ?? '').slice(0, 24)}' 일로 아이가 마음이 많이 힘들었다고 들려주셨어요.`;
+    story.interview.summary = education
+      ? `아이에게 '${education[2]}'의 의미를 전하고 싶어요.${education[3]?.trim() ? ` 더 전하고 싶은 말은 '${education[3].trim()}'예요.` : ''}`
+      : story.message
       ? `${story.message} 이야기를 아이와 나누고 싶어요.`
       : '아이의 속상한 마음을 먼저 알아주고, 괜찮다는 걸 함께 느끼는 이야기를 나누고 싶어요.';
   }
@@ -903,7 +908,12 @@ export function startMockApi({ port = Number(process.env.MOCK_API_PORT) || 8787,
         status: story.status,
         tone: story.tone,
         toneRequired: story.toneRequired,
-        situation: story.situation ? { category: story.situation.category, categoryLabel: story.situation.categoryLabel, timing: story.situation.timing, description: story.situation.description } : null,
+        situation: story.situation ? {
+          category: story.situation.category,
+          categoryLabel: story.situation.category === 'OTHER' ? story.situation.customCategory : story.situation.categoryLabel,
+          timing: story.situation.timing,
+          description: story.situation.description,
+        } : null,
         child: story.child,
         parent: story.message || story.situation ? { response: story.situation?.customReaction ?? null, concern: story.interview.summary ?? '아이가 불안해하는 것 같아요.', message: story.message, messageDirection: 'UNDECIDED' } : null,
         interview: { turns: story.interview.turns, summary: story.interview.summary, situationSummary: story.interview.situationSummary ?? null, endReason: story.interview.endReason },

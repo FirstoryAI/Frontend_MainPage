@@ -1,6 +1,6 @@
 import MascotBubble from './MascotBubble';
 import Chip from './Chip';
-import { EVENT_MAX_LENGTH, REACTION_MAX_LENGTH, categories, lockedCategories } from '../constants';
+import { EVENT_MAX_LENGTH, REACTION_MAX_LENGTH, categories, educationTopics, lockedCategories } from '../constants';
 import { getCategoryContent, getEventExample } from '../categoryContent';
 import iconLock from '../../../assets/icons/icon-lock.svg';
 import detailMascot from '../../../assets/images/story-detail-mascot.png';
@@ -19,14 +19,17 @@ const TIMING_TEXT = {
     eventLabel: '무슨 일이 있을 예정인가요?',
   },
   proactive: {
-    title: '먼저 알려 주고 싶은 일을 적어 주세요.',
-    eventLabel: '어떤 이야기를 먼저 해 주고 싶나요?',
+    title: '아이에게 알려주고 싶은 것을 골라 주세요.',
+    eventLabel: '더 전달하고 싶은 메시지가 있나요?',
   },
 };
 
 function DetailStep({ situation, detail, onChange }) {
   const timing = TIMING_TEXT[situation] ?? TIMING_TEXT.past;
   const isPast = timing === TIMING_TEXT.past;
+  const isEducation = situation === 'proactive';
+  // 교육 주제와 핵심 가치를 상황 설명에 함께 저장할 공간을 남겨요.
+  const eventMaxLength = isEducation ? EVENT_MAX_LENGTH - 40 : EVENT_MAX_LENGTH;
   // 고른 상황과 카테고리에 따라 예시 문장이 바뀌어요. 고르기 전에는 기본 카테고리의 예시를 보여줘요.
   const content = getCategoryContent(detail.category);
 
@@ -36,15 +39,17 @@ function DetailStep({ situation, detail, onChange }) {
         mascotImage={detailMascot}
         className={styles.intro}
         title={timing.title}
-        description="짧게 적어도 괜찮아요. AI 인터뷰에서 더 여쭤볼게요."
+        description={isEducation
+          ? '교육 주제와 핵심 가치를 골라 주세요. 더 전하고 싶은 말은 자유롭게 적어 주세요.'
+          : '짧게 적어도 괜찮아요. AI 인터뷰에서 더 여쭤볼게요.'}
       />
 
       <div className={`${styles.field} ${styles.categoryField}`}>
         <p className={form.label} id="category-label">
-          어떤 일인가요?
+          {isEducation ? '교육 주제' : '어떤 일인가요?'}
         </p>
         <div className={styles.chips} role="radiogroup" aria-labelledby="category-label">
-          {categories.map((category) => {
+          {(isEducation ? Object.keys(educationTopics) : categories).map((category) => {
             const locked = lockedCategories.includes(category);
 
             return (
@@ -54,7 +59,7 @@ function DetailStep({ situation, detail, onChange }) {
                 value={category}
                 checked={detail.category === category}
                 disabled={locked}
-                onChange={() => onChange({ category })}
+                onChange={() => onChange({ category, coreValue: '' })}
               >
                 {category}
                 {locked && <img className={styles.lockIcon} src={iconLock} alt="준비 중" />}
@@ -64,6 +69,25 @@ function DetailStep({ situation, detail, onChange }) {
         </div>
       </div>
 
+      {isEducation && detail.category && educationTopics[detail.category] && (
+        <div className={styles.field}>
+          <p className={form.label} id="core-value-label">핵심 가치</p>
+          <div className={styles.chips} role="radiogroup" aria-labelledby="core-value-label">
+            {educationTopics[detail.category].map((value) => (
+              <Chip
+                key={value}
+                name="coreValue"
+                value={value}
+                checked={detail.coreValue === value}
+                onChange={() => onChange({ coreValue: value })}
+              >
+                {value}
+              </Chip>
+            ))}
+          </div>
+        </div>
+      )}
+
       <div className={styles.field}>
         <label className={form.label} htmlFor="story-event">
           {timing.eventLabel}
@@ -72,13 +96,13 @@ function DetailStep({ situation, detail, onChange }) {
           className={`${form.control} ${form.textarea} ${styles.textarea}`}
           id="story-event"
           name="event"
-          placeholder={getEventExample(detail.category, situation)}
-          maxLength={EVENT_MAX_LENGTH}
+          placeholder={isEducation ? '아이에게 더 전하고 싶은 이야기를 자유롭게 적어 주세요.' : getEventExample(detail.category, situation)}
+          maxLength={eventMaxLength}
           value={detail.event}
           onChange={(event) => onChange({ event: event.target.value })}
         />
         <p className={styles.count} aria-live="off">
-          {detail.event.length}/{EVENT_MAX_LENGTH}
+          {detail.event.length}/{eventMaxLength}
         </p>
       </div>
 
