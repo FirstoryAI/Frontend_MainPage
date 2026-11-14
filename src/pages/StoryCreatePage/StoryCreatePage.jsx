@@ -123,9 +123,11 @@ function StoryCreatePage() {
   const [exitPromptOpen, setExitPromptOpen] = useState(false);
   const [loadingDraft, setLoadingDraft] = useState(Boolean(draftStoryId));
   const [busy, setBusy] = useState(false);
-  // '다음'·'동화 만들기'를 눌러 다음 단계를 기다리는 중이에요. 저장하는 동안 캐릭터가 화면 가운데로 날아와요.
-  // 저장 없이 넘어가는 상황 선택 단계는 기다리지 않아서 바로 넘어가요.
+  // '다음'·'동화 만들기'를 눌러 저장을 기다리는 중이에요.
   const [leaping, setLeaping] = useState(false);
+  const [saveComplete, setSaveComplete] = useState(false);
+  const leapingRef = useRef(false);
+  const pendingStepRef = useRef(null);
   // '다음'을 누른 단계예요. 기다리는 동안 단계가 바뀌어도 캐릭터 아래 글자는 누른 단계 기준으로 보여줘요.
   const [leapStep, setLeapStep] = useState(null);
   const [notice, setNotice] = useState('');
@@ -334,6 +336,10 @@ function StoryCreatePage() {
   };
 
   const goTo = (next) => {
+    if (leapingRef.current && step !== STEP.SITUATION) {
+      pendingStepRef.current = next;
+      return;
+    }
     setNotice('');
     setHistory((current) => [...current, step]);
     setStep(next);
@@ -783,15 +789,27 @@ function StoryCreatePage() {
   const leap = async (handler) => {
     if (busy) return;
     setLeapStep(step);
+    pendingStepRef.current = null;
+    leapingRef.current = true;
     setLeaping(true);
     try {
       await handler();
+      if (pendingStepRef.current !== null) {
+        setSaveComplete(true);
+        await new Promise((resolve) => setTimeout(resolve, 1200));
+        setNotice('');
+        setHistory((current) => [...current, step]);
+        setStep(pendingStepRef.current);
+      }
     } finally {
+      pendingStepRef.current = null;
+      leapingRef.current = false;
+      setSaveComplete(false);
       setLeaping(false);
     }
   };
   // 다음 단계를 기다리는 동안(흐린 화면)에는 나가기·뒤로가기를 포함해 아무것도 누를 수 없어요.
-  const waitingNext = busy && leaping;
+  const waitingNext = (busy && leaping) || saveComplete;
 
   // 위기 신호가 있어 동화를 만들 수 없을 때는 안내 화면만 보여줘요.
   if (blocked || activeJob?.status === 'blocked') {
@@ -939,7 +957,7 @@ function StoryCreatePage() {
               아이와 비슷한 일을 겪는 동물 친구의 이야기로 만들어요. 아이 이름은 동화에 나오지 않아요.
             </p>
           )}
-          {/* 기다리는 동안에도 버튼 모양·글자는 그대로 두고, 흐린 화면 가운데 캐릭터 아래에 '저장하는 중…'을 보여줘요. */}
+          {/* 저장 상태는 화면 가운데 별도 아이콘으로 보여줘요. */}
           {step === STEP.SUMMARY ? (
             <CtaButton pill disabled={busy && !waitingNext} onClick={() => leap(handleStartGeneration)}>
               동화 만들기
@@ -954,8 +972,8 @@ function StoryCreatePage() {
 
       <MascotTravel
         active={waitingNext}
+        complete={saveComplete}
         label={leapStep === STEP.SUMMARY ? '준비하는 중…' : '저장하는 중…'}
-        scopeRef={stageMainRef}
       />
 
       {editing === 'child' && (
