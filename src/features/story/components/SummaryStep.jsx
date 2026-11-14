@@ -48,7 +48,7 @@ function SummaryStep({ child, situation, goal, onEditChild, onEditSituation, onE
         mascotFrameClassName={styles.summaryMascotFrame}
         className={styles.intro}
         title="이 내용으로 동화를 만들까요?"
-        description="FIRSTORY AI가 이해한 내용이에요. 다르면 고쳐 주세요."
+        description="FIRSTORY AI가 이해한 내용이에요. 필요한 부분은 수정할 수 있어요."
       />
 
       <div className={styles.cards}>
