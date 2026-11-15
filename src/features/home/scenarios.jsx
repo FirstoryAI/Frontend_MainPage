@@ -1,4 +1,4 @@
-import { lockedCategories } from '../story/constants';
+import { categoryDisplayNames, lockedCategories } from '../story/constants';
 import scenarioFriend from '../../assets/images/home/scenario-friend.png';
 import scenarioEmotion from '../../assets/images/home/scenario-emotion.png';
 import scenarioKindergarten from '../../assets/images/home/scenario-kindergarten.png';
@@ -13,6 +13,7 @@ import scenarioClothesTeeth from '../../assets/images/home/scenario-clothes-teet
 // 동화 만들기에서 잠가 둔 카테고리(이별 · 죽음)의 카드는 당분간 홈과 '부모들의 이야기' 목록(전체)에서 보여주지 않아요.
 // 카드 데이터와 팝업 문구는 그대로 두었으니, lockedCategories에서 빼면 다시 나타나요.
 const isAvailable = (scenario) => !lockedCategories.includes(scenario.category);
+export const scenarioCategoryLabel = (scenario) => categoryDisplayNames[scenario.category] ?? scenario.category;
 
 // 홈의 추천 카드로 보여주는 시나리오예요. '부모들의 이야기'(더보기) 목록에도 모두 들어가요.
 const homeScenarios = [

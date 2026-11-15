@@ -171,6 +171,12 @@
   list-style: none;
 }
 
+.empty {
+  margin: 0;
+  color: var(--color-secondary);
+  font-size: 17px;
+}
+
 /* 카드 크기는 홈의 추천 카드(250×287)와 같은 비율이고, 안쪽 치수는 모두 --u로 줄어들어요. */
 .card {
   position: relative;

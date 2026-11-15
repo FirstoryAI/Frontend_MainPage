@@ -3,8 +3,8 @@ import { Link, useNavigate } from 'react-router-dom';
 import Sidebar from '../../components/layout/Sidebar';
 import HomeScenarioModal from '../../features/home/components/HomeScenarioModal';
 import { useSignedIn } from '../../features/auth/useSignedIn';
-import { listScenarios } from '../../features/home/scenarios';
-import { lockedCategories } from '../../features/story/constants';
+import { listScenarios, scenarioCategoryLabel } from '../../features/home/scenarios';
+import { categories, categoryDisplayNames, lockedCategories } from '../../features/story/constants';
 import iconBell from '../../assets/icons/icon-bell.svg';
 import iconLock from '../../assets/icons/icon-lock.svg';
 import iconBackSmall from '../../assets/icons/icon-back-small.svg';
@@ -13,7 +13,7 @@ import styles from './ScenarioListPage.module.css';
 
 const ALL = '전체';
 // 잠긴 카테고리(이별 · 죽음)는 카드는 숨기고 필터만 자물쇠로 남겨 둬요.
-const filters = [ALL, ...new Set([...listScenarios.map((scenario) => scenario.category), ...lockedCategories])];
+const filters = [ALL, ...categories];
 
 function ScenarioListPage() {
   const navigate = useNavigate();
@@ -84,7 +84,7 @@ function ScenarioListPage() {
                     disabled={locked}
                     onClick={() => setActiveFilter(filter)}
                   >
-                    {filter}
+                    {categoryDisplayNames[filter] ?? filter}
                     {locked && <img className={styles.lockIcon} src={iconLock} alt="준비 중" />}
                   </button>
                 );
@@ -99,10 +99,10 @@ function ScenarioListPage() {
                       className={`${styles.card} ${styles[scenario.color]} ${styles[scenario.id] ?? ''}`}
                       type="button"
                       aria-haspopup="dialog"
-                      aria-label={`${scenario.category}: ${scenario.accessibleTitle}`}
+                      aria-label={`${scenarioCategoryLabel(scenario)}: ${scenario.accessibleTitle}`}
                       onClick={() => setSelectedScenario(scenario)}
                     >
-                      <span className={styles.category}>{scenario.category}</span>
+                      <span className={styles.category}>{scenarioCategoryLabel(scenario)}</span>
                       <span className={styles.cardTitle}>{scenario.title}</span>
                       <span className={styles.cardDescription}>{scenario.description}</span>
                       <img className={styles.cardImage} src={scenario.image} alt="" />
@@ -110,6 +110,7 @@ function ScenarioListPage() {
                   </li>
                 ))}
               </ul>
+              {visibleScenarios.length === 0 && <p className={styles.empty}>해당하는 이야기가 아직 없어요.</p>}
             </div>
           </main>
         </div>
