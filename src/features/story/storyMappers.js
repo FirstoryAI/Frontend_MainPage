@@ -1,5 +1,5 @@
 // 화면에서 쓰는 값(한글 문구·연/월 선택)과 API 코드(FRIEND_CONFLICT, 2022-05 …)를 서로 바꿔 줘요.
-import { educationTopics } from './constants.js';
+import { categories, categoryDisplayNames, educationTopics } from './constants.js';
 // 화면의 '어떤 일인가요?' → API category
 const CATEGORY_CODES = {
   '친구 관계': 'FRIEND_CONFLICT',
@@ -188,31 +188,42 @@ export function toLoadingStage(stage) {
 export const GENERATING_STATUSES = ['REQUESTED', 'GENERATING_TEXT', 'GENERATING_IMAGES'];
 export const CREATING_STATUSES = ['DRAFT', 'INTERVIEWING', 'CONFIRMING', ...GENERATING_STATUSES];
 
-// 서재 카드가 어느 묶음인지 정해요. (API는 COMPLETED 하나로 보내고 label로 읽음 여부를 알려줘요)
-// 서재의 주제 칩이에요. 동화 만들기 '어떤 일인가요?'의 분류와 같아요.
-export const LIBRARY_TOPICS = Object.keys(CATEGORY_CODES);
-const OTHER_TOPIC = '그 밖의 일';
-// 서재 목록은 분류 코드 없이 서버 문구(categoryLabel)만 줘요. 서버 문구와 화면 문구를 모두 받아서 주제로 바꿔요.
-// '그 밖의 일'(OTHER)이면 서버가 직접 적은 분류를 주므로, 모르는 문구는 모두 '그 밖의 일'로 봐요.
+// 서재에서는 동화 만들기의 세부 분류를 더 큰 주제로 묶어서 보여줘요.
+export const LIBRARY_TOPICS = categories.map((category) => categoryDisplayNames[category]);
+const OTHER_TOPIC = '기타';
+// 서재 목록은 분류 코드 없이 서버 문구(categoryLabel)만 줄 수도 있어요.
+// 교육 주제는 OTHER 코드로 저장되므로 categoryLabel을 먼저 확인해요.
 const TOPIC_BY_LABEL = {
-  ...Object.fromEntries(LIBRARY_TOPICS.map((topic) => [topic, topic])),
-  '친구와 다툼': '친구 관계',
-  '새로운 환경': '등원 · 적응',
+  '친구 관계': '친구',
+  '친구와 다툼': '친구',
+  '등원 · 적응': '처음',
+  '새로운 환경': '처음',
   '가족의 변화': '가족',
-  '규칙': '떼쓰기 · 훈육',
-  '이별': '이별 · 죽음',
+  '가족': '가족',
+  '떼쓰기 · 훈육': '교육·훈육',
+  '규칙': '교육·훈육',
+  '이별 · 죽음': '이별',
+  '이별': '이별',
+  '그 밖의 일': '기타',
+  ...Object.fromEntries(LIBRARY_TOPICS.map((topic) => [topic, topic])),
 };
 const compact = (text) => String(text ?? '').replace(/\s+/g, '');
+const EDUCATION_TOPIC_LABELS = new Set(Object.keys(educationTopics).map(compact));
 const TOPIC_BY_COMPACT_LABEL = Object.fromEntries(
   Object.entries(TOPIC_BY_LABEL).map(([label, topic]) => [compact(label), topic]),
 );
 
 export function libraryTopic(story) {
+  const label = compact(story.categoryLabel);
+  if (/^교육[·.]/.test(label) || EDUCATION_TOPIC_LABELS.has(label)) {
+    return '교육·훈육';
+  }
   const code = story.category ?? story.situationCategory ?? story.situation?.category;
-  if (code && CATEGORY_LABELS[code]) return CATEGORY_LABELS[code];
-  return TOPIC_BY_COMPACT_LABEL[compact(story.categoryLabel)] ?? OTHER_TOPIC;
+  if (code && CATEGORY_LABELS[code]) return TOPIC_BY_COMPACT_LABEL[compact(CATEGORY_LABELS[code])] ?? OTHER_TOPIC;
+  return TOPIC_BY_COMPACT_LABEL[label] ?? OTHER_TOPIC;
 }
 
+// 서재 카드가 어느 묶음인지 정해요. (API는 COMPLETED 하나로 보내고 label로 읽음 여부를 알려줘요)
 export function libraryGroup(story) {
   const status = String(story.status ?? '').toUpperCase();
   if (CREATING_STATUSES.includes(status)) return 'CREATING';
