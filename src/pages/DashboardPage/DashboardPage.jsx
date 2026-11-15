@@ -5,11 +5,12 @@ import NotificationBell from '../../components/layout/NotificationBell';
 import OnboardingModal from '../../features/onboarding/components/OnboardingModal';
 import StoryDraftModal from '../../features/story/components/StoryDraftModal';
 import HomeScenarioModal from '../../features/home/components/HomeScenarioModal';
-import { listScenarios } from '../../features/home/scenarios';
+import { listScenarios, scenarioCategoryLabel } from '../../features/home/scenarios';
 import { shuffleScenarioRounds } from '../../features/home/shuffleScenarioRounds';
 import { SET_COUNT, useConveyor } from '../../features/home/hooks/useConveyor';
 import { hasSeenOnboarding, markOnboardingSeen } from '../../features/onboarding/onboardingSeen';
 import { useStoryGeneration } from '../../features/story/generation/useStoryGeneration';
+import { libraryTopic } from '../../features/story/storyMappers';
 import { getDraft } from '../../services/storiesApi';
 import { getStories } from '../../services/libraryApi';
 import { markOnboardingSeen as saveOnboardingSeen } from '../../services/meApi';
@@ -31,10 +32,12 @@ async function loadDrafts() {
       const draft = await getDraft(story.id).catch(() => null);
       // 목록 제목은 알아보기 쉬운 상황 설명으로 해요. (없으면 인터뷰가 정리한 부모 고민)
       const concern = (draft?.situation?.description || draft?.parent?.concern)?.trim();
+      const categoryLabel = story.categoryLabel ?? draft?.situation?.categoryLabel;
+      const category = story.category ?? draft?.situation?.category;
       return {
         id: story.id,
         title: concern ? (concern.length > 28 ? `${concern.slice(0, 28)}…` : concern) : '새로운 동화',
-        categoryLabel: story.categoryLabel ?? draft?.situation?.categoryLabel ?? '',
+        categoryLabel: (categoryLabel || category) ? libraryTopic({ categoryLabel, category }) : '',
         updatedAt: story.updatedAt,
       };
     }),
@@ -156,12 +159,12 @@ function DashboardPage({ guest = false }) {
                       key={`${copy}-${index}-${scenario.id}`}
                       data-scenario-id={scenario.id}
                       aria-haspopup="dialog"
-                      aria-label={`${scenario.category}: ${scenario.accessibleTitle}`}
+                      aria-label={`${scenarioCategoryLabel(scenario)}: ${scenario.accessibleTitle}`}
                       // 이어 붙인 카드는 모양만 같고 읽거나 포커스를 받지 않아요.
                       aria-hidden={copy > 0 || index >= listScenarios.length ? 'true' : undefined}
                       tabIndex={copy > 0 || index >= listScenarios.length ? -1 : undefined}
                     >
-                      <span className={styles.category}>{scenario.category}</span>
+                      <span className={styles.category}>{scenarioCategoryLabel(scenario)}</span>
                       <span className={styles.cardTitle}>{scenario.title}</span>
                       <span className={styles.cardDescription}>{scenario.description}</span>
                       <img className={styles.cardImage} src={scenario.image} alt="" />

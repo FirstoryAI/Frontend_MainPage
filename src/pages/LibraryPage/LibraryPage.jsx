@@ -234,7 +234,7 @@ function LibraryPage() {
                 const stateCover = creating ? creatingCover : group === 'FAILED' ? failedCover : null;
                 const coverAlt = story.title ? `${story.title} 표지` : '동화 표지';
                 const storyTitle = story.title || '제목을 준비하고 있어요';
-                const meta = [story.categoryLabel, story.childDisplayName, formatStoryDate(story.updatedAt || story.createdAt)]
+                const meta = [libraryTopic(story), story.childDisplayName, formatStoryDate(story.updatedAt || story.createdAt)]
                   .filter(Boolean).join(' · ');
                 return (
                   <article className={styles.storyCard} key={story.id}>
