@@ -15,6 +15,7 @@ import mascotBase from '../../../assets/story-preview-guide/mascot-base.svg';
 import mascotFace from '../../../assets/story-preview-guide/mascot-face.png';
 import { guideFor, NO_GUIDE_MESSAGE } from '../guideContent';
 import { useFlipDrag } from '../hooks/useFlipDrag';
+import GuideText from './GuideText';
 import StoryFlipBook from './StoryFlipBook';
 import styles from './StoryReader.module.css';
 
@@ -212,13 +213,13 @@ function StoryReader({ title, pages, page, onPage, onClose, closeLabel = '돌아
               <div className={styles.previewGuideContent}>
                 <section>
                   <h2>이번 장면에서는</h2>
-                  {pageGuide?.description && <p className={styles.previewGuideLead}>{pageGuide.description}</p>}
-                  {pageGuide?.scene && <p className={styles.previewGuideDetail}><img src={guideHand} alt="" />{pageGuide.scene}</p>}
+                  {pageGuide?.description && <p className={styles.previewGuideLead}><GuideText text={pageGuide.description} /></p>}
+                  {pageGuide?.scene && <p className={styles.previewGuideDetail}><img src={guideHand} alt="" /><GuideText text={pageGuide.scene} /></p>}
                 </section>
                 <section>
                   <h2>아이가 대답할 때에는</h2>
-                  {pageGuide?.hint && <p className={styles.previewGuideLead}>{pageGuide.hint}</p>}
-                  {pageGuide?.question && <p className={styles.previewGuideDetail}><img src={guideQuestion} alt="" />{pageGuide.question}</p>}
+                  {pageGuide?.hint && <p className={styles.previewGuideLead}><GuideText text={pageGuide.hint} /></p>}
+                  {pageGuide?.question && <p className={styles.previewGuideDetail}><img src={guideQuestion} alt="" /><GuideText text={pageGuide.question} /></p>}
                 </section>
               </div>
             </aside>

@@ -330,7 +330,7 @@
   line-height: 1.5;
 }
 
-.guidePanelContent p { overflow-wrap: anywhere; }
+.guidePanelContent p { overflow-wrap: break-word; word-break: keep-all; }
 .guideLead {
   margin: 12px 0 0 3px;
   font-size: 18px;
