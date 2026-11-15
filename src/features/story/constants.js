@@ -17,13 +17,23 @@ export const situations = [
 ];
 
 export const categories = [
-  '친구 관계',
   '등원 · 적응',
+  '친구 관계',
   '가족',
   '떼쓰기 · 훈육',
   '이별 · 죽음',
   '그 밖의 일',
 ];
+
+// 화면에 보여 주는 분류 이름이에요. 내부 값은 기존 API 분류 코드와 연결된 채 유지해요.
+export const categoryDisplayNames = {
+  '등원 · 적응': '처음',
+  '친구 관계': '친구',
+  '가족': '가족',
+  '떼쓰기 · 훈육': '교육·훈육',
+  '이별 · 죽음': '이별',
+  '그 밖의 일': '기타',
+};
 
 export const educationTopics = {
   식습관: ['골고루 먹기', '새로운 음식 도전하기'],

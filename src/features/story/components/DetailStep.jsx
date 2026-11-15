@@ -1,6 +1,6 @@
 import MascotBubble from './MascotBubble';
 import Chip from './Chip';
-import { EVENT_MAX_LENGTH, REACTION_MAX_LENGTH, categories, educationTopics, lockedCategories } from '../constants';
+import { EVENT_MAX_LENGTH, REACTION_MAX_LENGTH, categories, categoryDisplayNames, educationTopics, lockedCategories } from '../constants';
 import { getCategoryContent, getEventExample } from '../categoryContent';
 import iconLock from '../../../assets/icons/icon-lock.svg';
 import detailMascot from '../../../assets/images/story-detail-mascot.png';
@@ -61,7 +61,7 @@ function DetailStep({ situation, detail, onChange }) {
                 disabled={locked}
                 onChange={() => onChange({ category, coreValue: '' })}
               >
-                {category}
+                {isEducation ? category : categoryDisplayNames[category]}
                 {locked && <img className={styles.lockIcon} src={iconLock} alt="준비 중" />}
               </Chip>
             );
