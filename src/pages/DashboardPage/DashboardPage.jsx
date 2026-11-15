@@ -5,7 +5,8 @@ import NotificationBell from '../../components/layout/NotificationBell';
 import OnboardingModal from '../../features/onboarding/components/OnboardingModal';
 import StoryDraftModal from '../../features/story/components/StoryDraftModal';
 import HomeScenarioModal from '../../features/home/components/HomeScenarioModal';
-import { scenarios } from '../../features/home/scenarios';
+import { listScenarios } from '../../features/home/scenarios';
+import { shuffleScenarioRounds } from '../../features/home/shuffleScenarioRounds';
 import { SET_COUNT, useConveyor } from '../../features/home/hooks/useConveyor';
 import { hasSeenOnboarding, markOnboardingSeen } from '../../features/onboarding/onboardingSeen';
 import { useStoryGeneration } from '../../features/story/generation/useStoryGeneration';
@@ -50,6 +51,7 @@ function DashboardPage({ guest = false }) {
   const [storyModal, setStoryModal] = useState(null);
   const [selectedScenario, setSelectedScenario] = useState(null);
   const [drafts, setDrafts] = useState([]);
+  const [conveyorScenarios] = useState(() => shuffleScenarioRounds(listScenarios));
   const { resumeGeneration } = useStoryGeneration();
 
   useEffect(() => {
@@ -87,10 +89,10 @@ function DashboardPage({ guest = false }) {
   };
 
   const { viewportRef, trackRef, handlers: conveyorHandlers } = useConveyor({
-    setSize: scenarios.length,
+    setSize: conveyorScenarios.length,
     paused: selectedScenario !== null || storyModal !== null || onboardingOpen,
     onCardClick: (scenarioId) => {
-      const scenario = scenarios.find((item) => item.id === scenarioId);
+      const scenario = listScenarios.find((item) => item.id === scenarioId);
       if (scenario) setSelectedScenario(scenario);
     },
   });
@@ -147,17 +149,17 @@ function DashboardPage({ guest = false }) {
                 {...conveyorHandlers}
               >
                 <div className={styles.cards} ref={trackRef}>
-                  {Array.from({ length: SET_COUNT }, (_, copy) => scenarios.map((scenario) => (
+                  {Array.from({ length: SET_COUNT }, (_, copy) => conveyorScenarios.map((scenario, index) => (
                     <button
                       className={`${styles.card} ${styles[scenario.color]}`}
                       type="button"
-                      key={`${copy}-${scenario.category}`}
+                      key={`${copy}-${index}-${scenario.id}`}
                       data-scenario-id={scenario.id}
                       aria-haspopup="dialog"
                       aria-label={`${scenario.category}: ${scenario.accessibleTitle}`}
                       // 이어 붙인 카드는 모양만 같고 읽거나 포커스를 받지 않아요.
-                      aria-hidden={copy > 0 ? 'true' : undefined}
-                      tabIndex={copy > 0 ? -1 : undefined}
+                      aria-hidden={copy > 0 || index >= listScenarios.length ? 'true' : undefined}
+                      tabIndex={copy > 0 || index >= listScenarios.length ? -1 : undefined}
                     >
                       <span className={styles.category}>{scenario.category}</span>
                       <span className={styles.cardTitle}>{scenario.title}</span>

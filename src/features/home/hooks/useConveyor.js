@@ -3,7 +3,7 @@ import { useCallback, useEffect, useRef } from 'react';
 // 카드가 회전초밥처럼 오른쪽에서 왼쪽으로 천천히 흘러가요. 카드 한 벌을 SET_COUNT번 이어 붙여 두고,
 // 한 벌만큼 움직이면 처음 자리로 돌아와서 끊김 없이 계속돼요.
 // 화면 너비가 카드 한 벌 길이의 (SET_COUNT - 1)배보다 좁으면 어느 위치에서도 오른쪽 끝이 비지 않아요.
-export const SET_COUNT = 5;
+export const SET_COUNT = 2;
 const SPEED = 40; // 초당 움직이는 거리(px)
 const DRAG_THRESHOLD = 4;
 
