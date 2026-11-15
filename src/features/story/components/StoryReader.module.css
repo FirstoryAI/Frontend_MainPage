@@ -203,7 +203,7 @@
   padding: 0.8cqw 1.6cqw;
   color: #4a4a4a;
   font-family: var(--font-title);
-  font-size: clamp(12px, 1.32cqw, 19px);
+  font-size: clamp(19px, 2cqw, 28px);
   line-height: 1.34;
   text-align: center;
   background: rgb(255 255 255 / 72%);
@@ -506,7 +506,7 @@
   .reader .flipScene { display: flex; flex-direction: column; width: 100%; overflow-y: auto; }
   .reader .flipScene > img { flex: 0 0 auto; width: 100%; height: auto; aspect-ratio: 956.5 / 541; object-fit: cover; }
   .reader .flipFallback { flex: 1 0 100px; }
-  .reader .readerCopy { position: relative; inset: auto; flex: 0 0 auto; padding: 12px 10px; color: #4a4a4a; font-size: clamp(14px, 3.8vw, 17px); text-align: left; background: transparent; border-radius: 0; white-space: pre-line; }
+  .reader .readerCopy { position: relative; inset: auto; flex: 0 0 auto; padding: 12px 10px; color: #4a4a4a; font-size: clamp(21px, 5.4vw, 24px); text-align: left; background: transparent; border-radius: 0; white-space: pre-line; }
   .reader .readerCopy p { margin-bottom: 2px; }
   /* 휴대폰에서는 글이 그림 아래에 이어져서, 위·아래 자리 값으로 밀리지 않게 해요. */
   .reader .readerCopy[data-position] { top: auto; bottom: auto; }
