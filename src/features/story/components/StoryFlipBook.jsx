@@ -4,6 +4,16 @@ import StoryFlipPage from './StoryFlipPage';
 import styles from './StoryReader.module.css';
 
 const pageIndexFor = (number, portrait) => (number - 1) * (portrait ? 1 : 2);
+
+// 책장 한 장이 넘어가는 시간(ms)이에요. 어느 화면, 어떤 크기의 책이든 같아요.
+const FLIP_MS = 720;
+// 라이브러리(page-flip)는 책장이 움직이는 거리가 1000px보다 짧으면 그만큼 빨리 넘겨요. (거리/1000 × flippingTime)
+// 그래서 휴대폰처럼 책이 작으면 더 빨리 넘어갔어요. 거리가 짧은 만큼 flippingTime을 늘려서 시간을 맞춰요.
+// 거리는 라이브러리 계산과 같아요: 책장 폭 × 2 − 책 높이 / 10
+const flippingTimeFor = (pageWidth, height) => {
+  const distance = pageWidth * 2 - height / 10;
+  return distance > 0 ? Math.round(FLIP_MS * Math.max(1, 1000 / distance)) : FLIP_MS;
+};
 const pageNumberFor = (index, portrait) => Math.floor(index / (portrait ? 1 : 2)) + 1;
 
 // 책장 넘김 효과가 있는 동화책이에요. 아이와 읽기, 크게 보기, 미리보기가 함께 써요.
@@ -33,6 +43,7 @@ const StoryFlipBook = forwardRef(function StoryFlipBook({
   const pendingRef = useRef(null);
   const [area, setArea] = useState(null);
   const current = pages[page - 1];
+  const pageWidth = area ? (portrait ? area.width : Math.ceil(area.width / 2)) : 0;
 
   useImperativeHandle(ref, () => ({
     pageFlip: () => bookRef.current?.pageFlip?.(),
@@ -112,7 +123,7 @@ const StoryFlipBook = forwardRef(function StoryFlipBook({
           ref={bookRef}
           className={styles.flipBook}
           // 화면 폭이 홀수여도 두 쪽 사이에 틈(밝은 세로줄)이 생기지 않게 올림해요. 넘친 1px은 가려져요.
-          width={portrait ? area.width : Math.ceil(area.width / 2)}
+          width={pageWidth}
           height={area.height}
           size="fixed"
           startPage={pageIndexFor(page, portrait)}
@@ -120,7 +131,7 @@ const StoryFlipBook = forwardRef(function StoryFlipBook({
           showCover={false}
           drawShadow
           maxShadowOpacity={0.35}
-          flippingTime={720}
+          flippingTime={flippingTimeFor(pageWidth, area.height)}
           mobileScrollSupport={false}
           useMouseEvents={false}
           onFlip={handleFlip}
