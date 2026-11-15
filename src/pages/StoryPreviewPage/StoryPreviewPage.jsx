@@ -22,6 +22,7 @@ import { useImageQueue } from '../../features/story/hooks/useImageQueue';
 import { guideFor, NO_GUIDE_MESSAGE } from '../../features/story/guideContent';
 import { approveStory, getGuide, getPreview, getVersions, regenerateStory, setCurrentVersion } from '../../services/storiesApi';
 import ErrorText from '../../components/ui/ErrorText';
+import GuideText from '../../features/story/components/GuideText';
 import { useNotifications } from '../../features/notifications/useNotifications';
 
 // 화면의 '다시 만들 부분'을 API의 scope로 바꿔요.
@@ -288,13 +289,13 @@ function StoryPreviewPage({ initialRemakeOpen = false }) {
           <div className={styles.guidePanelContent}>
             <section className={styles.guideScene}>
               <h2>이번 장면에서는</h2>
-              {pageGuide?.description && <p className={styles.guideLead}>{pageGuide.description}</p>}
-              {pageGuide?.scene && <p className={styles.guideDetail}><img src={guideHand} alt="" />{pageGuide.scene}</p>}
+              {pageGuide?.description && <p className={styles.guideLead}><GuideText text={pageGuide.description} /></p>}
+              {pageGuide?.scene && <p className={styles.guideDetail}><img src={guideHand} alt="" /><GuideText text={pageGuide.scene} /></p>}
             </section>
             <section className={styles.guideResponse}>
               <h2>아이가 대답할 때에는</h2>
-              {pageGuide?.hint && <p className={styles.guideLead}>{pageGuide.hint}</p>}
-              {pageGuide?.question && <p className={styles.guideDetail}><img src={guideQuestion} alt="" />{pageGuide.question}</p>}
+              {pageGuide?.hint && <p className={styles.guideLead}><GuideText text={pageGuide.hint} /></p>}
+              {pageGuide?.question && <p className={styles.guideDetail}><img src={guideQuestion} alt="" /><GuideText text={pageGuide.question} /></p>}
             </section>
           </div>
         </aside>

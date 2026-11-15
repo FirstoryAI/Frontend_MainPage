@@ -335,7 +335,7 @@
   font-weight: 400;
   line-height: 1.5;
 }
-.previewGuideContent p { overflow-wrap: anywhere; }
+.previewGuideContent p { overflow-wrap: break-word; word-break: keep-all; }
 .previewGuideLead { margin: .83cqw 0 0 .21cqw; font-size: 1.25cqw; font-weight: 500; line-height: 1.5; }
 .previewGuideDetail { display: flex; align-items: flex-start; gap: .28cqw; margin: 1.1cqw 0 0 .21cqw; }
 .previewGuideDetail img { flex: 0 0 auto; max-width: none; margin-top: .14cqw; }

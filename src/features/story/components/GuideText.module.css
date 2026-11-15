@@ -1,0 +1,18 @@
+/* 아이콘 옆에 놓여도 남은 폭을 다 쓰고, 낱말(어절) 사이에서만 줄을 바꿔요. */
+.text {
+  display: block;
+  flex: 1 1 auto;
+  min-width: 0;
+  word-break: keep-all;
+  overflow-wrap: break-word;
+  text-wrap: pretty;
+}
+
+/* 문장마다 새 줄에서 시작하고, 문장 사이를 조금 띄워요. */
+.sentence {
+  display: block;
+}
+
+.sentence + .sentence {
+  margin-top: .4em;
+}
