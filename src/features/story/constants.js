@@ -11,7 +11,7 @@ export const situations = [
   },
   {
     id: 'proactive',
-    title: '알려주고 싶은 것이에요.',
+    title: '알려주고 싶은 것이에요',
     description: ['식습관, 예절, 안전 습관처럼', '일상에서 배워가는 것'],
   },
 ];
