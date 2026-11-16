@@ -21,7 +21,7 @@ export const getGeneration = (id) => apiClient.get(`${story(id)}/generation`);
 export const retryStory = (id) => apiClient.post(`${story(id)}/retry`);
 export const getPreview = (id) => apiClient.get(`${story(id)}/preview`);
 export const regenerateStory = (id, body) => apiClient.post(`${story(id)}/regenerate`, body);
-export const approveStory = (id) => apiClient.post(`${story(id)}/approve`);
+export const approveStory = (id, feedback) => apiClient.post(`${story(id)}/approve`, { feedback });
 export const getVersions = (id) => apiClient.get(`${story(id)}/versions`);
 export const setCurrentVersion = (id, versionId) =>
   apiClient.put(`${story(id)}/current-version`, { versionId });

@@ -15,6 +15,7 @@ import styles from './StoryPreviewPage.module.css';
 import { useSceneScale } from '../../features/story/hooks/useSceneScale';
 import { useStoryGeneration } from '../../features/story/generation/useStoryGeneration';
 import RemakeDialog from '../../features/story/components/RemakeDialog';
+import FeedbackDialog from '../../features/story/components/FeedbackDialog';
 import StoryReader from '../../features/story/components/StoryReader';
 import SafeImage from '../../features/story/components/SafeImage';
 import StoryFlipBook from '../../features/story/components/StoryFlipBook';
@@ -55,6 +56,7 @@ function StoryPreviewPage({ initialRemakeOpen = false }) {
   const [currentPage, setCurrentPage] = useState(1);
   const [isReaderOpen, setIsReaderOpen] = useState(false);
   const [isRemakeOpen, setIsRemakeOpen] = useState(initialRemakeOpen);
+  const [isFeedbackOpen, setIsFeedbackOpen] = useState(false);
   const [approving, setApproving] = useState(false);
   const [notice, setNotice] = useState('');
   // 다시 만들면 이전 버전도 남아 있어요. 버전이 둘 이상이면 서로 오갈 수 있어요. (버전 번호 순서예요)
@@ -133,18 +135,19 @@ function StoryPreviewPage({ initialRemakeOpen = false }) {
   };
 
   // 지금 보여 주는 버전으로 확정하고, 서재에서 '서재에 저장했어요' 팝업을 보여줘요.
-  const approve = async () => {
+  const approve = async (feedback) => {
     if (approving) return;
 
     setApproving(true);
     setNotice('');
     try {
-      await approveStory(storyId);
+      await approveStory(storyId, feedback);
       updateStoryNotificationHref(storyId, '/library?filter=UNREAD');
       navigate('/library?filter=UNREAD', { state: { story: { ...story, id: Number(storyId), title }, newlyCreated: true } });
     } catch (error) {
       setNotice(error.message || '확정하지 못했어요. 잠시 뒤에 다시 시도해 주세요.');
       setApproving(false);
+      return error.message || '동화를 확정하지 못했어요. 다시 시도해 주세요.';
     }
   };
 
@@ -350,7 +353,7 @@ function StoryPreviewPage({ initialRemakeOpen = false }) {
               {isLatestVersion ? '이전 동화로 돌아가기' : '이후 동화로 돌아가기'}
             </button>
           )}
-          <button className={styles.confirm} type="button" onClick={approve} disabled={approving}>
+          <button className={styles.confirm} type="button" onClick={() => setIsFeedbackOpen(true)} disabled={approving}>
             {approving ? '확정하는 중…' : '전체 동화 확정'}
           </button>
           {notice && (
@@ -361,6 +364,7 @@ function StoryPreviewPage({ initialRemakeOpen = false }) {
         </div>
       </div>
       {isRemakeOpen && <RemakeDialog pages={pages} sceneScale={scale} onClose={closeRemake} onRemake={remake} />}
+      {isFeedbackOpen && <FeedbackDialog sceneScale={scale} onClose={() => setIsFeedbackOpen(false)} onSubmit={approve} />}
       {isReaderOpen && (
         <StoryReader
           title={title}
