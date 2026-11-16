@@ -53,7 +53,7 @@
 }
 
 .avatarButton { display: block; width: 58.8px; height: 58.8px; padding: 0; border: 0; border-radius: 50%; background: transparent; cursor: pointer; }
-.avatar { display: block; width: 66.8px; height: 66.8px; margin: -4px; }
+.avatar { display: block; width: 66.8px; height: 66.8px; max-width: none; margin: 0 0 0 -4px; }
 .avatarButton:focus-visible { outline: 3px solid var(--color-brand); outline-offset: 4px; }
 
 /* ---------- 디자인 화면(1440×960) ----------
@@ -224,7 +224,7 @@
   .sidebarLayer { position: relative; inset: auto; width: auto; height: 84px; }
   .topbar { top: 22px; right: 92px; height: 40px; gap: 16px; }
   .avatarButton { width: 40px; height: 40px; }
-  .avatar { width: 45px; height: 45px; margin: -2.5px; }
+  .avatar { width: 45px; height: 45px; margin: 0 0 0 -2.5px; }
 
   .stage { width: auto; height: auto; padding: 8px 16px 110px; }
   .headingRow, .coverArea, .info { position: static; }

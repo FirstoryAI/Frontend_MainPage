@@ -6,7 +6,7 @@ import OnboardingModal from '../../features/onboarding/components/OnboardingModa
 import StoryDraftModal from '../../features/story/components/StoryDraftModal';
 import HomeScenarioModal from '../../features/home/components/HomeScenarioModal';
 import { listScenarios, scenarioCategoryLabel } from '../../features/home/scenarios';
-import { SET_COUNT, useConveyor } from '../../features/home/hooks/useConveyor';
+import { PRIMARY_COPY, SET_COUNT, useConveyor } from '../../features/home/hooks/useConveyor';
 import { hasSeenOnboarding, markOnboardingSeen } from '../../features/onboarding/onboardingSeen';
 import { useStoryGeneration } from '../../features/story/generation/useStoryGeneration';
 import { libraryTopic } from '../../features/story/storyMappers';
@@ -177,8 +177,8 @@ function DashboardPage({ guest = false }) {
                       aria-haspopup="dialog"
                       aria-label={`${scenarioCategoryLabel(scenario)}: ${scenario.accessibleTitle}`}
                       // 이어 붙인 카드는 모양만 같고 읽거나 포커스를 받지 않아요.
-                      aria-hidden={copy > 0 || index >= listScenarios.length ? 'true' : undefined}
-                      tabIndex={copy > 0 || index >= listScenarios.length ? -1 : undefined}
+                      aria-hidden={copy !== PRIMARY_COPY || index >= listScenarios.length ? 'true' : undefined}
+                      tabIndex={copy !== PRIMARY_COPY || index >= listScenarios.length ? -1 : undefined}
                     >
                       <span className={styles.category}>{scenarioCategoryLabel(scenario)}</span>
                       <span className={styles.cardTitle}>{scenario.title}</span>
