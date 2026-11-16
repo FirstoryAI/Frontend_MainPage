@@ -11,6 +11,8 @@ import bookCover from '../../assets/images/library-cover-sample.png';
 import SafeImage from '../../features/story/components/SafeImage';
 import bookCoverStyles from '../../features/story/components/BookCover.module.css';
 import StoryReader from '../../features/story/components/StoryReader';
+import FeedbackDialog from '../../features/story/components/FeedbackDialog';
+import { useSceneScale } from '../../features/story/hooks/useSceneScale';
 import readerStyles from '../../features/story/components/StoryReader.module.css';
 import { deleteStory, getBook, getGuide, getStoryDetail } from '../../services/storiesApi';
 import {
@@ -56,6 +58,7 @@ function StoryDetailPage() {
   const navigate = useNavigate();
   const story = location.state?.story;
   const { scale, stage } = useFitStage();
+  const feedbackScale = useSceneScale();
   const [detail, setDetail] = useState(null);
   const [guide, setGuide] = useState(null);
   const [loadError, setLoadError] = useState('');
@@ -63,6 +66,7 @@ function StoryDetailPage() {
   const [busy, setBusy] = useState(false);
   // 아이와 읽는 중이면 { session, book, page }
   const [reading, setReading] = useState(null);
+  const [readingFeedbackOpen, setReadingFeedbackOpen] = useState(false);
   // '대화 가이드 보기'로 미리보기와 같은 크게 보기 화면을 연 동안 { book, page }
   const [guideView, setGuideView] = useState(null);
   const [guideLoading, setGuideLoading] = useState(false);
@@ -150,13 +154,14 @@ function StoryDetailPage() {
     saveReadingProgress(reading.session.sessionId, page).catch(() => {});
   };
 
-  const handleFinishReading = async () => {
+  const handleFinishReading = async (feedback) => {
     try {
-      await completeReading(reading.session.sessionId);
+      await completeReading(reading.session.sessionId, feedback);
+      setReadingFeedbackOpen(false);
       setReading(null);
       loadDetail();
     } catch (error) {
-      setNotice(error.message || '읽기를 마치지 못했어요.');
+      return error.message || '읽기를 마치지 못했어요.';
     }
   };
 
@@ -246,6 +251,7 @@ function StoryDetailPage() {
       {reading && (
         <StoryReader
           title={reading.book.title}
+          suspended={readingFeedbackOpen}
           pages={reading.book.pages}
           page={reading.page}
           onPage={handlePage}
@@ -253,11 +259,20 @@ function StoryDetailPage() {
           closeLabel="읽기 닫기"
         >
           {reading.page === reading.book.pages.length && (
-            <button className={readerStyles.primary} type="button" onClick={handleFinishReading}>
+            <button className={readerStyles.primary} type="button" onClick={() => setReadingFeedbackOpen(true)}>
               다 읽었어요
             </button>
           )}
         </StoryReader>
+      )}
+
+      {readingFeedbackOpen && reading && (
+        <FeedbackDialog
+          variant="reading"
+          sceneScale={feedbackScale}
+          onClose={() => setReadingFeedbackOpen(false)}
+          onSubmit={handleFinishReading}
+        />
       )}
 
       {guideView && (

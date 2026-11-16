@@ -1,5 +1,5 @@
-.backdrop { position: fixed; z-index: 10; inset: 0; background: rgb(0 0 0 / 44%); backdrop-filter: blur(3.6px); }
-.scene { position: absolute; z-index: 11; top: 0; left: 50%; width: 1440px; height: 960px; pointer-events: none; transform: translateX(-50%) scale(var(--scene-scale, 1)); transform-origin: top center; }
+.backdrop { position: fixed; z-index: 101; inset: 0; background: rgb(0 0 0 / 44%); backdrop-filter: blur(3.6px); }
+.scene { position: fixed; z-index: 102; top: 0; left: 50%; width: 1440px; height: 960px; pointer-events: none; transform: translateX(-50%) scale(var(--scene-scale, 1)); transform-origin: top center; }
 .dialog { position: absolute; top: 75px; left: 370px; width: 700px; height: 809px; padding: 0; overflow: hidden; pointer-events: auto; color: var(--color-text); background: white; border-radius: 22px; box-shadow: 0 0 7px rgb(0 0 0 / 10%); }
 .eyebrow { position: absolute; top: 41px; left: 46px; margin: 0; color: #858585; font-size: 17px; }
 .dialog h2 { position: absolute; top: 66px; left: 46px; margin: 0; font-family: var(--font-title); font-size: 26px; font-weight: 400; line-height: 1.5; white-space: nowrap; }

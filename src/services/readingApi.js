@@ -8,4 +8,4 @@ export const resumeReading = (storyId) => apiClient.get(`/api/stories/${storyId}
 export const saveReadingProgress = (sessionId, page) =>
   apiClient.put(`/api/reading-sessions/${sessionId}/progress`, { page });
 
-export const completeReading = (sessionId) => apiClient.post(`/api/reading-sessions/${sessionId}/complete`);
+export const completeReading = (sessionId, feedback) => apiClient.post(`/api/reading-sessions/${sessionId}/complete`, { feedback });

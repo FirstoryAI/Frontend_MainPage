@@ -763,6 +763,7 @@ export function startMockApi({ port = Number(process.env.MOCK_API_PORT) || 8787,
     if (params && method === 'POST') {
       const session = user.readingSessions.get(Number(params.sessionId));
       if (!session) return error(res, 404, 'SESSION_NOT_FOUND', '읽기 세션을 찾을 수 없어요.');
+      session.feedback = body.feedback;
       if (!session.done) {
         session.done = true;
         const story = user.stories.get(session.storyId);
