@@ -1,19 +1,30 @@
 import { useState } from 'react';
 import { Link, useNavigate } from 'react-router-dom';
 import Sidebar from '../../components/layout/Sidebar';
+import NotificationBell from '../../components/layout/NotificationBell';
 import HomeScenarioModal from '../../features/home/components/HomeScenarioModal';
 import { useSignedIn } from '../../features/auth/useSignedIn';
 import { listScenarios, scenarioCategoryLabel } from '../../features/home/scenarios';
 import { categories, categoryDisplayNames, lockedCategories } from '../../features/story/constants';
-import iconBell from '../../assets/icons/icon-bell.svg';
 import iconLock from '../../assets/icons/icon-lock.svg';
-import iconBackSmall from '../../assets/icons/icon-back-small.svg';
-import avatarProfile from '../../assets/icons/avatar-profile.svg';
+import iconBack from '../../assets/images/scenarios/day-design/back-arrow.svg';
+import avatarProfile from '../../assets/images/scenarios/day-design/profile.svg';
+import dayBell from '../../assets/images/scenarios/day-design/notification.svg';
+import dayBackground from '../../assets/images/scenarios/day-design/overlay-949.png';
+import friendWave from '../../assets/images/home/day-design/friend-wave.svg';
+import familyWave from '../../assets/images/home/day-design/family-wave.svg';
+import kindergartenWave from '../../assets/images/home/day-design/kindergarten-wave.svg';
+import tantrumWave from '../../assets/images/home/day-design/tantrum-wave.svg';
+import friendCharacter from '../../assets/images/home/day-design/friend-character.png';
+import characterSheet from '../../assets/images/home/day-design/character-sheet.png';
+import kindergartenCharacter from '../../assets/images/home/day-design/kindergarten-character.png';
 import styles from './ScenarioListPage.module.css';
 
 const ALL = '전체';
 // 잠긴 카테고리(이별 · 죽음)는 카드는 숨기고 필터만 자물쇠로 남겨 둬요.
 const filters = [ALL, ...categories];
+const cardWaves = { friend: friendWave, emotion: familyWave, kindergarten: kindergartenWave, tantrum: tantrumWave, habit: familyWave };
+const designedCards = new Set(['friend', 'emotion', 'kindergarten', 'tantrum']);
 
 function ScenarioListPage() {
   const navigate = useNavigate();
@@ -33,36 +44,31 @@ function ScenarioListPage() {
 
   return (
     <div className={styles.page}>
-      <div className={styles.shell} inert={selectedScenario !== null}>
-        <Sidebar guest={guest} />
+      <div className={styles.shell} data-theme="day" inert={selectedScenario !== null}>
+        <img className={styles.background} src={dayBackground} alt="" />
+        <Sidebar guest={guest} compact showLogo={false} />
 
         <div className={styles.main}>
           <div className={styles.topbar}>
             {guest ? (
-              <Link className={styles.loginLink} to="/auth">로그인</Link>
-            ) : <><button
-              className={styles.bellButton}
-              type="button"
-              aria-label="알림"
-              disabled
-              title="알림 화면이 준비되면 연결됩니다"
-            >
-              <img src={iconBell} alt="" />
-            </button>
+              <button className={styles.guestBell} type="button" onClick={() => navigate('/auth')} aria-label="로그인 후 알림 보기">
+                <img src={dayBell} alt="" />
+              </button>
+            ) : <NotificationBell iconSrc={dayBell} />}
             <button
               className={styles.avatarButton}
               type="button"
-              onClick={() => navigate('/mypage')}
-              aria-label="마이페이지"
+              onClick={() => navigate(guest ? '/auth' : '/mypage')}
+              aria-label={guest ? '로그인' : '마이페이지'}
             >
               <img src={avatarProfile} alt="" />
-            </button></>}
+            </button>
           </div>
 
           <main className={styles.content}>
             <header className={styles.heading}>
               <Link className={styles.back} to={guest ? '/' : '/home'} aria-label="홈으로 돌아가기">
-                <img src={iconBackSmall} alt="" />
+                <img src={iconBack} alt="" />
               </Link>
               <h1 className={styles.title}>부모들의 이야기</h1>
               <p className={styles.description}>
@@ -104,8 +110,12 @@ function ScenarioListPage() {
                     >
                       <span className={styles.category}>{scenarioCategoryLabel(scenario)}</span>
                       <span className={styles.cardTitle}>{scenario.title}</span>
-                      <span className={styles.cardDescription}>{scenario.description}</span>
-                      <img className={styles.cardImage} src={scenario.image} alt="" />
+                      <img className={styles.cardWave} src={cardWaves[scenario.color]} alt="" />
+                      {scenario.id === 'friend' && <img className={styles.friendCharacter} src={friendCharacter} alt="" />}
+                      {scenario.id === 'emotion' && <span className={`${styles.spriteCrop} ${styles.familyCharacter}`}><img src={characterSheet} alt="" /></span>}
+                      {scenario.id === 'kindergarten' && <span className={styles.kindergartenCharacter}><img src={kindergartenCharacter} alt="" /></span>}
+                      {scenario.id === 'tantrum' && <span className={`${styles.spriteCrop} ${styles.tantrumCharacter}`}><img src={characterSheet} alt="" /></span>}
+                      {!designedCards.has(scenario.id) && <img className={styles.fallbackCharacter} src={scenario.image} alt="" />}
                     </button>
                   </li>
                 ))}
