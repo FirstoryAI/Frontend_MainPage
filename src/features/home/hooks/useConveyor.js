@@ -2,8 +2,10 @@ import { useCallback, useEffect, useRef } from 'react';
 
 // 카드가 회전초밥처럼 오른쪽에서 왼쪽으로 천천히 흘러가요. 카드 한 벌을 SET_COUNT번 이어 붙여 두고,
 // 한 벌만큼 움직이면 처음 자리로 돌아와서 끊김 없이 계속돼요.
+// 첫 벌은 왼쪽으로 지나간 카드가 보이는 자리(왼쪽 막대 옆까지 보여요)를 채우는 앞쪽 벌이고, 읽는 벌은 PRIMARY_COPY번째예요.
 // 화면 너비가 카드 한 벌 길이의 (SET_COUNT - 1)배보다 좁으면 어느 위치에서도 오른쪽 끝이 비지 않아요.
-export const SET_COUNT = 2;
+export const SET_COUNT = 3;
+export const PRIMARY_COPY = 1;
 const SPEED = 40; // 초당 움직이는 거리(px)
 const DRAG_THRESHOLD = 4;
 
@@ -45,7 +47,8 @@ export function useConveyor({ setSize, paused = false, onCardClick }) {
     const track = trackRef.current;
     if (!track) return;
     if (loop.current > 0) offset.current = ((offset.current % loop.current) + loop.current) % loop.current;
-    track.style.transform = `translate3d(${-offset.current}px, 0, 0)`;
+    // 앞쪽 벌(loop)만큼 미리 당겨 두어서, 처음 자리에서 읽는 벌의 첫 카드가 시작선에 와요.
+    track.style.transform = `translate3d(${-(loop.current + offset.current)}px, 0, 0)`;
   }, []);
 
   useEffect(() => {

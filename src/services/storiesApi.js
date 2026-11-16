@@ -30,4 +30,21 @@ export const setCurrentVersion = (id, versionId) =>
 export const getStoryDetail = (id) => apiClient.get(story(id));
 export const deleteStory = (id) => apiClient.delete(story(id));
 export const getGuide = (id) => apiClient.get(`${story(id)}/guide`);
-export const getBook = (id) => apiClient.get(`${story(id)}/book`);
+// 가이드 질문이 있는 쪽(prompts[].afterPage)은 서버가 textBlocks 마지막 문단에 질문을 넣어 줘요.
+// textBlocks가 없는 쪽(옛 동화·그림이 없는 쪽)은 text에 질문이 없어서, 여기서 마지막 줄로 덧붙여요.
+function withPromptQuestions(book) {
+  if (!book || !Array.isArray(book.pages) || !Array.isArray(book.prompts)) return book;
+
+  const pages = book.pages.map((page) => {
+    if (page.textBlocks != null) return page;
+
+    const question = book.prompts.find((prompt) => prompt.afterPage === page.pageNo)?.question?.trim();
+    const text = page.text ?? '';
+    if (!question || text.includes(question)) return page;
+
+    return { ...page, text: text ? `${text}\n${question}` : question };
+  });
+  return { ...book, pages };
+}
+
+export const getBook = (id) => apiClient.get(`${story(id)}/book`).then(withPromptQuestions);
