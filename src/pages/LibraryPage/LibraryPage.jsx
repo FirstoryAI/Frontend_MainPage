@@ -319,7 +319,17 @@ function LibraryPage() {
 
         <main
           className={styles.content}
-          style={{ zoom: scale, '--book': `${book}px`, '--per-shelf': perShelf, ...(titleTop ? { paddingTop: titleTop } : {}) }}
+          style={{
+            zoom: scale,
+            '--book': `${book}px`,
+            '--per-shelf': perShelf,
+            '--desktop-chip-height': `${38 / scale}px`,
+            '--desktop-chip-font': `${15 / scale}px`,
+            '--desktop-chip-pad-x': `${18 / scale}px`,
+            '--desktop-chip-gap': `${18 / scale}px`,
+            '--desktop-chip-radius': `${19 / scale}px`,
+            ...(titleTop ? { paddingTop: titleTop } : {}),
+          }}
         >
           <h1 className={styles.title}>서재</h1>
 
