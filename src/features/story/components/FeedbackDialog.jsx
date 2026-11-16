@@ -15,7 +15,7 @@ const readingQuestions = [
   { title: 'FIRSTORY가 아이와의 대화에 실질적으로 도움이 되었나요?', options: ['많은 도움이 되었어요', '조금 도움이 되었어요', '별로 도움이 되지 않았어요'] },
 ];
 
-function FeedbackDialog({ sceneScale, onClose, onSubmit, variant = 'preview' }) {
+function FeedbackDialog({ sceneScale, onSubmit, variant = 'preview' }) {
   const isReading = variant === 'reading';
   const questions = isReading ? readingQuestions : previewQuestions;
   const dialogRef = useRef(null);
@@ -27,10 +27,8 @@ function FeedbackDialog({ sceneScale, onClose, onSubmit, variant = 'preview' }) 
   useEffect(() => {
     const previousFocus = document.activeElement;
     dialogRef.current?.focus();
-    const handleKeyDown = (event) => { if (event.key === 'Escape' && !submitting) onClose(); };
-    window.addEventListener('keydown', handleKeyDown);
-    return () => { window.removeEventListener('keydown', handleKeyDown); previousFocus?.focus?.(); };
-  }, [onClose, submitting]);
+    return () => previousFocus?.focus?.();
+  }, []);
 
   const submit = async (event) => {
     event.preventDefault();
