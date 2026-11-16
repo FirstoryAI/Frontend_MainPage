@@ -47,10 +47,10 @@ const STORY_TITLES = {
   OTHER: '토리의 하루',
 };
 const PAGE_LINES = [
-  ['자유놀이 시간이다!', '토리는 좋아하는 블록 놀이 자리로 향했어요.'],
+  ['자유놀이 시간이다!', '토리는 **콩콩** 뛰어서 좋아하는 블록 놀이 자리로 향했어요.'],
   ['그때 같은 반 친구가 다가왔어요.', '“우와, 멋지다! 나도 같이 만들어도 돼?”'],
   ['친구는 토리 옆에 있던 빨간 블록 하나를 집었어요.', '토리는 빨간 블록을 가만히 바라보았어요.'],
-  ['친구는 빨간 블록을 내려놓았어요.', '“알겠어…”'],
+  ['친구는 빨간 블록을 **톡** 내려놓았어요.', '“알겠어…”'],
   ['집에 돌아온 뒤에도 토리는 자꾸 생각났어요.', '혼자 놀고 싶었던 마음도 진짜였어요.'],
   ['다음 날, 토리는 다시 블록 놀이 자리로 갔어요.', '토리는 어떻게 했을까요?'],
   ['토리는 친구에게 먼저 다가갔어요.', '“우리 같이 집을 만들어 볼래?”'],
@@ -176,6 +176,15 @@ function currentVersion(story) {
 
 const imageUrl = (story, versionId, pageNo) => `/api/stories/${story.id}/versions/${versionId}/pages/${pageNo}/image`;
 
+// 쪽 글의 **말**(의성어·의태어)을 그림 위에 띄울 자리예요. 실제 서버처럼 말의 가운데를 그림 대비 %로 줘요.
+// 가짜 그림(pageSvg)의 동그라미(인물) 바로 위에 놓아요. 별표 말이 없는 쪽은 null이에요.
+function soundWordOf(page) {
+  const word = String(page.text ?? '').match(/\*\*(.+?)\*\*/)?.[1];
+  if (!word) return null;
+  const x = ((200 + page.pageNo * 70) / 1024) * 100;
+  return { text: word, x: Math.round(Math.min(x, 88) * 10) / 10, y: 38, color: page.pageNo % 2 === 0 ? 'LIGHT' : 'DARK' };
+}
+
 function pageView(story, version) {
   // 그림 위 글 자리: 3쪽마다 위(TOP), 나머지는 아래(BOTTOM)로 번갈아 줘요. (서버는 그림 위나 아래 30%를 비워서 그려요)
   return version.pages.map((page) => {
@@ -185,6 +194,7 @@ function pageView(story, version) {
       imageStatus: 'DONE',
       imageUrl: imageUrl(story, imageVersionId ?? version.id, page.pageNo),
       textPosition: page.pageNo % 3 === 0 ? 'TOP' : 'BOTTOM',
+      soundWord: soundWordOf(page),
     };
   });
 }

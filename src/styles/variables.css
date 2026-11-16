@@ -46,9 +46,21 @@
   font-display: swap;
 }
 
+/* 히피체(OFL 1.1, AIollcut): 동화 그림 위 의성어·의태어 글씨예요.
+   원본(8MB)에서 자주 쓰는 한글 2,350자·영문·문장부호만 남겨 WOFF2로 줄였어요(약 730KB). 없는 글자는 --font-title로 보여요.
+   의성어·의태어가 있는 동화 화면에서만 내려받아요. */
+@font-face {
+  font-family: 'Hippie';
+  src: url('../assets/fonts/Hippie-KS.woff2') format('woff2');
+  font-style: normal;
+  font-weight: 400;
+  font-display: swap;
+}
+
 :root {
   --font-brand: 'Darumadrop One', sans-serif;
   --font-title: 'Memoment Kkukkukk', 'Pretendard', sans-serif;
+  --font-sound: 'Hippie', 'Memoment Kkukkukk', 'Pretendard', sans-serif;
   --font-body: 'Pretendard', sans-serif;
   --color-brand-soft: #ffd9c9;
   --color-brand-light: #faa07c;
