@@ -2,8 +2,10 @@
 .page {
   position: relative;
   min-width: 320px;
-  min-height: 100vh;
-  overflow-x: hidden;
+  height: 100vh;
+  height: 100dvh;
+  /* 넘치는 책은 쪽을 넘겨 봐서, 화면은 스크롤되지 않아요. */
+  overflow: hidden;
   background: #2b1e17;
   color: white;
 }
@@ -50,7 +52,8 @@
 .content {
   position: relative;
   z-index: 1;
-  padding: 135px 40px 120px 230px;
+  /* 900px 넘는 화면은 JS가 zoom으로 디자인(1440×960)을 화면에 맞춰 줄여요. */
+  padding: 135px 40px 0 230px;
 }
 
 .title {
@@ -94,7 +97,7 @@
 }
 
 /* ---------- 책장 ---------- */
-/* 크기는 모두 책 한 권(--book, 디자인 244px)에 비례해요. 좁은 화면에서는 --book만 줄여요. */
+/* 크기는 모두 책 한 권(--book, 디자인 244px)에 비례해요. 좁은 화면에서는 JS가 --book을 화면 폭에 맞춰요. */
 .shelves {
   --book: 244px;
 
@@ -335,31 +338,39 @@ button.book:hover { transform: translateY(-4px); }
 .emptyTitle { margin: 14px 0 0; color: white; font: 600 22px/1.4 var(--font-body); }
 .emptyLogin { margin-top: 18px; padding: 12px 24px; border-radius: 999px; background: var(--color-brand); color: white; font: 600 16px var(--font-body); text-decoration: none; }
 
-.loadMore {
-  display: block;
-  margin: 48px 0 0 calc(var(--book, 244px) * 14 / 244);
-  padding: 12px 30px;
+.pager {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 18px;
+  width: 1112px;
+  margin-top: 22px;
+  color: rgb(255 255 255 / 80%);
+  font: 600 18px var(--font-body);
+}
+
+.pager strong { color: white; }
+
+.pager button {
+  display: grid;
+  place-items: center;
+  width: 40px;
+  height: 40px;
+  padding: 0;
   border: 0;
-  border-radius: 999px;
+  border-radius: 50%;
   background: #433b38;
-  color: white;
-  font: 600 16px var(--font-body);
   cursor: pointer;
 }
 
-.loadMore:focus-visible { outline: 3px solid white; outline-offset: 3px; }
+.pager button:disabled { opacity: .35; cursor: default; }
+.pager button:focus-visible { outline: 3px solid white; outline-offset: 3px; }
+.pager svg { width: 22px; height: 22px; fill: none; stroke: white; stroke-width: 2.4; stroke-linecap: round; stroke-linejoin: round; }
 
 @media (prefers-reduced-motion: reduce) {
   .book, .book[data-state='REVIEWING'] .cover, .book[data-state='REVIEWING']::after, .sparkles i { animation: none; transition: none; }
   .sparkles i { opacity: 1; transform: none; }
 }
-
-/* 데스크톱 폭이 디자인(1440px)보다 좁으면 책장 전체를 비율대로 줄여요. (한 칸에 4권 그대로) */
-@media (min-width: 901px) and (max-width: 1399px) { .content { zoom: .93; } }
-@media (min-width: 901px) and (max-width: 1299px) { .content { zoom: .86; } }
-@media (min-width: 901px) and (max-width: 1199px) { .content { zoom: .79; } }
-@media (min-width: 901px) and (max-width: 1099px) { .content { zoom: .72; } }
-@media (min-width: 901px) and (max-width: 999px) { .content { zoom: .66; } }
 
 /* 패드 세로·휴대폰: 메뉴는 위·아래로 가고, 책장은 화면 폭에 맞춰 한 칸에 3권(좁으면 2권)이에요. */
 @media (max-width: 900px) {
@@ -367,19 +378,16 @@ button.book:hover { transform: translateY(-4px); }
   .topbar { top: 22px; right: 92px; height: 40px; gap: 16px; }
   .avatarButton { width: 40px; height: 40px; }
   .avatar { width: 45px; height: 45px; margin: -2.5px; }
-  .content { padding: 24px 16px 110px; }
+  .content { padding: 24px 16px 0; }
   .title { font-size: 28px; }
   .filters { flex-wrap: nowrap; gap: 10px; margin: 20px -16px 0; padding: 0 16px 4px; overflow-x: auto; scrollbar-width: none; }
   .filters::-webkit-scrollbar { display: none; }
   .filter { padding: 8px 16px; font-size: 15px; }
-  /* 3권: 책 3 + 사이 2칸(35/244씩) + 왼쪽 14/244 + 오른쪽 19/244 = 책 3.42권 폭 */
-  .shelves { --book: min(244px, calc((100vw - 32px) / 3.43)); margin-top: 28px; }
+  .shelves { margin-top: 28px; }
   .shelf { width: 100%; }
+  .pager { width: 100%; margin-top: 14px; font-size: 16px; }
+  .pager button { width: 36px; height: 36px; }
   .newBadge { top: -8px; right: -8px; padding: 4px 7px 3px; border-width: 1.5px; }
   .retryButton { padding: 6px 10px; font-size: 12px; }
 }
 
-@media (max-width: 560px) {
-  /* 2권: 책 2 + 사이 1칸 + 양옆 = 책 2.28권 폭 */
-  .shelves { --book: calc((100vw - 32px) / 2.29); }
-}

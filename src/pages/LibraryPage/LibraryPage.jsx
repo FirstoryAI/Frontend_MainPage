@@ -1,4 +1,4 @@
-import { useEffect, useState } from 'react';
+import { useEffect, useLayoutEffect, useRef, useState } from 'react';
 import { Link, useLocation, useNavigate } from 'react-router-dom';
 import ErrorText from '../../components/ui/ErrorText';
 import Sidebar from '../../components/layout/Sidebar';
@@ -47,8 +47,6 @@ const isDraft = (story) => DRAFT_STATUSES.includes(String(story.status ?? '').to
 // 서버는 주제로 거르지 못해서, 서재 전체를 받아 화면에서 주제별로 나눠요. (50개씩, 최대 1,000개)
 const LOAD_PAGE_SIZE = 50;
 const LOAD_MAX_PAGES = 20;
-// 한 번에 보여주는 책장 수예요. '더 보기'를 누르면 이만큼 더 보여줘요.
-const SHOW_SHELVES = 5;
 
 async function loadLibrary() {
   let pageNo = 0;
@@ -62,19 +60,58 @@ async function loadLibrary() {
   return items;
 }
 
-// 책장 한 칸에 꽂는 책 수예요. 데스크톱은 디자인대로 4권, 좁은 화면은 3권·2권이에요.
-const SHELF_QUERIES = [['(max-width: 560px)', 2], ['(max-width: 900px)', 3]];
-const booksPerShelf = () => SHELF_QUERIES.find(([query]) => window.matchMedia(query).matches)?.[1] ?? 4;
+// ---------- 화면에 맞추기 (스크롤 없이 한 화면) ----------
+// 디자인(1440×960) 기준 값이에요. 책 한 권 244px, 책장 한 칸 높이 262px, 칸 사이 57px.
+const DESIGN_WIDTH = 1440;
+const DESIGN_HEIGHT = 960;
+const BOOK = 244;
+const SHELF_HEIGHT = 262;
+const SHELF_GAP = 57;
+// 데스크톱: 첫 책장 윗변(287px)과, 아래에 남길 자리(쪽 넘기기 70px)예요.
+const DESKTOP_SHELVES_TOP = 287;
+const PAGER_SPACE = 70;
+// 휴대폰·좁은 화면: 아래 메뉴(78px)와 쪽 넘기기(56px) 자리를 남겨요.
+const MOBILE_BOTTOM_SPACE = 78 + 56;
 
-function useBooksPerShelf() {
-  const [count, setCount] = useState(booksPerShelf);
-  useEffect(() => {
-    const lists = SHELF_QUERIES.map(([query]) => window.matchMedia(query));
-    const update = () => setCount(booksPerShelf());
-    lists.forEach((list) => list.addEventListener('change', update));
-    return () => lists.forEach((list) => list.removeEventListener('change', update));
-  }, []);
-  return count;
+// 화면 크기에 맞춰 책장 모양을 정해요.
+//  - 900px 넘는 화면(데스크톱·패드): 디자인을 통째로 비율대로 줄여서(zoom) 가로·세로 모두 한 화면에 넣어요.
+//    한 칸에 4권, 남는 높이만큼 책장 칸 수를 늘려요. (패드 세로는 칸이 더 많아요)
+//  - 900px 이하: 화면 폭에 맞춰 책 크기를 정하고(3권, 560px 이하 2권), 남는 높이에 들어가는 만큼 칸을 보여줘요.
+// 넘치는 책은 스크롤 대신 쪽을 넘겨서 봐요.
+function measureShelfLayout(shelvesTop) {
+  const width = window.innerWidth;
+  const height = window.innerHeight;
+  if (width > 900) {
+    const scale = Math.min(1, width / DESIGN_WIDTH, height / DESIGN_HEIGHT);
+    const room = height / scale - DESKTOP_SHELVES_TOP - PAGER_SPACE + SHELF_GAP;
+    return { perShelf: 4, shelvesPerPage: Math.max(1, Math.floor(room / (SHELF_HEIGHT + SHELF_GAP))), scale, book: BOOK };
+  }
+  const perShelf = width <= 560 ? 2 : 3;
+  // 책 n권 + 사이 (n-1)칸(35/244씩) + 왼쪽 14/244 + 오른쪽 19/244
+  const book = Math.min(BOOK, (width - 32) / (perShelf + ((perShelf - 1) * 35 + 33) / BOOK));
+  const pitch = (book * (SHELF_HEIGHT + SHELF_GAP)) / BOOK;
+  const room = height - shelvesTop - MOBILE_BOTTOM_SPACE + (book * SHELF_GAP) / BOOK;
+  return { perShelf, shelvesPerPage: Math.max(1, Math.floor(room / pitch)), scale: 1, book };
+}
+
+function useShelfLayout(shelvesRef) {
+  const [layout, setLayout] = useState(() => measureShelfLayout(240));
+  useLayoutEffect(() => {
+    const update = () => {
+      const next = measureShelfLayout(shelvesRef.current?.getBoundingClientRect().top ?? 240);
+      setLayout((current) => (
+        current.perShelf === next.perShelf && current.shelvesPerPage === next.shelvesPerPage
+          && current.scale === next.scale && current.book === next.book ? current : next));
+    };
+    update();
+    window.addEventListener('resize', update);
+    window.addEventListener('orientationchange', update);
+    return () => {
+      window.removeEventListener('resize', update);
+      window.removeEventListener('orientationchange', update);
+    };
+  }, [shelvesRef]);
+  return layout;
 }
 
 const chunk = (items, size) => Array.from({ length: Math.ceil(items.length / size) }, (_, index) => items.slice(index * size, index * size + size));
@@ -156,11 +193,12 @@ function LibraryPage() {
   const [savedModalOpen, setSavedModalOpen] = useState(savedStory !== null);
   const [activeFilter, setActiveFilter] = useState(() => filterFromSearch(location.search) ?? ALL_FILTER);
   const [library, setLibrary] = useState([]);
-  const [shownShelves, setShownShelves] = useState(SHOW_SHELVES);
+  const [pageIndex, setPageIndex] = useState(0);
+  const shelvesRef = useRef(null);
   const [isLoading, setIsLoading] = useState(true);
   const [error, setError] = useState('');
   const { resumeGeneration } = useStoryGeneration();
-  const perShelf = useBooksPerShelf();
+  const { perShelf, shelvesPerPage, scale, book } = useShelfLayout(shelvesRef);
 
   // 알림을 눌러 주소의 filter만 바뀌어도 칩을 맞춰요. (그리는 중에 주소가 바뀐 것을 보고 바로 맞춰요)
   const [seenSearch, setSeenSearch] = useState(location.search);
@@ -169,7 +207,7 @@ function LibraryPage() {
     const requested = filterFromSearch(location.search);
     if (requested) {
       setActiveFilter(requested);
-      setShownShelves(SHOW_SHELVES);
+      setPageIndex(0);
     }
   }
 
@@ -230,8 +268,10 @@ function LibraryPage() {
 
   const filtered = activeFilter === ALL_FILTER ? library : library.filter((story) => libraryTopic(story) === activeFilter);
   const shelves = chunk(filtered, perShelf);
-  const shownStoryShelves = shelves.slice(0, shownShelves);
-  const hasNext = shelves.length > shownStoryShelves.length;
+  // 한 화면에 들어가는 책장 칸만큼씩 쪽으로 나눠요. 화면 크기가 바뀌어 쪽 수가 줄면 마지막 쪽을 보여줘요.
+  const pageCount = Math.max(1, Math.ceil(shelves.length / shelvesPerPage));
+  const page = Math.min(pageIndex, pageCount - 1);
+  const shownStoryShelves = shelves.slice(page * shelvesPerPage, (page + 1) * shelvesPerPage);
 
   // 보여줄 동화가 없으면 빈 책장 위에 안내를 보여줘요. 로그인하지 않았으면 로그인으로 이어 주는 버튼이 함께 나와요.
   // 전체에서 비었으면 '아직 제작된 동화가 없어요', 주제 칩에서 비었으면 '조건에 해당하는 동화가 없어요'예요.
@@ -265,7 +305,7 @@ function LibraryPage() {
           </button></>}
         </div>
 
-        <main className={styles.content}>
+        <main className={styles.content} style={{ zoom: scale }}>
           <h1 className={styles.title}>서재</h1>
 
           <div className={styles.filters} aria-label="동화 주제 필터">
@@ -277,7 +317,7 @@ function LibraryPage() {
                 aria-pressed={activeFilter === filter.value}
                 onClick={() => {
                   setActiveFilter(filter.value);
-                  setShownShelves(SHOW_SHELVES);
+                  setPageIndex(0);
                 }}
               >
                 {filter.label}
@@ -287,7 +327,8 @@ function LibraryPage() {
 
           {!guest && error && <p className={styles.error} role="alert"><ErrorText message={error} /></p>}
 
-          <section className={styles.shelves} aria-live="polite" aria-busy={!guest && isLoading} aria-label="내 동화 책장">
+          <section className={styles.shelves} ref={shelvesRef} style={{ '--book': `${book}px` }}
+            aria-live="polite" aria-busy={!guest && isLoading} aria-label="내 동화 책장">
             {showEmptyScreen || (!guest && isLoading) ? (
               // 빈 서재는 빈 책장 위에 캐릭터와 안내를 올려 둬요.
               <Shelf>
@@ -308,10 +349,16 @@ function LibraryPage() {
             ))}
           </section>
 
-          {!guest && hasNext && !isLoading && (
-            <button className={styles.loadMore} type="button" onClick={() => setShownShelves((count) => count + SHOW_SHELVES)}>
-              더 보기
-            </button>
+          {!guest && !isLoading && pageCount > 1 && (
+            <nav className={styles.pager} aria-label="책장 쪽">
+              <button type="button" onClick={() => setPageIndex(page - 1)} disabled={page === 0} aria-label="이전 책장">
+                <svg viewBox="0 0 24 24" aria-hidden="true"><path d="M15 5l-7 7 7 7" /></svg>
+              </button>
+              <span><strong>{page + 1}</strong> / {pageCount}</span>
+              <button type="button" onClick={() => setPageIndex(page + 1)} disabled={page === pageCount - 1} aria-label="다음 책장">
+                <svg viewBox="0 0 24 24" aria-hidden="true"><path d="M9 5l7 7-7 7" /></svg>
+              </button>
+            </nav>
           )}
         </main>
       </div>
