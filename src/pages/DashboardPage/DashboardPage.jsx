@@ -6,7 +6,6 @@ import OnboardingModal from '../../features/onboarding/components/OnboardingModa
 import StoryDraftModal from '../../features/story/components/StoryDraftModal';
 import HomeScenarioModal from '../../features/home/components/HomeScenarioModal';
 import { listScenarios, scenarioCategoryLabel } from '../../features/home/scenarios';
-import { shuffleScenarioRounds } from '../../features/home/shuffleScenarioRounds';
 import { SET_COUNT, useConveyor } from '../../features/home/hooks/useConveyor';
 import { hasSeenOnboarding, markOnboardingSeen } from '../../features/onboarding/onboardingSeen';
 import { useStoryGeneration } from '../../features/story/generation/useStoryGeneration';
@@ -14,14 +13,26 @@ import { libraryTopic } from '../../features/story/storyMappers';
 import { getDraft } from '../../services/storiesApi';
 import { getStories } from '../../services/libraryApi';
 import { markOnboardingSeen as saveOnboardingSeen } from '../../services/meApi';
-import avatarProfile from '../../assets/icons/avatar-profile.svg';
-import iconPencil from '../../assets/icons/home-pencil.svg';
-import mascotReading from '../../assets/images/home/mascot-reading.png';
+import avatarProfile from '../../assets/images/home/day-design/profile.svg';
+import dayBell from '../../assets/images/home/day-design/notification.svg';
+import iconPencil from '../../assets/images/home/day-design/section-pencil.svg';
+import createPlus from '../../assets/images/home/day-design/create-plus.svg';
+import dayBackground from '../../assets/images/home/day-design/day-background.png';
+import treeCanopy from '../../assets/images/home/day-design/tree-canopy.svg';
+import friendWave from '../../assets/images/home/day-design/friend-wave.svg';
+import familyWave from '../../assets/images/home/day-design/family-wave.svg';
+import kindergartenWave from '../../assets/images/home/day-design/kindergarten-wave.svg';
+import tantrumWave from '../../assets/images/home/day-design/tantrum-wave.svg';
+import friendCharacter from '../../assets/images/home/day-design/friend-character.png';
+import characterSheet from '../../assets/images/home/day-design/character-sheet.png';
+import kindergartenCharacter from '../../assets/images/home/day-design/kindergarten-character.png';
 import styles from './DashboardPage.module.css';
 
 // 서버에 저장된 '만들던 동화'(아직 인터뷰·확정 전)를 이어 만들 목록으로 바꿔요.
 const DRAFT_STATUSES = ['DRAFT', 'INTERVIEWING', 'CONFIRMING'];
 const MAX_DRAFTS = 10;
+const cardWaves = { friend: friendWave, emotion: familyWave, kindergarten: kindergartenWave, tantrum: tantrumWave, habit: familyWave };
+const designedCards = new Set(['friend', 'emotion', 'kindergarten', 'tantrum']);
 
 async function loadDrafts() {
   const { items = [] } = await getStories({ filter: 'CREATING', size: 50 });
@@ -54,7 +65,7 @@ function DashboardPage({ guest = false }) {
   const [storyModal, setStoryModal] = useState(null);
   const [selectedScenario, setSelectedScenario] = useState(null);
   const [drafts, setDrafts] = useState([]);
-  const [conveyorScenarios] = useState(() => shuffleScenarioRounds(listScenarios));
+  const conveyorScenarios = listScenarios;
   const { resumeGeneration } = useStoryGeneration();
 
   useEffect(() => {
@@ -102,14 +113,16 @@ function DashboardPage({ guest = false }) {
 
   return (
     <div className={styles.page}>
-      <div className={styles.shell} inert={onboardingOpen || storyModal !== null || selectedScenario !== null}>
-        <Sidebar guest={guest} />
+      <div className={styles.shell} data-theme="day" inert={onboardingOpen || storyModal !== null || selectedScenario !== null}>
+        <img className={styles.dayBackground} src={dayBackground} alt="" />
+        <img className={styles.treeCanopy} src={treeCanopy} alt="" />
+        <Sidebar guest={guest} compact />
 
         <div className={styles.main}>
           <div className={styles.topbar}>
             {guest ? (
               <Link className={styles.loginLink} to="/auth">로그인</Link>
-            ) : <><NotificationBell />
+            ) : <><NotificationBell iconSrc={dayBell} />
             <button
               className={styles.avatarButton}
               type="button"
@@ -122,12 +135,13 @@ function DashboardPage({ guest = false }) {
 
           <main className={styles.content}>
             <section className={styles.greeting} aria-labelledby="greeting-title">
-              <img className={styles.greetingMascot} src={mascotReading} alt="동화책을 읽는 Firstory 캐릭터" />
               <div className={styles.greetingCopy}>
                 <h1 id="greeting-title" className={styles.greetingText}>
-                  아이에게 전하고 싶은 마음, 동화로 시작해 보세요.
+                  아이에게 전하고 싶은 마음, 동화로 시작해 보세요
                 </h1>
-                <p>아이의 상황과 마음을 담은 맞춤 동화를 만들고, 함께 읽으며 자연스럽게 대화를 나눠보세요.</p>
+                <button className={styles.createStory} type="button" onClick={() => guest ? navigate('/auth') : navigate('/home', { state: { chooseStory: true } })}>
+                  <img src={createPlus} alt="" /> 동화 만들기
+                </button>
               </div>
             </section>
 
@@ -142,7 +156,7 @@ function DashboardPage({ guest = false }) {
                   type="button"
                   onClick={() => navigate('/scenarios')}
                 >
-                  {guest ? '더보기' : '전체 보기'} <span aria-hidden="true">→</span>
+                  더보기 <span aria-hidden="true">→</span>
                 </button>
               </div>
 
@@ -166,8 +180,12 @@ function DashboardPage({ guest = false }) {
                     >
                       <span className={styles.category}>{scenarioCategoryLabel(scenario)}</span>
                       <span className={styles.cardTitle}>{scenario.title}</span>
-                      <span className={styles.cardDescription}>{scenario.description}</span>
-                      <img className={styles.cardImage} src={scenario.image} alt="" />
+                      <img className={styles.cardWave} src={cardWaves[scenario.color]} alt="" />
+                      {scenario.id === 'friend' && <img className={styles.friendCharacter} src={friendCharacter} alt="" />}
+                      {scenario.id === 'emotion' && <span className={`${styles.spriteCrop} ${styles.familyCharacter}`}><img src={characterSheet} alt="" /></span>}
+                      {scenario.id === 'kindergarten' && <span className={styles.kindergartenCharacter}><img src={kindergartenCharacter} alt="" /></span>}
+                      {scenario.id === 'tantrum' && <span className={`${styles.spriteCrop} ${styles.tantrumCharacter}`}><img src={characterSheet} alt="" /></span>}
+                      {!designedCards.has(scenario.id) && <img className={styles.fallbackCharacter} src={scenario.image} alt="" />}
                     </button>
                   )))}
                 </div>
