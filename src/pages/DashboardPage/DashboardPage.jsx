@@ -1,5 +1,5 @@
 import { useCallback, useEffect, useState } from 'react';
-import { useLocation, useNavigate } from 'react-router-dom';
+import { Link, useLocation, useNavigate } from 'react-router-dom';
 import Sidebar from '../../components/layout/Sidebar';
 import NotificationBell from '../../components/layout/NotificationBell';
 import OnboardingModal from '../../features/onboarding/components/OnboardingModal';
@@ -121,18 +121,16 @@ function DashboardPage({ guest = false }) {
         <div className={styles.main}>
           <div className={styles.topbar}>
             {guest ? (
-              <button className={styles.guestBell} type="button" onClick={() => navigate('/auth')} aria-label="로그인 후 알림 보기">
-                <img src={dayBell} alt="" />
-              </button>
-            ) : <NotificationBell iconSrc={dayBell} />}
+              <Link className={styles.loginLink} to="/auth">로그인</Link>
+            ) : <><NotificationBell iconSrc={dayBell} />
             <button
               className={styles.avatarButton}
               type="button"
-              onClick={() => navigate(guest ? '/auth' : '/mypage')}
-              aria-label={guest ? '로그인' : '마이페이지'}
+              onClick={() => navigate('/mypage')}
+              aria-label="마이페이지"
             >
               <img className={styles.avatar} src={avatarProfile} alt="" />
-            </button>
+            </button></>}
           </div>
 
           <main className={styles.content}>

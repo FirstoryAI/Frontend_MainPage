@@ -5,11 +5,11 @@
 .treeCanopy { top: 0; right: 0; width: 547px; height: 414px; }
 .main { position: relative; z-index: 1; height: 100%; }
 .topbar { position: absolute; z-index: 4; top: 58.6px; right: 75px; display: flex; align-items: center; gap: 39.6px; height: 58.8px; }
-.guestBell { display: block; padding: 0; border: 0; background: transparent; cursor: pointer; }
-.guestBell img { display: block; }
+.loginLink { color: white; font: 600 20px var(--font-body); text-decoration: none; }
+.loginLink:focus-visible { outline: 3px solid var(--home-accent); outline-offset: 4px; }
 .avatar { display: block; width: 66.8px; height: 66.8px; max-width: none; margin: 0 0 0 -4px; }
 .avatarButton { display: block; width: 58.8px; height: 58.8px; padding: 0; border: 0; border-radius: 50%; background: transparent; cursor: pointer; }
-.avatarButton:focus-visible, .guestBell:focus-visible { outline: 3px solid var(--home-accent); outline-offset: 4px; }
+.avatarButton:focus-visible { outline: 3px solid var(--home-accent); outline-offset: 4px; }
 .content { position: relative; padding: 231px 0 72px 221px; }
 .greeting { min-height: 148px; }
 .greetingText { margin: 0; color: var(--home-text); font: 400 38px/1.3 var(--font-title); letter-spacing: -1.14px; }
