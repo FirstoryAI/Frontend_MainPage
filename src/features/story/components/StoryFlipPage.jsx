@@ -1,5 +1,6 @@
 import { forwardRef } from 'react';
 import SafeImage from './SafeImage';
+import SoundWord from './SoundWord';
 import StoryText from './StoryText';
 import StoryTextBlocks from './StoryTextBlocks';
 import { textPositionOf } from '../textPosition';
@@ -22,6 +23,8 @@ const StoryFlipPage = forwardRef(function StoryFlipPage({ storyPage, pageNumber,
             {lines.map((line, index) => <p key={`${pageNumber}-${index}`}><StoryText text={line} /></p>)}
           </div>
         ) : <StoryTextBlocks blocks={storyPage.textBlocks} />}
+        {/* 그림이 있을 때만 의성어·의태어를 그림 위에 띄워요. (옛 동화·별표 말이 없는 쪽은 soundWord가 null이에요) */}
+        {storyPage.imageUrl && <SoundWord word={storyPage.soundWord} />}
       </div>
     </div>
   );
