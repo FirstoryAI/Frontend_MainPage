@@ -322,21 +322,70 @@ button.book:hover { transform: translateY(-4px); }
 .retryButton:focus-visible { outline: 3px solid white; outline-offset: 3px; }
 
 /* ---------- 빈 서재 ---------- */
+/* 책을 불러오는 동안은 빈 책장 위에 안내를 올려 둬요. */
+.loading {
+  display: flex;
+  flex: 1;
+  align-items: flex-end;
+  justify-content: center;
+  margin: 0;
+  /* 책장 윗판(책 아래에서 48/244 위)보다 위에 오게 띄워요. */
+  padding: 0 0 calc(var(--book) * 60 / 244);
+}
+
+/* 빈 서재: 책장 없이, 예전 서재와 같은 크기의 캐릭터·안내·로그인 버튼이에요. (책장 폭 가운데) */
 .empty {
   display: flex;
   flex-direction: column;
   align-items: center;
-  justify-content: flex-end;
-  flex: 1;
-  margin: 0;
-  /* 책장 윗판(책 아래에서 48/244 위)보다 위에 오게 띄워요. */
-  padding: 0 0 calc(var(--book) * 60 / 244);
+  width: 1112px;
+  margin-top: 138px;
   text-align: center;
 }
 
-.emptyMascot { width: 140px; height: auto; }
-.emptyTitle { margin: 14px 0 0; color: white; font: 600 22px/1.4 var(--font-body); }
-.emptyLogin { margin-top: 18px; padding: 12px 24px; border-radius: 999px; background: var(--color-brand); color: white; font: 600 16px var(--font-body); text-decoration: none; }
+.emptyMascot {
+  position: relative;
+  width: 209px;
+  height: 186px;
+  overflow: hidden;
+  pointer-events: none;
+}
+
+/* 그림 한 장에 캐릭터가 두 모습으로 들어 있어서, 왼쪽 모습만 보여줘요. */
+.emptyMascot img {
+  position: absolute;
+  top: 0;
+  left: -0.27%;
+  width: 190.65%;
+  max-width: none;
+  height: 100%;
+}
+
+/* 어두운 나무 벽 위라 글씨는 흰색이에요. */
+.emptyTitle {
+  margin: 49px 0 0;
+  color: white;
+  font-family: var(--font-title);
+  font-size: 35px;
+  line-height: normal;
+}
+
+.emptyLogin {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  width: 235px;
+  height: 58px;
+  margin-top: 36px;
+  border-radius: 14px;
+  background: var(--color-surface);
+  box-shadow: 0 0 3.35px rgb(0 0 0 / 18%), inset 0 0 8.8px rgb(255 255 255 / 25%);
+  color: var(--color-brand);
+  font: 600 18px/1.5 var(--font-body);
+  text-decoration: none;
+}
+
+.emptyLogin:focus-visible { outline: 3px solid white; outline-offset: 3px; }
 
 .pager {
   display: flex;
@@ -385,6 +434,11 @@ button.book:hover { transform: translateY(-4px); }
   .filter { padding: 8px 16px; font-size: 15px; }
   .shelves { margin-top: 28px; }
   .shelf { width: 100%; }
+  /* 빈 서재: 예전 휴대폰 서재와 같아요. 낮은 화면에서는 캐릭터를 조금 줄여 한 화면에 넣어요. */
+  .empty { width: 100%; margin-top: 36px; }
+  .emptyMascot { width: clamp(150px, 25vh, 209px); height: clamp(134px, 22.2vh, 186px); }
+  .emptyTitle { margin-top: clamp(16px, 3vh, 49px); font-size: 28px; }
+  .emptyLogin { margin-top: clamp(16px, 3vh, 36px); }
   .pager { width: 100%; margin-top: 14px; font-size: 16px; }
   .pager button { width: 36px; height: 36px; }
   .newBadge { top: -8px; right: -8px; padding: 4px 7px 3px; border-width: 1.5px; }

@@ -329,16 +329,18 @@ function LibraryPage() {
 
           <section className={styles.shelves} ref={shelvesRef} style={{ '--book': `${book}px` }}
             aria-live="polite" aria-busy={!guest && isLoading} aria-label="내 동화 책장">
-            {showEmptyScreen || (!guest && isLoading) ? (
-              // 빈 서재는 빈 책장 위에 캐릭터와 안내를 올려 둬요.
+            {showEmptyScreen ? (
+              // 빈 서재는 책장 없이, 예전 서재와 같은 크기의 캐릭터·안내·로그인 버튼만 보여줘요.
+              <div className={styles.empty}>
+                <div className={styles.emptyMascot}>
+                  <img src={emptyMascot} alt="" />
+                </div>
+                <p className={styles.emptyTitle}>{emptyTitle}</p>
+                {guest && <Link className={styles.emptyLogin} to="/auth">로그인하고 동화 만들기</Link>}
+              </div>
+            ) : !guest && isLoading ? (
               <Shelf>
-                {showEmptyScreen ? (
-                  <div className={styles.empty}>
-                    <img className={styles.emptyMascot} src={emptyMascot} alt="" />
-                    <p className={styles.emptyTitle}>{emptyTitle}</p>
-                    {guest && <Link className={styles.emptyLogin} to="/auth">로그인하고 동화 만들기</Link>}
-                  </div>
-                ) : <p className={`${styles.empty} ${styles.message}`}>서재를 불러오는 중이에요.</p>}
+                <p className={`${styles.loading} ${styles.message}`}>서재를 불러오는 중이에요.</p>
               </Shelf>
             ) : shownStoryShelves.map((row) => (
               <Shelf key={row.map((story) => story.id).join('-')}>
