@@ -1,28 +1,30 @@
-.page { min-width: 320px; min-height: 100vh; overflow-x: clip; background: var(--color-page); }
-.shell { --list-text: #575757; --list-accent: #ff8a5b; position: relative; isolation: isolate; min-height: 100vh; overflow: hidden; color: var(--list-text); }
+.page { min-width: 320px; height: 100vh; height: 100dvh; overflow: hidden; background: var(--color-page); }
+.shell { --list-text: #575757; --list-accent: #ff8a5b; position: relative; isolation: isolate; height: 100%; overflow: hidden; color: var(--list-text); }
 .background { position: fixed; z-index: 0; inset: 0; display: block; width: 100%; height: 100%; object-fit: cover; opacity: .93; filter: blur(3.2px); pointer-events: none; }
 .shell::before { position: fixed; z-index: 1; inset: 0; background: rgb(255 255 255 / 8%); content: ''; pointer-events: none; }
-.main { position: relative; z-index: 2; min-height: 100vh; padding: 60px 0 80px; }
+.main { position: relative; z-index: 2; height: 100%; padding: 60px 0 0; }
+.content { display: flex; flex-direction: column; height: 100%; min-height: 0; }
 .topbar { position: absolute; z-index: 4; top: 58.6px; right: 75px; display: flex; align-items: center; gap: 39.6px; height: 58.8px; }
 .guestBell { display: block; padding: 0; border: 0; background: transparent; cursor: pointer; }
 .guestBell img { display: block; }
 .avatarButton { display: block; flex: 0 0 58.8px; width: 58.8px; height: 58.8px; padding: 0; border: 0; border-radius: 50%; background: transparent; cursor: pointer; }
 .avatarButton img { display: block; width: 58.8px; height: 58.8px; }
 .avatarButton:focus-visible, .guestBell:focus-visible { outline: 3px solid var(--list-accent); outline-offset: 4px; }
-.heading { position: relative; height: 141px; margin-left: 95px; }
+.heading { position: relative; flex: none; height: 141px; margin-left: 95px; }
 .back { position: absolute; top: 7px; left: 0; display: block; width: 19px; height: 33px; }
 .back img { display: block; width: 18.6045px; height: 32.6558px; }
 .back:focus-visible { outline: 3px solid var(--list-accent); outline-offset: 5px; }
 .title { position: absolute; top: 0; left: 48px; margin: 0; color: var(--list-text); font: 600 35px/1.304 var(--font-body); letter-spacing: -1.05px; }
 .description { position: absolute; top: 86px; left: 111px; margin: 0; color: var(--list-text); font: 400 20px/27px var(--font-body); white-space: nowrap; }
-.filters { display: flex; flex-wrap: wrap; gap: 12px 20px; margin: 0 30px 0 206px; }
+.filters { display: flex; flex: none; flex-wrap: wrap; gap: 12px 20px; margin: 0 30px 0 206px; }
 .filter { display: inline-flex; align-items: center; justify-content: center; min-height: 43px; padding: 0 22.8px; border: 0; border-radius: 23.75px; background: white; color: #717171; font: 600 17px var(--font-body); letter-spacing: -.51px; white-space: nowrap; cursor: pointer; }
 .filter:focus-visible { outline: 3px solid var(--list-accent); outline-offset: 3px; }
 .filter:disabled { color: var(--color-text-muted); background: #f3efec; cursor: not-allowed; }
 .filterActive { background: var(--list-accent); color: white; }
 .lockIcon { display: block; width: 14px; height: 17px; margin-left: 8px; }
-.gridArea { container-type: inline-size; max-width: 1049px; margin: 44px 134px 0 257px; }
+.gridArea { container-type: inline-size; flex: 1; max-width: 1049px; min-height: 0; margin: 44px 134px 0 257px; overflow-x: hidden; overflow-y: auto; overscroll-behavior: contain; scrollbar-gutter: stable; }
 .grid { --u: min(1px, calc(100cqw / 1049)); display: grid; grid-template-columns: repeat(4, calc(235.55 * var(--u))); justify-content: space-between; gap: calc(43.6 * var(--u)) calc(36.98 * var(--u)); margin: 0; padding: 0; list-style: none; }
+.grid > li:last-child { margin-bottom: 48px; }
 .grid > li { min-width: 0; }
 .empty { margin: 0; color: var(--list-text); font-size: 17px; }
 .card { --card-bg: #ffdcd7; --card-border: #ffdfda; --badge: #ff806d; position: relative; display: block; width: calc(235.55 * var(--u)); height: calc(270.41 * var(--u)); overflow: hidden; padding: 0; border: calc(2.05 * var(--u)) solid var(--card-border); border-radius: calc(18.85 * var(--u)); background: var(--card-bg); box-shadow: inset 0 0 27px rgb(255 255 255 / 50%); color: var(--list-text); cursor: pointer; }
@@ -46,18 +48,22 @@
 .tantrumCharacter { top: calc(105.6 * var(--u)); left: calc(22.56 * var(--u)); width: calc(186.39 * var(--u)); height: calc(190.9 * var(--u)); }
 .tantrumCharacter img { top: -139.9%; left: -113.44%; width: 412.9%; height: 268.77%; }
 .fallbackCharacter { position: absolute; z-index: 2; bottom: calc(-3 * var(--u)); left: 50%; width: calc(195 * var(--u)); height: calc(155 * var(--u)); object-fit: contain; object-position: center bottom; transform: translateX(-50%); }
+@media (min-width: 1400px) and (min-aspect-ratio: 8/5) {
+  .filters { column-gap: 18px; }
+  .filter { min-height: 38px; padding: 0 18px; border-radius: 19px; font-size: 15px; }
+}
 @media (max-width: 1399px) {
   .gridArea { margin-right: 6vw; margin-left: 18vw; }
   .filters { margin-left: 18vw; }
 }
 @media (max-width: 1199px) and (min-width: 901px) {
-  .gridArea { --grid-max: 780px; max-width: 780px; margin-right: 35px; margin-left: max(160px, calc((100% - 780px) / 2)); }
+  .gridArea { max-width: 780px; margin-right: 35px; margin-left: max(160px, calc((100% - 780px) / 2)); }
   .grid { --u: min(1px, calc(100cqw / 780)); grid-template-columns: repeat(3, calc(235.55 * var(--u))); }
   .filters { margin-left: max(160px, calc((100% - 780px) / 2)); }
 }
 @media (max-width: 900px) {
   .background { object-position: center bottom; }
-  .main { min-height: 0; padding: 26px 22px 90px; }
+  .main { height: calc(100% - 84px); padding: 26px 22px 0; }
   .topbar { top: -62px; right: 94px; height: 40px; gap: 16px; }
   .avatarButton { flex-basis: 40px; width: 40px; height: 40px; }
   .avatarButton img { width: 40px; height: 40px; }
@@ -70,6 +76,7 @@
   .filter { min-height: 38px; padding: 0 17px; font-size: 14px; }
   .gridArea { max-width: none; margin: 30px 0 0; }
   .grid { --u: min(1px, calc(100cqw / 508)); grid-template-columns: repeat(2, calc(235.55 * var(--u))); justify-content: center; gap: 26px 36.98px; }
+  .grid > li:last-child { margin-bottom: 100px; }
 }
 @media (max-width: 550px) {
   .main { padding-right: 16px; padding-left: 16px; }

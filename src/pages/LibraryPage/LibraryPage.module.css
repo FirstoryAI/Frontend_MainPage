@@ -94,6 +94,21 @@
 
 .filter:focus-visible { outline: 3px solid var(--color-brand); outline-offset: 3px; }
 
+/* 본문 zoom 이후에도 두 목록의 데스크톱 칩이 같은 크기로 보여요. */
+@media (min-width: 1400px) and (min-aspect-ratio: 8/5) {
+  .filters { gap: var(--desktop-chip-gap); }
+  .filter {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    box-sizing: border-box;
+    height: var(--desktop-chip-height);
+    padding: 0 var(--desktop-chip-pad-x);
+    border-radius: var(--desktop-chip-radius);
+    font-size: var(--desktop-chip-font);
+  }
+}
+
 .error, .message {
   margin: 24px 0 0;
   color: white;
