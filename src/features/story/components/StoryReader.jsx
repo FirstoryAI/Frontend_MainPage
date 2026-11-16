@@ -26,7 +26,7 @@ const HEADER_VISIBLE_MS = 2000;
 
 // 동화를 화면 가득 크게 읽는 화면이에요. 미리보기(확정 전)와 아이와 읽기(확정 후)가 함께 써요.
 // pages: [{ pageNo, text, imageUrl, imageStatus }], page: 지금 쪽(1부터), children: 쪽 아래에 띄울 보조 영역
-function StoryReader({ title, pages, page, onPage, onClose, closeLabel = '돌아가기', children, guide, previewMode = false, className = '' }) {
+function StoryReader({ title, pages, page, onPage, onClose, closeLabel = '돌아가기', children, guide, previewMode = false, className = '', suspended = false }) {
   const current = pages[page - 1];
   const [closedGuidePage, setClosedGuidePage] = useState(null);
   const [isHintOpen, setIsHintOpen] = useState(false);
@@ -76,6 +76,7 @@ function StoryReader({ title, pages, page, onPage, onClose, closeLabel = '돌아
 
   useEffect(() => {
     const handleKeys = (event) => {
+      if (suspended) return;
       // 키보드로 움직이면 닫기 버튼에 갈 수 있게 상단바를 내려요.
       if (event.key === 'Tab' && !previewMode) {
         setIsHeaderShown(true);
@@ -93,7 +94,7 @@ function StoryReader({ title, pages, page, onPage, onClose, closeLabel = '돌아
       document.body.style.overflow = previousOverflow;
       window.removeEventListener('keydown', handleKeys);
     };
-  }, [onClose, page, pages.length, previewMode, showPage]);
+  }, [onClose, page, pages.length, previewMode, showPage, suspended]);
 
   useEffect(() => {
     if (!isHintOpen) return undefined;
@@ -137,6 +138,7 @@ function StoryReader({ title, pages, page, onPage, onClose, closeLabel = '돌아
   return (
     <section
       className={`${styles.reader} ${previewMode ? styles.previewReader : ''} ${className}`}
+      inert={suspended}
       data-header-hidden={isHeaderHidden}
       onPointerDown={handlePointerDown}
       onPointerUp={handlePointerUp}
