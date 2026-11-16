@@ -48,6 +48,12 @@
 .avatarButton:focus-visible { outline: 3px solid var(--color-brand); outline-offset: 4px; }
 
 .content {
+  /* 책 한 권(디자인 244px)과 한 칸에 꽂는 책 수예요. JS가 화면에 맞춰 바꿔요. */
+  --book: 244px;
+  --per-shelf: 4;
+  /* 책장 폭: 책 수 × 283 - 20 (4권이면 디자인 그대로 1112px). 빈 서재 안내·쪽 넘기기도 이 폭 가운데에 놓여요. */
+  --shelf-width: calc(var(--book) * (var(--per-shelf) * 283 - 20) / 244);
+
   position: relative;
   z-index: 1;
   /* 900px 넘는 화면은 JS가 zoom으로 디자인(1440×960)을 화면에 맞춰 줄여요. */
@@ -97,8 +103,6 @@
 /* ---------- 책장 ---------- */
 /* 크기는 모두 책 한 권(--book, 디자인 244px)에 비례해요. 좁은 화면에서는 JS가 --book을 화면 폭에 맞춰요. */
 .shelves {
-  --book: 244px;
-
   display: flex;
   flex-direction: column;
   gap: calc(var(--book) * 57 / 244);
@@ -107,7 +111,7 @@
 
 .shelf {
   position: relative;
-  width: calc(var(--book) * 1112 / 244);
+  width: var(--shelf-width);
   padding-bottom: calc(var(--book) * 18 / 244);
 }
 
@@ -343,7 +347,7 @@ button.book:hover { transform: translateY(-4px); }
   display: flex;
   flex-direction: column;
   align-items: center;
-  width: 1112px;
+  width: var(--shelf-width);
   margin-top: 138px;
   text-align: center;
 }
@@ -397,7 +401,7 @@ button.book:hover { transform: translateY(-4px); }
   align-items: center;
   justify-content: center;
   gap: 18px;
-  width: 1112px;
+  width: var(--shelf-width);
   margin-top: 22px;
   color: rgb(255 255 255 / 80%);
   font: 600 18px var(--font-body);

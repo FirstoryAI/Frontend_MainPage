@@ -70,12 +70,16 @@ const SHELF_GAP = 57;
 // 데스크톱: 첫 책장 윗변(287px)과, 아래에 남길 자리(쪽 넘기기 70px)예요.
 const DESKTOP_SHELVES_TOP = 287;
 const PAGER_SPACE = 70;
+// 데스크톱 책장 왼쪽(230px)·오른쪽 여백(99px)이에요. 책 한 권이 늘 때마다 책장이 283px(표지 210 + 사이 73)씩 길어져요.
+const DESKTOP_SHELF_LEFT = 230;
+const DESKTOP_SHELF_RIGHT = 99;
+const BOOK_PITCH = 283;
 // 휴대폰·좁은 화면: 아래 메뉴(78px)와 쪽 넘기기(56px) 자리를 남겨요.
 const MOBILE_BOTTOM_SPACE = 78 + 56;
 
 // 화면 크기에 맞춰 책장 모양을 정해요.
 //  - 900px 넘는 화면(데스크톱·패드): 디자인을 통째로 비율대로 줄여서(zoom) 가로·세로 모두 한 화면에 넣어요.
-//    한 칸에 4권, 남는 높이만큼 책장 칸 수를 늘려요. (패드 세로는 칸이 더 많아요)
+//    한 칸에 4권이 기본이고, 화면이 디자인보다 넓으면 남는 폭만큼 한 칸에 책을 더 꽂아요. 남는 높이만큼 책장 칸 수도 늘려요.
 //  - 900px 이하: 화면 폭에 맞춰 책 크기를 정하고(3권, 560px 이하 2권), 남는 높이에 들어가는 만큼 칸을 보여줘요.
 // 넘치는 책은 스크롤 대신 쪽을 넘겨서 봐요.
 function measureShelfLayout(shelvesTop) {
@@ -84,7 +88,10 @@ function measureShelfLayout(shelvesTop) {
   if (width > 900) {
     const scale = Math.min(1, width / DESIGN_WIDTH, height / DESIGN_HEIGHT);
     const room = height / scale - DESKTOP_SHELVES_TOP - PAGER_SPACE + SHELF_GAP;
-    return { perShelf: 4, shelvesPerPage: Math.max(1, Math.floor(room / (SHELF_HEIGHT + SHELF_GAP))), scale, book: BOOK };
+    // 책장 폭 = 책 수 × 283 - 20 (4권이면 디자인 그대로 1112px)
+    const shelfRoom = width / scale - DESKTOP_SHELF_LEFT - DESKTOP_SHELF_RIGHT;
+    const perShelf = Math.max(4, Math.floor((shelfRoom + 20) / BOOK_PITCH));
+    return { perShelf, shelvesPerPage: Math.max(1, Math.floor(room / (SHELF_HEIGHT + SHELF_GAP))), scale, book: BOOK };
   }
   const perShelf = width <= 560 ? 2 : 3;
   // 표지 n권(210/244씩) + 사이 (n-1)칸(73/244씩) + 양옆 26/244씩. book은 책장 칸 높이(디자인 244) 기준이에요.
@@ -288,10 +295,11 @@ function LibraryPage() {
       <div className={styles.page} inert={isSignedIn && savedModalOpen}>
         <img className={styles.background} src={shelfBackground} alt="" />
         <div className={styles.sidebarLayer}>
-          <Sidebar guest={guest} compact />
+          {/* 로고·오른쪽 위 버튼도 본문과 같은 비율로 줄여서, 낮은 화면에서 '서재' 제목과 겹치지 않게 해요. */}
+          <Sidebar guest={guest} compact logoScale={scale} />
         </div>
 
-        <div className={styles.topbar}>
+        <div className={styles.topbar} style={{ zoom: scale }}>
           {guest ? (
             <Link className={styles.loginLink} to="/auth">로그인</Link>
           ) : <><NotificationBell iconSrc={libraryBell} />
@@ -305,7 +313,7 @@ function LibraryPage() {
           </button></>}
         </div>
 
-        <main className={styles.content} style={{ zoom: scale }}>
+        <main className={styles.content} style={{ zoom: scale, '--book': `${book}px`, '--per-shelf': perShelf }}>
           <h1 className={styles.title}>서재</h1>
 
           <div className={styles.filters} aria-label="동화 주제 필터">
@@ -327,7 +335,7 @@ function LibraryPage() {
 
           {!guest && error && <p className={styles.error} role="alert"><ErrorText message={error} /></p>}
 
-          <section className={styles.shelves} ref={shelvesRef} style={{ '--book': `${book}px` }}
+          <section className={styles.shelves} ref={shelvesRef}
             aria-live="polite" aria-busy={!guest && isLoading} aria-label="내 동화 책장">
             {showEmptyScreen ? (
               // 빈 서재는 책장 없이, 예전 서재와 같은 크기의 캐릭터·안내·로그인 버튼만 보여줘요.

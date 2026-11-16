@@ -13,7 +13,8 @@ import styles from './Sidebar.module.css';
 import dayRail from '../../assets/images/home/day-design/sidebar-rail.svg';
 import libraryRail from '../../assets/images/library/sidebar-rail-library.svg';
 
-function Sidebar({ guest = false, compact = false, showLogo = true }) {
+// logoScale: 좁은 막대(compact)의 로고를 본문과 같은 비율로 줄일 때 써요. (서재처럼 본문을 화면에 맞춰 줄이는 화면)
+function Sidebar({ guest = false, compact = false, showLogo = true, logoScale = 1 }) {
   const navigate = useNavigate();
   const location = useLocation();
   const [isLoggingOut, setIsLoggingOut] = useState(false);
@@ -38,7 +39,10 @@ function Sidebar({ guest = false, compact = false, showLogo = true }) {
   if (compact) {
     return (
       <aside className={styles.compactSidebar} aria-label="주요 메뉴">
-        {showLogo && <Link className={styles.compactLogo} to={guest ? '/' : '/home'} aria-label="FIRSTORY 홈">FIRSTORY</Link>}
+        {showLogo && (
+          <Link className={styles.compactLogo} to={guest ? '/' : '/home'} aria-label="FIRSTORY 홈"
+            style={logoScale === 1 ? undefined : { zoom: logoScale }}>FIRSTORY</Link>
+        )}
         <nav className={styles.compactRail} aria-label="주요 메뉴">
           {/* 지금 화면(홈·서재)의 아이콘이 주황색인 막대 그림이에요. */}
           <img src={libraryActive ? libraryRail : dayRail} alt="" aria-hidden="true" />
