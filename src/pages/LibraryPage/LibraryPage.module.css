@@ -44,7 +44,7 @@
 
 .loginLink { color: white; font: 600 20px var(--font-body); text-decoration: none; }
 .avatarButton { display: block; width: 58.8px; height: 58.8px; padding: 0; border: 0; border-radius: 50%; background: transparent; cursor: pointer; }
-.avatar { display: block; width: 66.8px; height: 66.8px; margin: -4px; }
+.avatar { display: block; width: 66.8px; height: 66.8px; max-width: none; margin: 0 0 0 -4px; }
 .avatarButton:focus-visible { outline: 3px solid var(--color-brand); outline-offset: 4px; }
 
 .content {
@@ -435,7 +435,7 @@ button.book:hover { transform: translateY(-4px); }
   .sidebarLayer { position: relative; inset: auto; width: auto; height: 84px; }
   .topbar { top: 22px; right: 92px; height: 40px; gap: 16px; }
   .avatarButton { width: 40px; height: 40px; }
-  .avatar { width: 45px; height: 45px; margin: -2.5px; }
+  .avatar { width: 45px; height: 45px; margin: 0 0 0 -2.5px; }
   .content { padding: 24px 16px 0; }
   .title { font-size: 28px; }
   .filters { flex-wrap: nowrap; gap: 10px; margin: 20px -16px 0; padding: 0 16px 4px; overflow-x: auto; scrollbar-width: none; }
