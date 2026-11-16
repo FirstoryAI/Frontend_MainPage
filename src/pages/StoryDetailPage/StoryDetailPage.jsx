@@ -23,16 +23,21 @@ import styles from './StoryDetailPage.module.css';
 import ErrorText from '../../components/ui/ErrorText';
 
 // 900px 넘는 화면은 디자인(1440×960)을 통째로 비율대로 줄여 한 화면에 넣어요. (서재와 같아요)
+// 화면이 디자인보다 넓거나 높으면 무대를 화면 크기만큼 넓혀서, 표지·글이 화면 가운데에 오게 해요.
 const DESIGN_WIDTH = 1440;
 const DESIGN_HEIGHT = 960;
-const fitScale = () => (window.innerWidth > 900
-  ? Math.min(1, window.innerWidth / DESIGN_WIDTH, window.innerHeight / DESIGN_HEIGHT)
-  : 1);
+const fitStage = () => {
+  const width = window.innerWidth;
+  const height = window.innerHeight;
+  if (width <= 900) return { scale: 1, stage: null };
+  const scale = Math.min(1, width / DESIGN_WIDTH, height / DESIGN_HEIGHT);
+  return { scale, stage: { width: width / scale, height: height / scale } };
+};
 
-function useFitScale() {
-  const [scale, setScale] = useState(fitScale);
+function useFitStage() {
+  const [fit, setFit] = useState(fitStage);
   useLayoutEffect(() => {
-    const update = () => setScale(fitScale());
+    const update = () => setFit(fitStage());
     window.addEventListener('resize', update);
     window.addEventListener('orientationchange', update);
     return () => {
@@ -40,7 +45,7 @@ function useFitScale() {
       window.removeEventListener('orientationchange', update);
     };
   }, []);
-  return scale;
+  return fit;
 }
 
 // 서재에서 '아직 읽지 않았어요'·'함께 읽었어요' 동화를 누르면 보이는 '동화 한 눈에 보기' 화면이에요.
@@ -50,7 +55,7 @@ function StoryDetailPage() {
   const location = useLocation();
   const navigate = useNavigate();
   const story = location.state?.story;
-  const scale = useFitScale();
+  const { scale, stage } = useFitStage();
   const [detail, setDetail] = useState(null);
   const [guide, setGuide] = useState(null);
   const [loadError, setLoadError] = useState('');
@@ -174,7 +179,7 @@ function StoryDetailPage() {
         </button>
       </div>
 
-      <main className={styles.stage} style={{ zoom: scale }}>
+      <main className={styles.stage} style={{ zoom: scale, ...stage }}>
         <div className={styles.headingRow}>
           <button className={styles.back} type="button" onClick={() => navigate('/library')} aria-label="서재로 돌아가기">
             <img src={iconBack} alt="" />
