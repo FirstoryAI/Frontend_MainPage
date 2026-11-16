@@ -56,7 +56,9 @@
 .avatar { display: block; width: 66.8px; height: 66.8px; margin: -4px; }
 .avatarButton:focus-visible { outline: 3px solid var(--color-brand); outline-offset: 4px; }
 
-/* ---------- 디자인 화면(1440×960) ---------- */
+/* ---------- 디자인 화면(1440×960) ----------
+   JS가 무대를 화면 크기(줄인 비율 기준)로 넓혀요. 표지·글은 무대 가운데를 기준으로 디자인과 같은 거리에 놓여요.
+   (1440×960에서는 디자인 자리 그대로예요: 표지 234·274, 글 810·363) */
 .stage {
   position: relative;
   z-index: 1;
@@ -97,8 +99,8 @@
 
 .coverArea {
   position: absolute;
-  top: 274px;
-  left: 234px;
+  top: calc(50% - 206px);
+  left: calc(50% - 486px);
   display: flex;
   align-items: center;
   justify-content: center;
@@ -125,8 +127,8 @@
 
 .info {
   position: absolute;
-  top: 363px;
-  left: 810px;
+  top: calc(50% - 117px);
+  left: calc(50% + 90px);
   width: 485px;
 }
 
