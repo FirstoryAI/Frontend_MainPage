@@ -5,10 +5,11 @@
 .treeCanopy { top: 0; right: 0; width: 547px; height: 414px; }
 .main { position: relative; z-index: 1; height: 100%; }
 .topbar { position: absolute; z-index: 4; top: 58.6px; right: 75px; display: flex; align-items: center; gap: 39.6px; height: 58.8px; }
-.loginLink { color: var(--home-text); font-size: 20px; font-weight: 600; text-decoration: none; }
-.avatar { display: block; width: 66.8px; height: 66.8px; margin: -4px; }
+.guestBell { display: block; padding: 0; border: 0; background: transparent; cursor: pointer; }
+.guestBell img { display: block; }
+.avatar { display: block; width: 66.8px; height: 66.8px; max-width: none; margin: 0 0 0 -4px; }
 .avatarButton { display: block; width: 58.8px; height: 58.8px; padding: 0; border: 0; border-radius: 50%; background: transparent; cursor: pointer; }
-.avatarButton:focus-visible { outline: 3px solid var(--home-accent); outline-offset: 4px; }
+.avatarButton:focus-visible, .guestBell:focus-visible { outline: 3px solid var(--home-accent); outline-offset: 4px; }
 .content { position: relative; padding: 231px 0 72px 221px; }
 .greeting { min-height: 148px; }
 .greetingText { margin: 0; color: var(--home-text); font: 400 38px/1.3 var(--font-title); letter-spacing: -1.14px; }
@@ -70,7 +71,7 @@
   .treeCanopy { display: none; }
   .topbar { top: 22px; right: 92px; height: 40px; gap: 16px; }
   .avatarButton { width: 40px; height: 40px; }
-  .avatar { width: 45px; height: 45px; margin: -2.5px; }
+  .avatar { width: 45px; height: 45px; margin: 0 0 0 -2.5px; }
   .content { padding: 75px 0 60px 22px; }
   .greeting { min-height: 200px; padding-right: 20px; }
   .greetingText { max-width: 560px; font-size: clamp(26px, 5vw, 38px); }

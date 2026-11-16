@@ -12,7 +12,7 @@ import { setSignedInStatus } from '../../features/auth/useSignedIn';
 import styles from './Sidebar.module.css';
 import dayRail from '../../assets/images/home/day-design/sidebar-rail.svg';
 
-function Sidebar({ guest = false, compact = false }) {
+function Sidebar({ guest = false, compact = false, showLogo = true }) {
   const navigate = useNavigate();
   const location = useLocation();
   const [isLoggingOut, setIsLoggingOut] = useState(false);
@@ -37,7 +37,7 @@ function Sidebar({ guest = false, compact = false }) {
   if (compact) {
     return (
       <aside className={styles.compactSidebar} aria-label="주요 메뉴">
-        <Link className={styles.compactLogo} to={guest ? '/' : '/home'} aria-label="FIRSTORY 홈">FIRSTORY</Link>
+        {showLogo && <Link className={styles.compactLogo} to={guest ? '/' : '/home'} aria-label="FIRSTORY 홈">FIRSTORY</Link>}
         <nav className={styles.compactRail} aria-label="주요 메뉴">
           <img src={dayRail} alt="" aria-hidden="true" />
           <button className={`${styles.railAction} ${styles.railCreate}`} type="button" aria-label="동화 만들기"

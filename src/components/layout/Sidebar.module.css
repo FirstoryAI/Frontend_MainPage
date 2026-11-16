@@ -112,10 +112,11 @@
 }
 
 .compactSidebar {
-  position: absolute;
-  inset: 0 auto 0 0;
+  position: fixed;
+  inset: 0 auto auto 0;
   z-index: 3;
   width: 145px;
+  height: 100dvh;
   pointer-events: none;
 }
 
