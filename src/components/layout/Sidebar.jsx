@@ -10,8 +10,9 @@ import iconLogout from '../../assets/icons/icon-logout.svg';
 import { logout } from '../../services/authApi';
 import { setSignedInStatus } from '../../features/auth/useSignedIn';
 import styles from './Sidebar.module.css';
+import dayRail from '../../assets/images/home/day-design/sidebar-rail.svg';
 
-function Sidebar({ guest = false }) {
+function Sidebar({ guest = false, compact = false }) {
   const navigate = useNavigate();
   const location = useLocation();
   const [isLoggingOut, setIsLoggingOut] = useState(false);
@@ -32,6 +33,28 @@ function Sidebar({ guest = false }) {
       setIsLoggingOut(false);
     }
   };
+
+  if (compact) {
+    return (
+      <aside className={styles.compactSidebar} aria-label="주요 메뉴">
+        <Link className={styles.compactLogo} to={guest ? '/' : '/home'} aria-label="FIRSTORY 홈">FIRSTORY</Link>
+        <nav className={styles.compactRail} aria-label="주요 메뉴">
+          <img src={dayRail} alt="" aria-hidden="true" />
+          <button className={`${styles.railAction} ${styles.railCreate}`} type="button" aria-label="동화 만들기"
+            onClick={() => guest ? navigate('/auth') : navigate('/home', { state: { chooseStory: true } })} />
+          <Link className={`${styles.railAction} ${styles.railHome}`} to={guest ? '/' : '/home'} aria-label="홈" aria-current="page"><img src={iconHome} alt="" /><span>홈</span></Link>
+          <Link className={`${styles.railAction} ${styles.railLibrary}`} to="/library" aria-label="서재"><img src={iconLibrary} alt="" /><span>서재</span></Link>
+          {guest ? (
+            <Link className={`${styles.railAction} ${styles.railLogout}`} to="/auth" aria-label="로그인"><img src={iconLogout} alt="" /><span>로그인</span></Link>
+          ) : (
+            <button className={`${styles.railAction} ${styles.railLogout}`} type="button" aria-label="로그아웃"
+              onClick={handleLogout} disabled={isLoggingOut}><img src={iconLogout} alt="" /><span>로그아웃</span></button>
+          )}
+        </nav>
+        {!guest && logoutError && <p className={styles.compactLogoutError} role="alert">{logoutError}</p>}
+      </aside>
+    );
+  }
 
   return (
     <aside className={styles.sidebar}>

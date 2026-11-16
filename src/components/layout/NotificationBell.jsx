@@ -31,7 +31,7 @@ function filterForGroup(group) {
 }
 
 // 오른쪽 위 알림 버튼이에요. 안 읽은 알림 수를 뱃지로 보여주고, 누르면 알림 내용을 펼쳐 보여줘요.
-function NotificationBell() {
+function NotificationBell({ iconSrc = iconBell }) {
   const { notifications, unreadCount, markAllRead } = useNotifications();
   const navigate = useNavigate();
   const [open, setOpen] = useState(false);
@@ -112,7 +112,7 @@ function NotificationBell() {
         aria-controls={open ? panelId : undefined}
         onClick={toggle}
       >
-        <img src={iconBell} alt="" />
+        <img src={iconSrc} alt="" />
         {unreadCount > 0 && (
           <span className={styles.badge} aria-hidden="true">
             {unreadCount > MAX_BADGE ? `${MAX_BADGE}+` : unreadCount}

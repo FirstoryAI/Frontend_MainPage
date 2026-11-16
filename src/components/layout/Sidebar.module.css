@@ -110,3 +110,101 @@
     margin-top: 16px;
   }
 }
+
+.compactSidebar {
+  position: absolute;
+  inset: 0 auto 0 0;
+  z-index: 3;
+  width: 145px;
+  pointer-events: none;
+}
+
+.compactLogo {
+  position: absolute;
+  top: 49px;
+  left: 76px;
+  color: var(--color-brand);
+  font: 400 38px var(--font-brand);
+  letter-spacing: -1.14px;
+  text-decoration: none;
+  pointer-events: auto;
+}
+
+.compactRail {
+  position: absolute;
+  top: calc(50vh - 303.6px);
+  left: 49.4px;
+  width: 105.2px;
+  height: 672.2px;
+  pointer-events: auto;
+}
+
+.compactRail > img {
+  display: block;
+  width: 105.2px;
+  height: 672.2px;
+}
+
+.railAction {
+  position: absolute;
+  left: 28.6px;
+  display: block;
+  width: 48px;
+  height: 48px;
+  padding: 0;
+  border: 0;
+  border-radius: 8px;
+  background: transparent;
+  cursor: pointer;
+}
+
+.railAction:focus-visible {
+  outline: 3px solid var(--color-brand);
+  outline-offset: 3px;
+}
+.railAction > img, .railAction > span { display: none; }
+
+.railCreate { top: 83.6px; }
+.railHome { top: 214px; }
+.railLibrary { top: 302px; }
+.railLogout { top: 574px; }
+
+.compactLogoutError {
+  position: absolute;
+  top: calc(50vh + 351px);
+  left: 50px;
+  width: 180px;
+  color: #c83e35;
+  font-size: 12px;
+  pointer-events: auto;
+}
+
+@media (min-width: 901px) and (max-height: 850px) {
+  .compactRail { top: calc(50% - 279px); transform: scale(.83); transform-origin: top left; }
+}
+
+@media (min-width: 901px) and (max-height: 720px) {
+  .compactRail { top: calc(50% - 242px); transform: scale(.72); }
+}
+
+@media (max-width: 900px) {
+  .compactSidebar {
+    position: relative;
+    width: 100%;
+    height: 84px;
+  }
+
+  .compactLogo { top: 17px; left: 22px; font-size: 31px; }
+  .compactRail { top: 6px; right: 16px; left: auto; width: 63px; height: 70px; }
+  .compactRail > img { display: none; }
+  .railAction { display: none; }
+  .railCreate { display: block; top: 7px; left: 8px; width: 48px; height: 48px; background: var(--color-brand); }
+  .railCreate::before, .railCreate::after { content: ''; position: absolute; top: 23px; left: 16px; width: 16px; height: 2px; background: white; }
+  .railCreate::after { transform: rotate(90deg); }
+  .railHome, .railLibrary, .railLogout { position: fixed; top: auto; bottom: 10px; z-index: 5; display: flex; flex-direction: column; align-items: center; justify-content: center; gap: 3px; width: 72px; height: 58px; background: white; color: var(--color-text); font: 500 12px var(--font-body); text-decoration: none; box-shadow: 0 0 8px rgb(0 0 0 / 10%); }
+  .railHome { left: calc(50% - 108px); border-radius: 14px 0 0 14px; color: var(--color-brand); }
+  .railLibrary { left: calc(50% - 36px); border-radius: 0; }
+  .railLogout { left: calc(50% + 36px); border-radius: 0 14px 14px 0; }
+  .railAction > img, .railAction > span { display: block; }
+  .railAction > img { width: 21px; height: 21px; }
+}

@@ -1,523 +1,93 @@
-.page {
-  min-width: 320px;
-  min-height: 100vh;
-  overflow-x: clip;
-  overscroll-behavior-x: none;
-  background: var(--color-page);
-}
-
-.shell {
-  min-height: 100vh;
-}
-
-.main {
-  min-height: 100vh;
-  padding: 58.6px 0 72px 363px;
-}
-
-.topbar {
-  position: relative;
-  display: flex;
-  align-items: center;
-  justify-content: flex-end;
-  gap: 39.6px;
-  height: 58.8px;
-  margin: 0 75px 0 0;
-}
-
-.loginLink {
-  color: var(--color-text);
-  font-size: 20px;
-  font-weight: 600;
-  text-decoration: none;
-}
-
-.avatar {
-  display: block;
-  flex: 0 0 58.8px;
-  width: 58.8px;
-  height: 58.8px;
-}
-
-.avatarButton {
-  display: block;
-  flex: 0 0 58.8px;
-  width: 58.8px;
-  height: 58.8px;
-  padding: 0;
-  background: transparent;
-  border: 0;
-  border-radius: 50%;
-  cursor: pointer;
-}
-
-.avatarButton:focus-visible {
-  outline-offset: 4px;
-}
-
-.content {
-  margin-top: 80px;
-  padding-left: 35px;
-}
-
-.greeting {
-  display: flex;
-  align-items: center;
-  gap: 35px;
-  min-height: 161px;
-}
-
-.greetingMascot {
-  display: block;
-  flex: 0 0 174px;
-  width: 174px;
-  height: 161px;
-  object-fit: contain;
-}
-
-.greetingCopy {
-  min-width: 0;
-  transform: translateY(12px);
-}
-
-.greetingText {
-  margin: 0;
-  color: var(--color-text);
-  font-family: var(--font-title);
-  font-size: 38px;
-  font-weight: 400;
-  line-height: 1.3;
-  letter-spacing: -1.14px;
-}
-
-.greetingCopy p {
-  margin: 11px 0 0;
-  color: var(--color-text);
-  font-size: 18px;
-  line-height: 27px;
-  white-space: nowrap;
-}
-
-.recommendations {
-  margin: 92px 0 0 15px;
-}
-
-.sectionHeading {
-  display: flex;
-  align-items: flex-end;
-  justify-content: space-between;
-  max-width: 990px;
-  padding: 0 42px 0 0;
-}
-
-.sectionHeading h2 {
-  margin: 0;
-  color: var(--color-text);
-  font-size: 26px;
-  font-weight: 600;
-  letter-spacing: -0.7px;
-}
-
-.sectionHeading h2 img {
-  display: inline-block;
-  margin-right: 12px;
-  vertical-align: -5px;
-}
-
-.sectionHeading p {
-  margin: 15px 0 0;
-  color: var(--color-secondary);
-  font-size: 16px;
-}
-
-.viewAll {
-  flex: none;
-  margin-bottom: 1px;
-  padding: 4px 0;
-  color: var(--color-brand);
-  background: none;
-  border: 0;
-  font: 600 16px var(--font-body);
-  cursor: pointer;
-}
-
-.viewAll span {
-  font-size: 20px;
-}
-
-/* 카드는 회전초밥처럼 저절로 흘러가요. 위치는 스크립트가 .cards의 transform으로 움직여요. */
-.cardViewport {
-  margin-top: 39px;
-  overflow: hidden;
-  overscroll-behavior-x: contain;
-  cursor: grab;
-  user-select: none;
-  touch-action: pan-y;
-}
-
-.cardViewport[data-dragging='true'],
-.cardViewport[data-dragging='true'] * {
-  cursor: grabbing !important;
-}
-
-.cards {
-  display: flex;
-  gap: 40px;
-  width: max-content;
-  will-change: transform;
-}
-
-.card {
-  position: relative;
-  display: flex;
-  flex: 0 0 250px;
-  flex-direction: column;
-  align-items: center;
-  width: 250px;
-  height: 287px;
-  padding: 21px 15px 0;
-  overflow: hidden;
-  color: #fff;
-  appearance: none;
-  border: 0;
-  border-radius: 20px;
-  box-shadow: inset 0 0 8px rgb(255 255 255 / 51%);
-  font-family: var(--font-body);
-  text-align: center;
-  cursor: pointer;
-}
-
-.card:focus-visible {
-  outline: 3px solid #3a2e28;
-  outline-offset: 4px;
-}
-
-.friend { background: #ff7c68; }
-.emotion { background: #65d0a5; }
-.kindergarten { background: #ffcf55; }
-.habit { background: #9e95ff; }
-.tantrum { background: #4ab1ff; }
-
-.category {
-  z-index: 1;
-  padding: 2px 10px;
-  border-radius: 20px;
-  background: rgb(255 255 255 / 34%);
-  font-size: 12px;
-  font-weight: 600;
-  line-height: 18px;
-}
-
-.cardTitle {
-  z-index: 1;
-  margin-top: 12px;
-  font-size: 22px;
-  font-weight: 600;
-  line-height: 35px;
-  letter-spacing: -0.4px;
-}
-
-.cardDescription {
-  z-index: 1;
-  margin-top: 1px;
-  font-size: 12px;
-  line-height: 21px;
-}
-
-.cardImage {
-  position: absolute;
-  display: block;
-  object-fit: fill;
-  object-position: center bottom;
-  pointer-events: none;
-}
-
-.friend .cardImage {
-  bottom: 12.4px;
-  left: 20.1px;
-  width: 210.8px;
-  height: 114.7px;
-}
-
-.emotion .cardImage {
-  bottom: 12.2px;
-  left: 63.4px;
-  width: 124px;
-  height: 136.4px;
-}
-
-.kindergarten .cardImage {
-  bottom: 12.2px;
-  left: 50.3px;
-  width: 150.8px;
-  height: 128.1px;
-}
-
-.habit .cardImage {
-  bottom: 12.2px;
-  left: 62px;
-  width: 127.1px;
-  height: 146.7px;
-}
-
-.tantrum .cardImage {
-  bottom: 8px;
-  left: 56.8px;
-  width: 132.3px;
-  height: 135.4px;
-}
-
+.page { min-width: 320px; height: 100dvh; overflow: hidden; background: var(--color-page); }
+.shell { --home-bg: #fff9f4; --home-text: #575757; --home-accent: #ff8a5b; position: relative; height: 100%; overflow: hidden; background: var(--home-bg); color: var(--home-text); }
+.dayBackground, .treeCanopy { position: absolute; z-index: 0; display: block; pointer-events: none; }
+.dayBackground { top: 0; left: -134px; width: 1574px; height: 1052px; max-width: none; opacity: .95; }
+.treeCanopy { top: 0; right: 0; width: 547px; height: 414px; }
+.main { position: relative; z-index: 1; height: 100%; }
+.topbar { position: absolute; z-index: 4; top: 58.6px; right: 75px; display: flex; align-items: center; gap: 39.6px; height: 58.8px; }
+.loginLink { color: var(--home-text); font-size: 20px; font-weight: 600; text-decoration: none; }
+.avatar { display: block; width: 66.8px; height: 66.8px; margin: -4px; }
+.avatarButton { display: block; width: 58.8px; height: 58.8px; padding: 0; border: 0; border-radius: 50%; background: transparent; cursor: pointer; }
+.avatarButton:focus-visible { outline: 3px solid var(--home-accent); outline-offset: 4px; }
+.content { position: relative; padding: 231px 0 72px 221px; }
+.greeting { min-height: 148px; }
+.greetingText { margin: 0; color: var(--home-text); font: 400 38px/1.3 var(--font-title); letter-spacing: -1.14px; }
+.createStory { display: flex; align-items: center; justify-content: center; gap: 10px; width: 213px; height: 54.5px; margin-top: 29px; padding: 0; border: 0; border-radius: 15.5px; background: var(--home-accent); box-shadow: inset 0 0 3.7px .8px rgb(255 255 255 / 46%); color: white; font: 600 17px var(--font-body); letter-spacing: -.51px; cursor: pointer; }
+.createStory img { width: 15px; height: 15px; }
+.createStory:focus-visible, .viewAll:focus-visible { outline: 3px solid var(--home-text); outline-offset: 4px; }
+.recommendations { position: relative; margin-top: 137px; }
+.sectionHeading { position: relative; }
+.sectionHeading h2 { display: flex; align-items: center; gap: 10px; margin: 0; color: var(--home-text); font: 600 26px/1.25 var(--font-body); }
+.sectionHeading h2 img { display: block; width: 26px; height: 26px; }
+.sectionHeading p { margin: 12px 0 0; color: var(--home-text); font: 400 18px/27px var(--font-body); }
+.viewAll { position: absolute; top: 37px; right: 72px; z-index: 2; padding: 3px 0; border: 0; background: none; color: white; font: 700 20px var(--font-body); cursor: pointer; }
+.cardViewport { margin-top: 36px; overflow: hidden; overscroll-behavior-x: contain; cursor: grab; user-select: none; touch-action: pan-y; }
+.cardViewport[data-dragging='true'], .cardViewport[data-dragging='true'] * { cursor: grabbing !important; }
+.cards { display: flex; gap: 37px; width: max-content; will-change: transform; }
+.card { position: relative; display: block; flex: 0 0 230px; width: 230px; height: 264px; overflow: hidden; padding: 0; border: 2px solid var(--card-border); border-radius: 18px; background: var(--card-bg); box-shadow: inset 0 0 26.6px rgb(255 255 255 / 50%); color: var(--home-text); cursor: pointer; }
+.card::before { position: absolute; z-index: 3; inset: 9px; border: 1px solid white; border-radius: 11px; content: ''; pointer-events: none; }
+.card:focus-visible { outline: 3px solid var(--home-text); outline-offset: 4px; }
+.friend { --card-bg: #ffdcd7; --card-border: #ffdfda; --badge: #ff806d; }
+.emotion { --card-bg: #e0efe0; --card-border: #dceee6; --badge: #55c99a; }
+.kindergarten { --card-bg: #fff1cf; --card-border: #fff1cc; --badge: #ffd058; }
+.tantrum { --card-bg: #e7f2fb; --card-border: #dfe8f1; --badge: #4cb2ff; }
+.category { position: absolute; z-index: 4; top: 17px; left: 50%; transform: translateX(-50%); padding: 3px 9px; border-radius: 20px; background: var(--badge); color: white; font: 600 12px/17px var(--font-body); white-space: nowrap; }
+.cardTitle { position: absolute; z-index: 4; top: 51px; left: 0; width: 100%; color: var(--home-text); font: 400 27px/1.2 var(--font-title); text-align: center; }
+.cardWave { position: absolute; z-index: 1; top: 145px; left: -30px; width: 286.6px; height: 134.85px; max-width: none; }
+.friendCharacter { position: absolute; z-index: 2; top: 132px; left: -7px; width: 240px; height: 145px; max-width: none; }
+.spriteCrop, .kindergartenCharacter { position: absolute; z-index: 2; display: block; overflow: hidden; pointer-events: none; }
+.spriteCrop img, .kindergartenCharacter img { position: absolute; display: block; max-width: none; }
+.familyCharacter { top: 108px; left: 32px; width: 162px; height: 179px; }
+.familyCharacter img { top: -33.51%; left: -231.34%; width: 458.51%; height: 276.76%; }
+.kindergartenCharacter { top: 121px; left: 9px; width: 202px; height: 171px; }
+.kindergartenCharacter img { top: -114.23%; left: -84.96%; width: 271.86%; height: 214.23%; }
+.tantrumCharacter { top: 103px; left: 22px; width: 182px; height: 186px; }
+.tantrumCharacter img { top: -139.9%; left: -113.44%; width: 412.9%; height: 268.77%; }
+.fallbackCharacter { position: absolute; z-index: 2; bottom: -3px; left: 50%; width: 190px; height: 150px; object-fit: contain; object-position: center bottom; transform: translateX(-50%); }
 @media (min-width: 901px) and (max-height: 950px) {
-  .page {
-    height: 100dvh;
-    min-height: 0;
-    overflow-y: hidden;
-  }
-
-  .shell,
-  .main {
-    min-height: 100dvh;
-  }
-
-  .main {
-    padding-top: 58.6px;
-    padding-bottom: clamp(20px, 7vh, 62px);
-  }
-
-  .topbar {
-    height: 58.8px;
-  }
-
-  .content {
-    margin-top: clamp(20px, 6.5vh, 62px);
-  }
-
-  .greeting {
-    gap: clamp(18px, 3.7vh, 35px);
-    min-height: clamp(115px, 17vh, 153px);
-  }
-
-  .greetingMascot {
-    flex-basis: clamp(120px, 18.3vh, 174px);
-    width: clamp(120px, 18.3vh, 174px);
-    height: clamp(115px, 17vh, 153px);
-  }
-
-  .greetingText {
-    font-size: clamp(26px, 4vh, 38px);
-  }
-
-  .greetingCopy p {
-    margin-top: clamp(6px, 1.15vh, 11px);
-    font-size: clamp(13px, 1.9vh, 18px);
-    line-height: clamp(19px, 2.85vh, 27px);
-  }
-
-  .recommendations {
-    margin-top: clamp(28px, 9vh, 82px);
-  }
-
-  .sectionHeading h2 {
-    font-size: clamp(20px, 2.75vh, 26px);
-  }
-
-  .sectionHeading p {
-    margin-top: clamp(8px, 1.6vh, 15px);
-    font-size: clamp(13px, 1.7vh, 16px);
-  }
-
-  .cardViewport {
-    margin-top: clamp(18px, 4vh, 36px);
-  }
-
-  .cards {
-    gap: clamp(24px, 4vh, 38px);
-  }
-
-  .card {
-    flex-basis: clamp(205px, 28.6vh, 250px);
-    width: clamp(205px, 28.6vh, 250px);
-    height: clamp(235px, 33vh, 287px);
-  }
-
-  .cardTitle {
-    margin-top: clamp(8px, 1.4vh, 12px);
-    font-size: clamp(18px, 2.5vh, 22px);
-    line-height: clamp(27px, 3.9vh, 35px);
-  }
-
-  .cardDescription {
-    font-size: clamp(10px, 1.3vh, 12px);
-    line-height: clamp(16px, 2.2vh, 21px);
-  }
-
-  .friend .cardImage {
-    bottom: clamp(10.5px, 1.43vh, 12.4px);
-    left: clamp(16.3px, 2.32vh, 20.1px);
-    width: clamp(172.5px, 24.24vh, 210.8px);
-    height: clamp(94px, 13.19vh, 114.7px);
-  }
-
-  .emotion .cardImage {
-    bottom: clamp(10px, 1.4vh, 12.2px);
-    left: clamp(51.9px, 7.29vh, 63.4px);
-    width: clamp(101.5px, 14.26vh, 124px);
-    height: clamp(111.6px, 15.68vh, 136.4px);
-  }
-
-  .kindergarten .cardImage {
-    bottom: clamp(10px, 1.4vh, 12.2px);
-    left: clamp(41.1px, 5.78vh, 50.3px);
-    width: clamp(123.4px, 17.34vh, 150.8px);
-    height: clamp(104.8px, 14.73vh, 128.1px);
-  }
-
-  .habit .cardImage {
-    bottom: clamp(10px, 1.4vh, 12.2px);
-    left: clamp(50.7px, 7.12vh, 62px);
-    width: clamp(104px, 14.61vh, 127.1px);
-    height: clamp(120.1px, 16.87vh, 146.7px);
-  }
-
-  .tantrum .cardImage {
-    bottom: clamp(6.6px, 0.92vh, 8px);
-    left: clamp(46.5px, 6.53vh, 56.8px);
-    width: clamp(108.2px, 15.21vh, 132.3px);
-    height: clamp(110.8px, 15.56vh, 135.4px);
-  }
+  .content { zoom: .95; }
 }
-
+@media (min-width: 901px) and (max-height: 900px) {
+  .content { zoom: .89; }
+}
+@media (min-width: 901px) and (max-height: 850px) {
+  .content { zoom: .83; }
+  .dayBackground { right: 0; left: auto; width: 1306px; height: 873px; }
+  .treeCanopy { width: 454px; height: 344px; }
+}
+@media (min-width: 901px) and (max-height: 780px) {
+  .content { zoom: .76; }
+}
+@media (min-width: 901px) and (max-height: 720px) {
+  .content { zoom: .7; }
+  .dayBackground { width: 1133px; height: 757px; }
+  .treeCanopy { width: 394px; height: 298px; }
+}
 @media (max-width: 900px) {
-  .main {
-    padding: 24px 0 48px;
-  }
-
-  .topbar {
-    height: 48px;
-    margin: 0 22px;
-  }
-
-  .content {
-    margin-top: 36px;
-    padding-left: 22px;
-  }
-
-  .topbar {
-    margin-right: 22px;
-  }
-
-  .greeting {
-    align-items: flex-start;
-    gap: 14px;
-    min-height: 0;
-    padding-right: 22px;
-  }
-
-  .greetingCopy {
-    transform: none;
-  }
-
-  .greetingMascot {
-    flex-basis: 92px;
-    width: 92px;
-    height: 100px;
-  }
-
-  .greetingText {
-    font-size: clamp(23px, 5.5vw, 32px);
-  }
-
-  .greetingCopy p {
-    margin-top: 8px;
-    font-size: 14px;
-    white-space: normal;
-  }
-
-  .recommendations {
-    margin: 48px 0 0;
-  }
-
-  .sectionHeading {
-    align-items: flex-start;
-    gap: 14px;
-    padding-right: 22px;
-  }
-
-  .sectionHeading h2 {
-    font-size: 21px;
-  }
-
-  .sectionHeading h2 img {
-    margin-right: 8px;
-    vertical-align: -6px;
-  }
-
-  .sectionHeading p {
-    margin-top: 10px;
-    font-size: 14px;
-  }
-
-  .viewAll {
-    margin-top: 3px;
-    font-size: 14px;
-  }
-
-  .cardViewport {
-    margin-top: 24px;
-  }
-
-  .cards {
-    gap: 16px;
-  }
-
-  .card {
-    flex-basis: 230px;
-    width: 230px;
-    height: 270px;
-  }
-
-  .friend .cardImage {
-    bottom: 11.4px;
-    left: 18.5px;
-    width: 194px;
-    height: 105.4px;
-  }
-
-  .emotion .cardImage {
-    bottom: 11.2px;
-    left: 58.3px;
-    width: 114.1px;
-    height: 125.5px;
-  }
-
-  .kindergarten .cardImage {
-    bottom: 11.2px;
-    left: 46.2px;
-    width: 138.8px;
-    height: 117.9px;
-  }
-
-  .habit .cardImage {
-    bottom: 11.2px;
-    left: 57px;
-    width: 116.9px;
-    height: 135px;
-  }
-
-  .tantrum .cardImage {
-    bottom: 7.4px;
-    left: 52.3px;
-    width: 121.7px;
-    height: 124.5px;
-  }
+  .page { height: auto; min-height: 100vh; overflow: visible; }
+  .shell, .main { height: auto; min-height: 100vh; }
+  .dayBackground { top: 30px; left: auto; right: -410px; width: 980px; height: auto; opacity: .65; }
+  .treeCanopy { display: none; }
+  .topbar { top: 22px; right: 92px; height: 40px; gap: 16px; }
+  .avatarButton { width: 40px; height: 40px; }
+  .avatar { width: 45px; height: 45px; margin: -2.5px; }
+  .content { padding: 75px 0 60px 22px; }
+  .greeting { min-height: 200px; padding-right: 20px; }
+  .greetingText { max-width: 560px; font-size: clamp(26px, 5vw, 38px); }
+  .recommendations { margin-top: 32px; }
+  .sectionHeading { padding-right: 22px; }
+  .sectionHeading h2 { font-size: 22px; }
+  .sectionHeading p { max-width: 560px; font-size: 15px; }
+  .viewAll { top: 75px; right: 22px; color: var(--home-accent); font-size: 16px; }
+  .cardViewport { margin-top: 54px; }
 }
-
 @media (max-width: 520px) {
-  .sectionHeading {
-    display: block;
-  }
-
-  .viewAll {
-    margin-top: 8px;
-  }
+  .dayBackground { top: 77px; right: -420px; width: 830px; opacity: .42; }
+  .greeting { min-height: 225px; }
+  .greetingText { max-width: 355px; font-size: 29px; }
+  .createStory { width: 190px; height: 50px; }
+  .sectionHeading h2 { align-items: flex-start; font-size: 20px; }
+  .sectionHeading p { padding-right: 20px; font-size: 14px; line-height: 22px; }
+  .viewAll { top: 93px; }
+  .cardViewport { margin-top: 64px; }
 }
