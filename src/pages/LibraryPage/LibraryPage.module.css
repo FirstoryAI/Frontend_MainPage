@@ -31,8 +31,6 @@
   pointer-events: none;
 }
 
-.sidebarLayer > * { pointer-events: auto; }
-
 .topbar {
   position: absolute;
   z-index: 4;
