@@ -563,6 +563,7 @@ export function startMockApi({ port = Number(process.env.MOCK_API_PORT) || 8787,
       emailNotify: account.emailNotify,
       kakaoLinked: Boolean(account.kakaoLinked),
       hasPassword: Boolean(account.password),
+      feedbackSubmitted: account.feedbackSubmitted ?? { preview: false, reading: false },
     });
 
     const logIn = (account, status) => {
@@ -764,6 +765,7 @@ export function startMockApi({ port = Number(process.env.MOCK_API_PORT) || 8787,
       const session = user.readingSessions.get(Number(params.sessionId));
       if (!session) return error(res, 404, 'SESSION_NOT_FOUND', '읽기 세션을 찾을 수 없어요.');
       session.feedback = body.feedback;
+      if (body.feedback) user.feedbackSubmitted = { ...user.feedbackSubmitted, reading: true };
       if (!session.done) {
         session.done = true;
         const story = user.stories.get(session.storyId);
@@ -1048,6 +1050,10 @@ export function startMockApi({ port = Number(process.env.MOCK_API_PORT) || 8787,
     }
     if (method === 'POST' && section === 'approve') {
       if (story.status !== 'REVIEWING') return conflict();
+      if (body.feedback) {
+        story.feedback = body.feedback;
+        user.feedbackSubmitted = { ...user.feedbackSubmitted, preview: true };
+      }
       story.status = 'COMPLETED';
       story.confirmedAt = now();
       story.updatedAt = now();

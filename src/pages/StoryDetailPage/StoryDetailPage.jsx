@@ -12,6 +12,7 @@ import SafeImage from '../../features/story/components/SafeImage';
 import bookCoverStyles from '../../features/story/components/BookCover.module.css';
 import StoryReader from '../../features/story/components/StoryReader';
 import FeedbackDialog from '../../features/story/components/FeedbackDialog';
+import { getFeedbackSubmission, markFeedbackSubmitted } from '../../features/story/feedbackSubmission';
 import { useSceneScale } from '../../features/story/hooks/useSceneScale';
 import readerStyles from '../../features/story/components/StoryReader.module.css';
 import { deleteStory, getBook, getGuide, getStoryDetail } from '../../services/storiesApi';
@@ -67,6 +68,8 @@ function StoryDetailPage() {
   // 아이와 읽는 중이면 { session, book, page }
   const [reading, setReading] = useState(null);
   const [readingFeedbackOpen, setReadingFeedbackOpen] = useState(false);
+  const [feedbackMemberId, setFeedbackMemberId] = useState(null);
+  const [checkingReadingFeedback, setCheckingReadingFeedback] = useState(false);
   // '대화 가이드 보기'로 미리보기와 같은 크게 보기 화면을 연 동안 { book, page }
   const [guideView, setGuideView] = useState(null);
   const [guideLoading, setGuideLoading] = useState(false);
@@ -157,11 +160,25 @@ function StoryDetailPage() {
   const handleFinishReading = async (feedback) => {
     try {
       await completeReading(reading.session.sessionId, feedback);
+      if (feedback) markFeedbackSubmitted(feedbackMemberId, 'reading');
       setReadingFeedbackOpen(false);
       setReading(null);
       loadDetail();
     } catch (error) {
       return error.message || '읽기를 마치지 못했어요.';
+    }
+  };
+
+  const handleReadCompleteClick = async () => {
+    if (checkingReadingFeedback) return;
+    setCheckingReadingFeedback(true);
+    try {
+      const { memberId, submitted } = await getFeedbackSubmission('reading');
+      setFeedbackMemberId(memberId);
+      if (submitted) await handleFinishReading();
+      else setReadingFeedbackOpen(true);
+    } finally {
+      setCheckingReadingFeedback(false);
     }
   };
 
@@ -259,8 +276,8 @@ function StoryDetailPage() {
           closeLabel="읽기 닫기"
         >
           {reading.page === reading.book.pages.length && (
-            <button className={readerStyles.primary} type="button" onClick={() => setReadingFeedbackOpen(true)}>
-              다 읽었어요
+            <button className={readerStyles.primary} type="button" onClick={handleReadCompleteClick} disabled={checkingReadingFeedback}>
+              {checkingReadingFeedback ? '확인하는 중…' : '다 읽었어요'}
             </button>
           )}
         </StoryReader>
@@ -270,7 +287,6 @@ function StoryDetailPage() {
         <FeedbackDialog
           variant="reading"
           sceneScale={feedbackScale}
-          onClose={() => setReadingFeedbackOpen(false)}
           onSubmit={handleFinishReading}
         />
       )}
