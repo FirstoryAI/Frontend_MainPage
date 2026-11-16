@@ -1,14 +1,12 @@
-import { useCallback, useEffect, useRef, useState } from 'react';
-import { Link, useLocation, useNavigate, useParams } from 'react-router-dom';
+import { useCallback, useEffect, useLayoutEffect, useRef, useState } from 'react';
+import { useLocation, useNavigate, useParams } from 'react-router-dom';
 import Sidebar from '../../components/layout/Sidebar';
 import NotificationBell from '../../components/layout/NotificationBell';
-import avatarCircle from '../../assets/icons/avatar-circle.svg';
-import avatarPerson from '../../assets/icons/avatar-person.svg';
-import iconTrash from '../../assets/icons/icon-trash.svg';
-import iconBack from '../../assets/icons/icon-back-large.svg';
-import iconSummary from '../../assets/icons/icon-detail-summary.svg';
-import iconBefore from '../../assets/icons/icon-detail-before.svg';
-import iconAfter from '../../assets/icons/icon-detail-after.svg';
+import shelfBackground from '../../assets/images/library/shelf-background.webp';
+import libraryBell from '../../assets/images/library/notification.svg';
+import libraryProfile from '../../assets/images/library/profile.svg';
+import iconBack from '../../assets/images/library/icon-back-white.svg';
+import iconTrash from '../../assets/images/library/icon-trash-white.svg';
 import bookCover from '../../assets/images/library-cover-sample.png';
 import SafeImage from '../../features/story/components/SafeImage';
 import bookCoverStyles from '../../features/story/components/BookCover.module.css';
@@ -23,24 +21,36 @@ import {
 } from '../../services/readingApi';
 import styles from './StoryDetailPage.module.css';
 import ErrorText from '../../components/ui/ErrorText';
-import { setCoverFrameRatio } from '../../features/story/coverLayout';
 
-// 읽기 가이드를 아직 못 받았을 때 대신 보여주는 기본 안내예요.
-const FALLBACK_BEFORE = [
-  '정답을 말해 주기보다 아이 말을 먼저 들어 주세요.',
-  '아이가 이야기하고 싶어 하지 않으면 그냥 읽고 넘어가도 괜찮아요.',
-];
-const FALLBACK_AFTER = {
-  bridgeQuestion: '“너도 친구랑 놀고 싶었는데 속상했던 적 있어?”',
-  ifUndecided: '아이의 이야기로 꼭 넘어가지 않아도 괜찮아요',
-};
+// 900px 넘는 화면은 디자인(1440×960)을 통째로 비율대로 줄여 한 화면에 넣어요. (서재와 같아요)
+const DESIGN_WIDTH = 1440;
+const DESIGN_HEIGHT = 960;
+const fitScale = () => (window.innerWidth > 900
+  ? Math.min(1, window.innerWidth / DESIGN_WIDTH, window.innerHeight / DESIGN_HEIGHT)
+  : 1);
 
-// 서재에서 '아직 읽지 않았어요'·'함께 읽었어요' 동화를 누르면 보이는 동화 상세 화면이에요.
+function useFitScale() {
+  const [scale, setScale] = useState(fitScale);
+  useLayoutEffect(() => {
+    const update = () => setScale(fitScale());
+    window.addEventListener('resize', update);
+    window.addEventListener('orientationchange', update);
+    return () => {
+      window.removeEventListener('resize', update);
+      window.removeEventListener('orientationchange', update);
+    };
+  }, []);
+  return scale;
+}
+
+// 서재에서 '아직 읽지 않았어요'·'함께 읽었어요' 동화를 누르면 보이는 '동화 한 눈에 보기' 화면이에요.
+// 밤 나무 벽(서재와 같은 배경) 위에 비스듬히 놓인 표지, 제목·줄거리, '아이와 읽기 시작하기'·'대화 가이드 보기'가 있어요.
 function StoryDetailPage() {
   const { storyId } = useParams();
   const location = useLocation();
   const navigate = useNavigate();
   const story = location.state?.story;
+  const scale = useFitScale();
   const [detail, setDetail] = useState(null);
   const [guide, setGuide] = useState(null);
   const [loadError, setLoadError] = useState('');
@@ -62,18 +72,14 @@ function StoryDetailPage() {
 
   useEffect(() => {
     loadDetail();
-    // 대화 가이드는 확정한 동화만 받을 수 있어서, 못 받으면 기본 안내를 보여줘요.
+    // 대화 가이드는 확정한 동화만 받을 수 있어서, 못 받으면 가이드 없이 열어요.
     getGuide(storyId).then(setGuide).catch(() => setGuide(null));
   }, [loadDetail, storyId]);
 
   const title = detail?.title ?? story?.title ?? '';
-  // 동화 줄거리는 synopsis예요. summary는 부모 고민(이번 이야기에서 나누고 싶은 것)이라 줄거리가 아니에요. synopsis가 없는 옛 동화는 카드를 숨겨요.
+  // 동화 줄거리는 synopsis예요. summary는 부모 고민(이번 이야기에서 나누고 싶은 것)이라 줄거리가 아니에요. 줄거리가 없는 옛 동화는 비워 둬요.
   const synopsis = detail?.synopsis ?? '';
   const coverUrl = detail?.coverUrl ?? story?.coverUrl;
-  const beforeLines = guide
-    ? [guide.beforeReading?.intent, ...(guide.beforeReading?.tips ?? [])].filter(Boolean)
-    : FALLBACK_BEFORE;
-  const after = guide?.afterReading ?? FALLBACK_AFTER;
 
   const handleDelete = async () => {
     if (!window.confirm('이 동화를 지울까요? 지우면 되돌릴 수 없어요.')) return;
@@ -151,35 +157,77 @@ function StoryDetailPage() {
 
   return (
     <div className={styles.page}>
-      <Sidebar />
+      <img className={styles.background} src={shelfBackground} alt="" />
+      <div className={styles.sidebarLayer}>
+        <Sidebar compact showLogo={false} />
+      </div>
 
-      <div className={styles.main}>
-        <div className={styles.topbar}>
-          <NotificationBell />
-          <button
-            className={styles.avatarButton}
-            type="button"
-            onClick={() => navigate('/mypage')}
-            aria-label="마이페이지"
-          >
-            <img className={styles.avatarCircle} src={avatarCircle} alt="" />
-            <img className={styles.avatarPerson} src={avatarPerson} alt="" />
+      <div className={styles.topbar}>
+        <NotificationBell iconSrc={libraryBell} />
+        <button
+          className={styles.avatarButton}
+          type="button"
+          onClick={() => navigate('/mypage')}
+          aria-label="마이페이지"
+        >
+          <img className={styles.avatar} src={libraryProfile} alt="" />
+        </button>
+      </div>
+
+      <main className={styles.stage} style={{ zoom: scale }}>
+        <div className={styles.headingRow}>
+          <button className={styles.back} type="button" onClick={() => navigate('/library')} aria-label="서재로 돌아가기">
+            <img src={iconBack} alt="" />
           </button>
+          <h1 className={styles.heading}>동화 한 눈에 보기</h1>
         </div>
 
-        <main className={styles.content}>
-          <nav className={styles.crumbs} aria-label="현재 위치">
-            <Link to="/library">서재</Link>
-            <span aria-hidden="true">&gt;</span>
-            <span>{title}</span>
-            <span aria-hidden="true">&gt;</span>
-            <span aria-current="page">동화 상세</span>
-          </nav>
-          <div className={styles.headingRow}>
-            <button className={styles.back} type="button" onClick={() => navigate('/library')} aria-label="서재로 돌아가기">
-              <img src={iconBack} alt="" />
+        {/* 표지는 살짝 기울여 탁자에 놓인 책처럼 보여줘요. */}
+        <section className={styles.coverArea} aria-label="동화 표지">
+          <div
+            className={`${styles.cover} ${bookCoverStyles.bookCover}`}
+            style={{ '--cover': `url(${JSON.stringify(coverUrl || bookCover)})` }}
+          >
+            <div className={bookCoverStyles.bookFace}>
+              <div className={bookCoverStyles.bookArt}>
+                <SafeImage
+                  className={styles.coverImage}
+                  src={coverUrl}
+                  alt={`${title} 표지`}
+                  fallback={<img className={styles.coverImage} src={bookCover} alt={`${title} 표지`} />}
+                />
+              </div>
+            </div>
+          </div>
+        </section>
+
+        <section className={styles.info} aria-labelledby="story-detail-title">
+          <div className={styles.titleRow}>
+            <h2 className={styles.title} id="story-detail-title">{title}</h2>
+            <button className={styles.trash} type="button" onClick={handleDelete} aria-label="동화 삭제">
+              <img src={iconTrash} alt="" />
             </button>
-            <h1 className={styles.heading}>동화 한 눈에 보기</h1>
+          </div>
+
+          {synopsis && <p className={styles.synopsis}>{synopsis}</p>}
+
+          <div className={styles.actions}>
+            <button
+              className={styles.readButton}
+              type="button"
+              onClick={handleStartReading}
+              disabled={!detail?.canRead || busy}
+            >
+              {busy ? '불러오는 중…' : '아이와 읽기 시작하기'}
+            </button>
+            <button
+              className={styles.guideButton}
+              type="button"
+              onClick={handleOpenGuide}
+              disabled={guideLoading}
+            >
+              {guideLoading ? '불러오는 중…' : '대화 가이드 보기'}
+            </button>
           </div>
 
           {(loadError || notice) && (
@@ -187,88 +235,8 @@ function StoryDetailPage() {
               <ErrorText message={loadError || notice} />
             </p>
           )}
-
-          <div className={styles.detail}>
-            <section className={styles.bookColumn} aria-label="동화 표지">
-              <div
-                className={`${styles.cover} ${bookCoverStyles.bookCover}`}
-                data-cover-frame
-                style={{ '--cover': `url(${JSON.stringify(coverUrl || bookCover)})` }}
-              >
-                <div className={bookCoverStyles.bookFace}>
-                  <div className={bookCoverStyles.bookArt}>
-                    <SafeImage
-                      className={styles.coverFull}
-                      onLoad={setCoverFrameRatio}
-                      src={coverUrl}
-                      alt={`${title} 표지`}
-                      fallback={<img className={styles.coverCrop} src={bookCover} alt={`${title} 표지`} />}
-                    />
-                  </div>
-                </div>
-              </div>
-
-              <div className={styles.titleRow}>
-                <h2 className={styles.title}>{title}</h2>
-                <button className={styles.trash} type="button" onClick={handleDelete} aria-label="동화 삭제">
-                  <img src={iconTrash} alt="" />
-                </button>
-              </div>
-
-              <button
-                className={styles.readButton}
-                type="button"
-                onClick={handleStartReading}
-                disabled={!detail?.canRead || busy}
-              >
-                {busy ? '불러오는 중…' : '아이와 읽기 시작하기'}
-              </button>
-              <button
-                className={styles.guideButton}
-                type="button"
-                onClick={handleOpenGuide}
-                disabled={guideLoading}
-              >
-                {guideLoading ? '불러오는 중…' : '대화 가이드 보기'}
-              </button>
-            </section>
-
-            <div className={styles.sections}>
-              {synopsis && (
-                <section className={`${styles.section} ${styles.summarySection}`}>
-                  <h2>
-                    <span className={`${styles.icon} ${styles.iconSummary}`}><img src={iconSummary} alt="" /></span>
-                    동화 줄거리
-                  </h2>
-                  <p>{synopsis}</p>
-                </section>
-              )}
-              <section className={`${styles.section} ${styles.beforeSection}`}>
-                <h2>
-                  <span className={styles.icon}><img src={iconBefore} alt="" /></span>
-                  읽기 전에
-                </h2>
-                <p>
-                  {beforeLines.map((line, index) => (
-                    <span key={line}>
-                      {index > 0 && <br />}
-                      {line}
-                    </span>
-                  ))}
-                </p>
-              </section>
-              <section className={`${styles.section} ${styles.afterSection}`}>
-                <h2>
-                  <span className={`${styles.icon} ${styles.iconAfter}`}><img src={iconAfter} alt="" /></span>
-                  다 읽은 뒤에
-                </h2>
-                <p className={styles.question}>{after.bridgeQuestion}</p>
-                <p className={styles.ifUndecided}>{after.ifUndecided}</p>
-              </section>
-            </div>
-          </div>
-        </main>
-      </div>
+        </section>
+      </main>
 
       {reading && (
         <StoryReader
