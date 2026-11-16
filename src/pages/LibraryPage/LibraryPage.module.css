@@ -138,23 +138,26 @@
   object-fit: cover;
 }
 
+/* 책장 칸 높이는 디자인(244)대로 두고, 표지는 210으로 줄여 책 사이를 73만큼 띄워요.
+   (표지 4권 840 + 사이 3칸 219 + 양옆 26씩 = 책장 폭 1111) */
 .shelfBooks {
   position: relative;
   z-index: 1;
   display: flex;
   align-items: flex-end;
-  gap: calc(var(--book) * 35 / 244);
+  gap: calc(var(--book) * 73 / 244);
   min-height: var(--book);
-  padding-left: calc(var(--book) * 14 / 244);
+  padding-left: calc(var(--book) * 26 / 244);
 }
 
 /* ---------- 책 한 권 ---------- */
+/* 모든 표지(제작 중 포함)가 같은 크기예요. */
 .book {
   position: relative;
   display: block;
   flex: none;
-  width: var(--book);
-  height: var(--book);
+  width: calc(var(--book) * 210 / 244);
+  height: calc(var(--book) * 210 / 244);
   padding: 0;
   border: 0;
   background: none;
@@ -188,24 +191,28 @@ button.book:hover { transform: translateY(-4px); }
   user-select: none;
 }
 
-/* 제작 중: 회색 책 위에 흐린 캐릭터와 '제작중...'이에요. */
+/* 제작 중: 회색 책 위에 흐린 캐릭터와 '제작중...'이에요. 다른 표지와 같은 크기로 보여요.
+   회색 책 그림은 둘레에 투명한 여백(왼 2.6%·위 4.4%·오른 3.3%·아래 4%)이 있어서, 여백을 빼고 그려진 책이
+   다른 표지(210 + 오른쪽·아래 책장 면 4px)와 딱 맞게 키워 놓아요.
+   캐릭터·글씨 자리는 Figma(회색 책 211×214 안)의 비율을 이 크기로 옮긴 값이에요. */
 .creatingBook { isolation: isolate; }
 
 .creatingShape {
   position: absolute;
-  top: calc(var(--book) * 17 / 244);
-  left: calc(var(--book) * 18 / 244);
-  width: calc(var(--book) * 211 / 244);
-  height: calc(var(--book) * 214 / 244);
+  top: -4.86%;
+  left: -2.8%;
+  width: 108.3%;
+  height: 110.6%;
   max-width: none;
+  filter: drop-shadow(0 4px 5px rgb(0 0 0 / 26%));
 }
 
 .creatingMascot {
   position: absolute;
-  top: calc(var(--book) * 80 / 244);
-  left: calc(var(--book) * 88 / 244);
-  width: calc(var(--book) * 71 / 244);
-  height: calc(var(--book) * 66 / 244);
+  top: 27.66%;
+  left: 33.15%;
+  width: 36.4%;
+  height: 34.1%;
   max-width: none;
   object-fit: cover;
   opacity: .77;
@@ -215,10 +222,10 @@ button.book:hover { transform: translateY(-4px); }
 
 .creatingText {
   position: absolute;
-  top: calc(var(--book) * 151 / 244);
-  left: calc(var(--book) * 123.5 / 244);
+  top: 64.4%;
+  left: 51.35%;
   color: #656464;
-  font: 500 calc(var(--book) * 14 / 244) var(--font-body);
+  font: 500 calc(var(--book) * 15.2 / 244) var(--font-body);
   letter-spacing: -.03em;
   white-space: nowrap;
   transform: translateX(-50%);

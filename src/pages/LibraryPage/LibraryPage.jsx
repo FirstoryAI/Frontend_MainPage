@@ -87,8 +87,8 @@ function measureShelfLayout(shelvesTop) {
     return { perShelf: 4, shelvesPerPage: Math.max(1, Math.floor(room / (SHELF_HEIGHT + SHELF_GAP))), scale, book: BOOK };
   }
   const perShelf = width <= 560 ? 2 : 3;
-  // 책 n권 + 사이 (n-1)칸(35/244씩) + 왼쪽 14/244 + 오른쪽 19/244
-  const book = Math.min(BOOK, (width - 32) / (perShelf + ((perShelf - 1) * 35 + 33) / BOOK));
+  // 표지 n권(210/244씩) + 사이 (n-1)칸(73/244씩) + 양옆 26/244씩. book은 책장 칸 높이(디자인 244) 기준이에요.
+  const book = Math.min(BOOK, ((width - 32) * BOOK) / (perShelf * 210 + (perShelf - 1) * 73 + 52));
   const pitch = (book * (SHELF_HEIGHT + SHELF_GAP)) / BOOK;
   const room = height - shelvesTop - MOBILE_BOTTOM_SPACE + (book * SHELF_GAP) / BOOK;
   return { perShelf, shelvesPerPage: Math.max(1, Math.floor(room / pitch)), scale: 1, book };
