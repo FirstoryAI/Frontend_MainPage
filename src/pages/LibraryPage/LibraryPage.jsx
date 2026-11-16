@@ -74,6 +74,9 @@ const PAGER_SPACE = 70;
 const DESKTOP_SHELF_LEFT = 230;
 const DESKTOP_SHELF_RIGHT = 99;
 const BOOK_PITCH = 283;
+// '서재' 제목 윗변(디자인 135px)이에요. 본문을 줄여도 로고(아래 끝 114px) 밑으로 16px은 띄워요.
+const DESKTOP_TITLE_TOP = 135;
+const LOGO_CLEAR = 114 + 16;
 // 휴대폰·좁은 화면: 아래 메뉴(78px)와 쪽 넘기기(56px) 자리를 남겨요.
 const MOBILE_BOTTOM_SPACE = 78 + 56;
 
@@ -87,18 +90,20 @@ function measureShelfLayout(shelvesTop) {
   const height = window.innerHeight;
   if (width > 900) {
     const scale = Math.min(1, width / DESIGN_WIDTH, height / DESIGN_HEIGHT);
-    const room = height / scale - DESKTOP_SHELVES_TOP - PAGER_SPACE + SHELF_GAP;
+    // 로고는 줄지 않아서, 본문이 줄어 제목이 로고에 붙을 만큼 올라가면 그만큼 아래로 내려요.
+    const titleTop = Math.max(DESKTOP_TITLE_TOP, LOGO_CLEAR / scale);
+    const room = height / scale - (DESKTOP_SHELVES_TOP + titleTop - DESKTOP_TITLE_TOP) - PAGER_SPACE + SHELF_GAP;
     // 책장 폭 = 책 수 × 283 - 20 (4권이면 디자인 그대로 1112px)
     const shelfRoom = width / scale - DESKTOP_SHELF_LEFT - DESKTOP_SHELF_RIGHT;
     const perShelf = Math.max(4, Math.floor((shelfRoom + 20) / BOOK_PITCH));
-    return { perShelf, shelvesPerPage: Math.max(1, Math.floor(room / (SHELF_HEIGHT + SHELF_GAP))), scale, book: BOOK };
+    return { perShelf, shelvesPerPage: Math.max(1, Math.floor(room / (SHELF_HEIGHT + SHELF_GAP))), scale, book: BOOK, titleTop };
   }
   const perShelf = width <= 560 ? 2 : 3;
   // 표지 n권(210/244씩) + 사이 (n-1)칸(73/244씩) + 양옆 26/244씩. book은 책장 칸 높이(디자인 244) 기준이에요.
   const book = Math.min(BOOK, ((width - 32) * BOOK) / (perShelf * 210 + (perShelf - 1) * 73 + 52));
   const pitch = (book * (SHELF_HEIGHT + SHELF_GAP)) / BOOK;
   const room = height - shelvesTop - MOBILE_BOTTOM_SPACE + (book * SHELF_GAP) / BOOK;
-  return { perShelf, shelvesPerPage: Math.max(1, Math.floor(room / pitch)), scale: 1, book };
+  return { perShelf, shelvesPerPage: Math.max(1, Math.floor(room / pitch)), scale: 1, book, titleTop: null };
 }
 
 function useShelfLayout(shelvesRef) {
@@ -108,7 +113,7 @@ function useShelfLayout(shelvesRef) {
       const next = measureShelfLayout(shelvesRef.current?.getBoundingClientRect().top ?? 240);
       setLayout((current) => (
         current.perShelf === next.perShelf && current.shelvesPerPage === next.shelvesPerPage
-          && current.scale === next.scale && current.book === next.book ? current : next));
+          && current.scale === next.scale && current.book === next.book && current.titleTop === next.titleTop ? current : next));
     };
     update();
     window.addEventListener('resize', update);
@@ -205,7 +210,7 @@ function LibraryPage() {
   const [isLoading, setIsLoading] = useState(true);
   const [error, setError] = useState('');
   const { resumeGeneration } = useStoryGeneration();
-  const { perShelf, shelvesPerPage, scale, book } = useShelfLayout(shelvesRef);
+  const { perShelf, shelvesPerPage, scale, book, titleTop } = useShelfLayout(shelvesRef);
 
   // 알림을 눌러 주소의 filter만 바뀌어도 칩을 맞춰요. (그리는 중에 주소가 바뀐 것을 보고 바로 맞춰요)
   const [seenSearch, setSeenSearch] = useState(location.search);
@@ -295,11 +300,10 @@ function LibraryPage() {
       <div className={styles.page} inert={isSignedIn && savedModalOpen}>
         <img className={styles.background} src={shelfBackground} alt="" />
         <div className={styles.sidebarLayer}>
-          {/* 로고·오른쪽 위 버튼도 본문과 같은 비율로 줄여서, 낮은 화면에서 '서재' 제목과 겹치지 않게 해요. */}
-          <Sidebar guest={guest} compact logoScale={scale} />
+          <Sidebar guest={guest} compact />
         </div>
 
-        <div className={styles.topbar} style={{ zoom: scale }}>
+        <div className={styles.topbar}>
           {guest ? (
             <Link className={styles.loginLink} to="/auth">로그인</Link>
           ) : <><NotificationBell iconSrc={libraryBell} />
@@ -313,7 +317,10 @@ function LibraryPage() {
           </button></>}
         </div>
 
-        <main className={styles.content} style={{ zoom: scale, '--book': `${book}px`, '--per-shelf': perShelf }}>
+        <main
+          className={styles.content}
+          style={{ zoom: scale, '--book': `${book}px`, '--per-shelf': perShelf, ...(titleTop ? { paddingTop: titleTop } : {}) }}
+        >
           <h1 className={styles.title}>서재</h1>
 
           <div className={styles.filters} aria-label="동화 주제 필터">
