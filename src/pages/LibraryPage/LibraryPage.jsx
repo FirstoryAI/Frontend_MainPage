@@ -4,10 +4,14 @@ import ErrorText from '../../components/ui/ErrorText';
 import Sidebar from '../../components/layout/Sidebar';
 import NotificationBell from '../../components/layout/NotificationBell';
 import StorySavedModal from '../../features/library/components/StorySavedModal';
-import avatarCircle from '../../assets/icons/avatar-circle.svg';
-import avatarPerson from '../../assets/icons/avatar-person.svg';
+import shelfBackground from '../../assets/images/library/shelf-background.webp';
+import shelfBoard from '../../assets/images/library/shelf-board.svg';
+import shelfFront from '../../assets/images/library/shelf-front.webp';
+import creatingBook from '../../assets/images/library/creating-book.webp';
+import creatingMascot from '../../assets/images/library/creating-mascot.webp';
+import libraryBell from '../../assets/images/library/notification.svg';
+import libraryProfile from '../../assets/images/library/profile.svg';
 import bookCover from '../../assets/images/library-cover-sample.png';
-import creatingCover from '../../assets/images/library-creating-cover.svg';
 import failedCover from '../../assets/images/library-failed-cover.svg';
 import emptyMascot from '../../assets/images/library-empty-mascot.png';
 import SafeImage from '../../features/story/components/SafeImage';
@@ -20,7 +24,7 @@ import { useStoryGeneration } from '../../features/story/generation/useStoryGene
 import { useSignedIn } from '../../features/auth/useSignedIn';
 import styles from './LibraryPage.module.css';
 
-// 서재 칩은 주제별로 나눠요. (동화 책 위의 상태 표시는 그대로예요)
+// 서재 칩은 주제별로 나눠요. (처음 / 친구 / 가족 / 교육·훈육 / 이별 / 기타)
 const ALL_FILTER = 'ALL';
 const filters = [{ value: ALL_FILTER, label: '전체' }, ...LIBRARY_TOPICS.map((topic) => ({ value: topic, label: topic }))];
 const isTopicFilter = (value) => filters.some((filter) => filter.value === value);
@@ -31,31 +35,20 @@ const filterFromSearch = (search) => {
   return isTopicFilter(requested) ? requested : ALL_FILTER;
 };
 
+// 책 위 상태는 글 대신 모양으로 보여줘요. 화면 읽기 프로그램에는 글로 알려줘요.
 const groupLabels = {
   CREATING: '제작 중', REVIEWING: '확인을 기다려요',
   UNREAD: '아직 읽지 않았어요', READ: '함께 읽었어요', FAILED: '만들지 못했어요',
 };
 
-const groupClasses = {
-  CREATING: 'creating', REVIEWING: 'reviewing', UNREAD: 'unread', READ: 'read', FAILED: 'failed',
-};
-
-function formatStoryDate(value) {
-  if (!value) return '';
-  const date = new Date(value);
-  if (Number.isNaN(date.getTime())) return '';
-  return new Intl.DateTimeFormat('ko-KR', { month: 'long', day: 'numeric' }).format(date);
-}
-
 // 만들다 멈춘(임시저장) 동화예요. 서재에는 실제로 만들고 있는 동화부터 보여줘서 이 동화들은 빼요.
-// 서버는 '전체'에 이 동화들도 함께 보내서, 목록과 칩 숫자에서 화면이 직접 빼요.
 const DRAFT_STATUSES = ['DRAFT', 'INTERVIEWING', 'CONFIRMING'];
 const isDraft = (story) => DRAFT_STATUSES.includes(String(story.status ?? '').toUpperCase());
 // 서버는 주제로 거르지 못해서, 서재 전체를 받아 화면에서 주제별로 나눠요. (50개씩, 최대 1,000개)
 const LOAD_PAGE_SIZE = 50;
 const LOAD_MAX_PAGES = 20;
-// 한 번에 보여주는 동화 수예요. '더 보기'를 누르면 이만큼 더 보여줘요.
-const SHOW_STEP = 20;
+// 한 번에 보여주는 책장 수예요. '더 보기'를 누르면 이만큼 더 보여줘요.
+const SHOW_SHELVES = 5;
 
 async function loadLibrary() {
   let pageNo = 0;
@@ -69,6 +62,90 @@ async function loadLibrary() {
   return items;
 }
 
+// 책장 한 칸에 꽂는 책 수예요. 데스크톱은 디자인대로 4권, 좁은 화면은 3권·2권이에요.
+const SHELF_QUERIES = [['(max-width: 560px)', 2], ['(max-width: 900px)', 3]];
+const booksPerShelf = () => SHELF_QUERIES.find(([query]) => window.matchMedia(query).matches)?.[1] ?? 4;
+
+function useBooksPerShelf() {
+  const [count, setCount] = useState(booksPerShelf);
+  useEffect(() => {
+    const lists = SHELF_QUERIES.map(([query]) => window.matchMedia(query));
+    const update = () => setCount(booksPerShelf());
+    lists.forEach((list) => list.addEventListener('change', update));
+    return () => lists.forEach((list) => list.removeEventListener('change', update));
+  }, []);
+  return count;
+}
+
+const chunk = (items, size) => Array.from({ length: Math.ceil(items.length / size) }, (_, index) => items.slice(index * size, index * size + size));
+
+// 책장 한 칸이에요. 위판 → 책 → 앞판 순서로 겹쳐서, 책 아래가 앞판에 살짝 가려 꽂힌 것처럼 보여요.
+function Shelf({ children }) {
+  return (
+    <div className={styles.shelf}>
+      <img className={styles.shelfBoard} src={shelfBoard} alt="" />
+      <div className={styles.shelfBooks}>{children}</div>
+      <img className={styles.shelfFront} src={shelfFront} alt="" />
+    </div>
+  );
+}
+
+// 책장에 꽂힌 동화 한 권이에요. 상태마다 표지 모양이 달라요.
+//  - 제작 중: 회색 책에 흐린 캐릭터와 '제작중...'
+//  - 확인을 기다려요: 테두리가 반짝반짝 빛나요
+//  - 아직 읽지 않았어요: 테두리에 빨간 NEW
+//  - 함께 읽었어요: 기본 표지
+//  - 만들지 못했어요: 부러진 연필 표지와 '다시 만들기'
+function ShelfBook({ story, onOpen, onRetry }) {
+  const group = libraryGroup(story);
+  const title = story.title || '제목을 준비하고 있어요';
+  const label = `${title}, ${groupLabels[group] ?? '동화'}`;
+
+  if (group === 'CREATING') {
+    return (
+      <button className={`${styles.book} ${styles.creatingBook}`} type="button" onClick={() => onOpen(story)} aria-label={label} title={title}>
+        <img className={styles.creatingShape} src={creatingBook} alt="" />
+        <img className={styles.creatingMascot} src={creatingMascot} alt="" />
+        <span className={styles.creatingText} aria-hidden="true">제작중...</span>
+      </button>
+    );
+  }
+
+  const failed = group === 'FAILED';
+  const cover = (
+    <span className={`${styles.cover} ${bookCoverStyles.bookCover}`} data-cover-frame
+      style={{ '--cover': `url(${JSON.stringify(failed ? failedCover : (story.coverUrl || bookCover))})` }}>
+      <span className={bookCoverStyles.bookFace}>
+        <span className={bookCoverStyles.bookArt}>
+          {failed ? <img className={styles.coverImage} src={failedCover} alt="" /> : (
+            <SafeImage className={styles.coverImage} onLoad={setCoverFrameRatio} src={story.coverUrl} alt=""
+              fallback={<img className={styles.coverImage} src={bookCover} alt="" />} />
+          )}
+        </span>
+      </span>
+    </span>
+  );
+
+  if (failed) {
+    return (
+      <div className={`${styles.book} ${styles.failedBook}`} role="group" aria-label={label} title={title}>
+        {cover}
+        <button className={styles.retryButton} type="button" onClick={() => onRetry(story)}>다시 만들기</button>
+      </div>
+    );
+  }
+
+  return (
+    <button className={styles.book} type="button" data-state={group} onClick={() => onOpen(story)} aria-label={label} title={title}>
+      {cover}
+      {group === 'REVIEWING' && (
+        <span className={styles.sparkles} aria-hidden="true"><i /><i /><i /></span>
+      )}
+      {group === 'UNREAD' && <span className={styles.newBadge} aria-hidden="true">NEW</span>}
+    </button>
+  );
+}
+
 function LibraryPage() {
   const navigate = useNavigate();
   const location = useLocation();
@@ -79,10 +156,11 @@ function LibraryPage() {
   const [savedModalOpen, setSavedModalOpen] = useState(savedStory !== null);
   const [activeFilter, setActiveFilter] = useState(() => filterFromSearch(location.search) ?? ALL_FILTER);
   const [library, setLibrary] = useState([]);
-  const [shownCount, setShownCount] = useState(SHOW_STEP);
+  const [shownShelves, setShownShelves] = useState(SHOW_SHELVES);
   const [isLoading, setIsLoading] = useState(true);
   const [error, setError] = useState('');
   const { resumeGeneration } = useStoryGeneration();
+  const perShelf = useBooksPerShelf();
 
   // 알림을 눌러 주소의 filter만 바뀌어도 칩을 맞춰요. (그리는 중에 주소가 바뀐 것을 보고 바로 맞춰요)
   const [seenSearch, setSeenSearch] = useState(location.search);
@@ -91,7 +169,7 @@ function LibraryPage() {
     const requested = filterFromSearch(location.search);
     if (requested) {
       setActiveFilter(requested);
-      setShownCount(SHOW_STEP);
+      setShownShelves(SHOW_SHELVES);
     }
   }
 
@@ -150,21 +228,16 @@ function LibraryPage() {
     }
   };
 
-  // 칩 숫자와 지금 칩의 동화예요. 모두 받아 둔 서재에서 화면이 직접 나눠요.
-  const topicCounts = library.reduce((result, story) => {
-    const topic = libraryTopic(story);
-    return { ...result, [topic]: (result[topic] ?? 0) + 1 };
-  }, { [ALL_FILTER]: library.length });
   const filtered = activeFilter === ALL_FILTER ? library : library.filter((story) => libraryTopic(story) === activeFilter);
-  const stories = filtered.slice(0, shownCount);
-  const hasNext = filtered.length > stories.length;
+  const shelves = chunk(filtered, perShelf);
+  const shownStoryShelves = shelves.slice(0, shownShelves);
+  const hasNext = shelves.length > shownStoryShelves.length;
 
-  // 로그인했어도 보여줄 동화가 없으면 비로그인과 같은 빈 서재 화면을 보여줘요. (로그인 버튼만 없어요)
-  // 전체 보기에서 비었으면 '아직 제작된 동화가 없어요', 주제 칩에서 비었으면 '조건에 해당하는 동화가 없어요'예요.
-
-  const isLibraryEmpty = isSignedIn && !isLoading && !error && stories.length === 0;
+  // 보여줄 동화가 없으면 빈 책장 위에 안내를 보여줘요. 로그인하지 않았으면 로그인으로 이어 주는 버튼이 함께 나와요.
+  // 전체에서 비었으면 '아직 제작된 동화가 없어요', 주제 칩에서 비었으면 '조건에 해당하는 동화가 없어요'예요.
+  const isLibraryEmpty = isSignedIn && !isLoading && !error && filtered.length === 0;
   const showEmptyScreen = guest || isLibraryEmpty;
-  const emptyTitle = guest || activeFilter === 'ALL' ? '아직 제작된 동화가 없어요' : '조건에 해당하는 동화가 없어요';
+  const emptyTitle = guest || activeFilter === ALL_FILTER ? '아직 제작된 동화가 없어요' : '조건에 해당하는 동화가 없어요';
 
   if (isSignedIn === null) {
     return <div className={styles.page} role="status" aria-label="서재를 불러오는 중" />;
@@ -173,122 +246,74 @@ function LibraryPage() {
   return (
     <>
       <div className={styles.page} inert={isSignedIn && savedModalOpen}>
-        <Sidebar guest={guest} />
+        <img className={styles.background} src={shelfBackground} alt="" />
+        <div className={styles.sidebarLayer}>
+          <Sidebar guest={guest} compact />
+        </div>
 
-        <div className={`${styles.main} ${guest ? styles.guestMain : ''}`}>
-          <div className={styles.topbar}>
-            {guest ? (
-              <Link className={styles.loginLink} to="/auth">로그인</Link>
-            ) : <><NotificationBell />
-            <button
-              className={styles.avatarButton}
-              type="button"
-              onClick={() => navigate('/mypage')}
-              aria-label="마이페이지"
-            >
-              <img className={styles.avatarCircle} src={avatarCircle} alt="" />
-              <img className={styles.avatarPerson} src={avatarPerson} alt="" />
-            </button></>}
+        <div className={styles.topbar}>
+          {guest ? (
+            <Link className={styles.loginLink} to="/auth">로그인</Link>
+          ) : <><NotificationBell iconSrc={libraryBell} />
+          <button
+            className={styles.avatarButton}
+            type="button"
+            onClick={() => navigate('/mypage')}
+            aria-label="마이페이지"
+          >
+            <img className={styles.avatar} src={libraryProfile} alt="" />
+          </button></>}
+        </div>
+
+        <main className={styles.content}>
+          <h1 className={styles.title}>서재</h1>
+
+          <div className={styles.filters} aria-label="동화 주제 필터">
+            {filters.map((filter) => (
+              <button
+                key={filter.value}
+                className={`${styles.filter} ${activeFilter === filter.value ? styles.filterActive : ''}`}
+                type="button"
+                aria-pressed={activeFilter === filter.value}
+                onClick={() => {
+                  setActiveFilter(filter.value);
+                  setShownShelves(SHOW_SHELVES);
+                }}
+              >
+                {filter.label}
+              </button>
+            ))}
           </div>
 
-          <main className={styles.content}>
-            <h1 className={styles.title}>서재</h1>
+          {!guest && error && <p className={styles.error} role="alert"><ErrorText message={error} /></p>}
 
-            <div className={styles.filters} aria-label="동화 주제 필터">
-              {filters.map((filter) => (
-                <button
-                  key={filter.value}
-                  className={`${styles.filter} ${activeFilter === filter.value ? styles.filterActive : ''}`}
-                  type="button"
-                  aria-pressed={activeFilter === filter.value}
-                  onClick={() => {
-                    setActiveFilter(filter.value);
-                    setShownCount(SHOW_STEP);
-                  }}
-                >
-                  {filter.label}{isSignedIn && !isLoading && !error && ` ${topicCounts[filter.value] ?? 0}`}
-                </button>
-              ))}
-            </div>
+          <section className={styles.shelves} aria-live="polite" aria-busy={!guest && isLoading} aria-label="내 동화 책장">
+            {showEmptyScreen || (!guest && isLoading) ? (
+              // 빈 서재는 빈 책장 위에 캐릭터와 안내를 올려 둬요.
+              <Shelf>
+                {showEmptyScreen ? (
+                  <div className={styles.empty}>
+                    <img className={styles.emptyMascot} src={emptyMascot} alt="" />
+                    <p className={styles.emptyTitle}>{emptyTitle}</p>
+                    {guest && <Link className={styles.emptyLogin} to="/auth">로그인하고 동화 만들기</Link>}
+                  </div>
+                ) : <p className={`${styles.empty} ${styles.message}`}>서재를 불러오는 중이에요.</p>}
+              </Shelf>
+            ) : shownStoryShelves.map((row) => (
+              <Shelf key={row.map((story) => story.id).join('-')}>
+                {row.map((story) => (
+                  <ShelfBook key={story.id} story={story} onOpen={openStory} onRetry={handleRetry} />
+                ))}
+              </Shelf>
+            ))}
+          </section>
 
-            {showEmptyScreen && (
-              // 보여줄 동화가 없을 때의 안내예요. 로그인하지 않았으면 로그인으로 이어 주는 버튼이 함께 나와요.
-              <section className={styles.guestEmpty} aria-labelledby="library-empty-title">
-                <div className={styles.emptyMascot}>
-                  <img src={emptyMascot} alt="" />
-                </div>
-                <p className={styles.emptyTitle} id="library-empty-title">{emptyTitle}</p>
-                {guest && <Link className={styles.emptyLogin} to="/auth">로그인하고 동화 만들기</Link>}
-              </section>
-            )}
-
-            {!guest && error && <p className={styles.error} role="alert"><ErrorText message={error} /></p>}
-            {!guest && !isLibraryEmpty && (
-            <section className={styles.storyGrid} aria-live="polite" aria-busy={isLoading}>
-              {isLoading ? <p className={styles.message}>서재를 불러오는 중이에요.</p> : stories.map((story) => {
-                const group = libraryGroup(story);
-                // 제작 중이거나 만들지 못한 동화는 표지가 없어서, 상태에 맞는 회색 표지를 보여줘요.
-                //  - 제작 중: 연필이 그림을 그리는 중이에요. (빛이 지나가요)
-                //  - 만들지 못했어요: 연필이 부러졌고, 그리던 선이 엉켜 있어요.
-                const creating = group === 'CREATING';
-                const stateCover = creating ? creatingCover : group === 'FAILED' ? failedCover : null;
-                const coverAlt = story.title ? `${story.title} 표지` : '동화 표지';
-                const storyTitle = story.title || '제목을 준비하고 있어요';
-                const meta = [libraryTopic(story), story.childDisplayName, formatStoryDate(story.updatedAt || story.createdAt)]
-                  .filter(Boolean).join(' · ');
-                return (
-                  <article className={styles.storyCard} key={story.id}>
-                    <span className={`${styles.badge} ${styles[groupClasses[group]] || ''}`}>
-                      {story.label || groupLabels[group] || '동화'}
-                    </span>
-                    <div
-                      className={`${styles.coverFrame} ${bookCoverStyles.bookCover}`}
-                      data-cover-frame
-                      style={{ '--cover': `url(${JSON.stringify(stateCover || story.coverUrl || bookCover)})` }}
-                    >
-                      <div className={bookCoverStyles.bookFace}>
-                        <div className={`${bookCoverStyles.bookArt} ${creating ? styles.creatingArt : ''}`}>
-                          {stateCover ? (
-                            <img className={styles.cover} src={stateCover} alt={creating ? '제작 중인 동화 표지' : '만들지 못한 동화 표지'} />
-                          ) : (
-                            <SafeImage
-                              className={styles.cover}
-                              onLoad={setCoverFrameRatio}
-                              src={story.coverUrl}
-                              alt={coverAlt}
-                              fallback={<img className={styles.cover} src={bookCover} alt={coverAlt} />}
-                            />
-                          )}
-                        </div>
-                      </div>
-                    </div>
-                    <h2 className={styles.storyTitle}>
-                      {group !== 'FAILED' ? (
-                        <button className={styles.storyOpen} type="button" onClick={() => openStory(story)}>
-                          {storyTitle}
-                        </button>
-                      ) : storyTitle}
-                    </h2>
-                    <div className={styles.storyFooter}>
-                      <p className={styles.storyMeta}>{meta}</p>
-                      {group === 'FAILED' && (
-                        <button className={styles.retryButton} type="button" onClick={() => handleRetry(story)}>
-                          다시 만들기
-                        </button>
-                      )}
-                    </div>
-                  </article>
-                );
-              })}
-            </section>
-            )}
-            {!guest && hasNext && !isLoading && (
-              <button className={styles.loadMore} type="button" onClick={() => setShownCount((count) => count + SHOW_STEP)}>
-                더 보기
-              </button>
-            )}
-          </main>
-        </div>
+          {!guest && hasNext && !isLoading && (
+            <button className={styles.loadMore} type="button" onClick={() => setShownShelves((count) => count + SHOW_SHELVES)}>
+              더 보기
+            </button>
+          )}
+        </main>
       </div>
       {isSignedIn && savedModalOpen && <StorySavedModal onClose={closeSavedModal} onRead={readSavedStory} />}
     </>
