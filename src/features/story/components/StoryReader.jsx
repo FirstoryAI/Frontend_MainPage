@@ -47,8 +47,16 @@ function StoryReader({ title, pages, page, onPage, onClose, closeLabel = '돌아
   const tapOnCover = useRef(false);
   const bookRef = useRef(null);
   const [portrait, setPortrait] = useState(() => window.matchMedia('(max-width: 760px)').matches);
+  // 책장이 넘어가는 중인지예요. 다 넘어가기 전에는 다음·이전 쪽으로 가지 않아요. (연속으로 눌러도 한 장씩 넘어가요)
+  const [turning, setTurning] = useState(false);
+  const turningRef = useRef(false);
+  const handleTurningChange = useCallback((value) => {
+    turningRef.current = value;
+    setTurning(value);
+  }, []);
   // 쪽이 바뀌면 책이 그 쪽으로 책장을 넘겨요.
   const showPage = useCallback((next) => {
+    if (turningRef.current) return;
     const target = Math.min(lastPage, Math.max(firstPage, next));
     if (target === page) return;
     setClosedGuidePage(null);
@@ -64,8 +72,8 @@ function StoryReader({ title, pages, page, onPage, onClose, closeLabel = '돌아
   const pageGuide = guide && previewMode ? guideFor(guide, page, pages.length) : null;
   // 아이와 읽기에서는 책장을 누른 채 끌어서도 넘겨요. 미리보기는 아래 화살표로만 넘어가요.
   const flipDrag = useFlipDrag(bookRef, {
-    canPrev: page > firstPage,
-    canNext: page < lastPage,
+    canPrev: !turning && page > firstPage,
+    canNext: !turning && page < lastPage,
     // 넓은 화면에서 표지를 펼치고 덮는 건(앞표지 ↔ 1쪽, 마지막 쪽 ↔ 뒤표지) 책장을 끌지 않고 쓸어 넘기면 표지 움직임으로 넘어가요.
     swipePrev: covers && !portrait && (page === 1 || page === lastPage),
     swipeNext: covers && !portrait && (page === 0 || page === pages.length),
@@ -192,6 +200,7 @@ function StoryReader({ title, pages, page, onPage, onClose, closeLabel = '돌아
               pages={pages}
               page={page}
               onPage={handleBookPage}
+              onTurningChange={handleTurningChange}
               portrait={portrait}
               seamless={!previewMode}
               frontCover={covers ? frontCover : null}
@@ -206,6 +215,8 @@ function StoryReader({ title, pages, page, onPage, onClose, closeLabel = '돌아
           type="button"
           onClick={() => showPage(page - 1)}
           disabled={page === firstPage}
+          // 넘어가는 동안에는 누를 수 없어요. (disabled로 바꾸면 키보드 포커스가 빠져서 aria-disabled로 막아요)
+          aria-disabled={turning || undefined}
           aria-label="이전 쪽"
         >
           <img src={readerArrowLeft} alt="" />
@@ -215,6 +226,7 @@ function StoryReader({ title, pages, page, onPage, onClose, closeLabel = '돌아
           type="button"
           onClick={() => showPage(page + 1)}
           disabled={page === lastPage}
+          aria-disabled={turning || undefined}
           aria-label="다음 쪽"
         >
           <img src={readerArrowRight} alt="" />

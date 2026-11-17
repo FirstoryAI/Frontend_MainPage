@@ -7,6 +7,8 @@ import styles from './StoryReader.module.css';
 
 // 책장 한 장이 넘어가는 시간(ms)이에요. 어느 화면, 어떤 크기의 책이든 같아요.
 const FLIP_MS = 720;
+// 넘김(최대: 작은 화면의 책장 넘김, 표지 펼치기·덮기 1.7초)이 이 시간 안에 끝나지 않으면 멈춘 것으로 봐요.
+const TURN_TIMEOUT_MS = 3000;
 // 라이브러리(page-flip)는 책장이 움직이는 거리가 1000px보다 짧으면 그만큼 빨리 넘겨요. (거리/1000 × flippingTime)
 // 그래서 휴대폰처럼 책이 작으면 더 빨리 넘어갔어요. 거리가 짧은 만큼 flippingTime을 늘려서 시간을 맞춰요.
 // 거리는 라이브러리 계산과 같아요: 책장 폭 × 2 − 책 높이 / 10
@@ -89,11 +91,13 @@ function CoverMotionPending({ kind, src, pageWidth, shift, slideRef }) {
 //  - seamless: 쪽 바탕을 비우고 지금 그림을 뒤에 깔아서, 두 쪽이 만나는 곳(소수점 픽셀)에 밝은 세로줄이 보이지 않게 해요.
 //  - 마우스·터치로 넘기는 처리는 라이브러리에서 꺼 뒀어요. 끌어서 넘기려면 useFlipDrag 핸들러를 넘겨줘요.
 // pages: [{ pageNo, text, textBlocks, imageUrl, imageNote? }], copyClassName·fallbackClassName: 글 상자·그림 없음 안내 모양
+// onTurningChange(turning): 책장(또는 표지)이 넘어가기 시작하면 true, 다 넘어가 멈추면 false로 알려줘요.
 // ref로 pageFlip()(라이브러리)과 host()(책을 담은 칸)를 꺼낼 수 있어요.
 const StoryFlipBook = forwardRef(function StoryFlipBook({
   pages,
   page,
   onPage,
+  onTurningChange,
   portrait = false,
   seamless = false,
   frontCover = null,
@@ -126,6 +130,9 @@ const StoryFlipBook = forwardRef(function StoryFlipBook({
   const turnFirst = coverStep && (restingPage === 0 || restingPage === count + 1);
   // 표지 움직임이 도는 중인지예요. 그 사이 라이브러리가 보내는 '멈춤' 알림이 머문 쪽을 바꿔 움직임을 끊고 책장을 한 번 더 넘기지 않게 써요.
   const motionRunningRef = useRef(false);
+  // 가려는 쪽에 아직 멈추지 않았으면 넘어가는 중이에요.
+  const turning = restingPage !== page;
+  const onTurningChangeRef = useRef(onTurningChange);
   useLayoutEffect(() => {
     motionRunningRef.current = Boolean(motionKind);
   }, [motionKind]);
@@ -159,8 +166,17 @@ const StoryFlipBook = forwardRef(function StoryFlipBook({
   useEffect(() => {
     pageRef.current = page;
     onPageRef.current = onPage;
+    onTurningChangeRef.current = onTurningChange;
     layoutRef.current = { portrait, covers, count };
-  }, [page, onPage, portrait, covers, count]);
+  }, [page, onPage, onTurningChange, portrait, covers, count]);
+
+  useEffect(() => {
+    onTurningChangeRef.current?.(turning);
+    if (!turning) return undefined;
+    // 멈춤 알림이 오지 않는 드문 경우에도 계속 넘어가는 중으로 남지 않게, 넉넉히 기다린 뒤 지금 쪽에 멈춘 것으로 봐요.
+    const timer = window.setTimeout(() => setRestingPage(pageRef.current), TURN_TIMEOUT_MS);
+    return () => window.clearTimeout(timer);
+  }, [turning]);
 
   useLayoutEffect(() => {
     const host = hostRef.current;

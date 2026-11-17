@@ -580,7 +580,10 @@
   height: 4.274cqw;
 }
 
+.readerArrow { transition: opacity .2s ease; }
 .readerArrow:disabled { opacity: 0.35; cursor: default; }
+/* 책장이 넘어가는 동안에는 누를 수 없어요. */
+.readerArrow[aria-disabled='true'] { opacity: 0.35; cursor: default; }
 .readerArrowLeft { left: 1.25%; }
 .readerArrowRight { right: 1.18%; }
 .readerArrowRight img { transform: scaleX(-1); }
