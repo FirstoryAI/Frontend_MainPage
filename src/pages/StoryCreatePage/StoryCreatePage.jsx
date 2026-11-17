@@ -827,8 +827,12 @@ function StoryCreatePage() {
     try {
       await handler();
       if (pendingStepRef.current !== null) {
-        setSaveComplete(true);
-        await new Promise((resolve) => setTimeout(resolve, 1200));
+        // 입력 단계는 '저장 완료!'를 잠깐 보여주고 넘어가요.
+        // 요약의 '동화 만들기'는 '준비하는 중…' 뒤에 완료 표시 없이 바로 동화 만드는 화면으로 가요.
+        if (step !== STEP.SUMMARY) {
+          setSaveComplete(true);
+          await new Promise((resolve) => setTimeout(resolve, 1200));
+        }
         setNotice('');
         setHistory((current) => [...current, step]);
         setStep(pendingStepRef.current);
