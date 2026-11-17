@@ -51,6 +51,11 @@ function useFitStage() {
   return fit;
 }
 
+// 앞·뒤표지가 둘 다 있는 책이에요. (이 기능 전에 만든 동화·표지가 실패한 동화는 없어요)
+const hasBookCovers = (book) => Boolean(book?.frontCoverUrl && book?.backCoverUrl);
+// 뒤표지에 닿은 뒤 읽기를 마치기 전에 뒤표지를 보여주는 시간이에요. (책장 넘기는 시간 0.72초 포함)
+const BACK_COVER_PAUSE_MS = 1600;
+
 // 서재에서 '아직 읽지 않았어요'·'함께 읽었어요' 동화를 누르면 보이는 '동화 한 눈에 보기' 화면이에요.
 // 밤 나무 벽(서재와 같은 배경) 위에 비스듬히 놓인 표지, 제목·줄거리, '아이와 읽기 시작하기'·'대화 가이드 보기'가 있어요.
 function StoryDetailPage() {
@@ -70,6 +75,9 @@ function StoryDetailPage() {
   const [readingFeedbackOpen, setReadingFeedbackOpen] = useState(false);
   const [feedbackMemberId, setFeedbackMemberId] = useState(null);
   const [checkingReadingFeedback, setCheckingReadingFeedback] = useState(false);
+  // 뒤표지에 닿은 뒤 읽기를 마치는 타이머예요.
+  const backCoverTimer = useRef(null);
+  useEffect(() => () => clearTimeout(backCoverTimer.current), []);
   // '대화 가이드 보기'로 미리보기와 같은 크게 보기 화면을 연 동안 { book, page }
   const [guideView, setGuideView] = useState(null);
   const [guideLoading, setGuideLoading] = useState(false);
@@ -114,9 +122,14 @@ function StoryDetailPage() {
     try {
       const [book, resumed] = await Promise.all([getBook(storyId), resumeReading(storyId)]);
       const session = resumed ?? (await startReading(storyId));
-      // 앞·뒤표지가 있으면 처음 읽을 때는 앞표지(0쪽)부터 보여줘요. 읽던 쪽이 있으면 그 쪽부터예요.
-      const hasCovers = Boolean(book.frontCoverUrl && book.backCoverUrl);
-      setReading({ session, book, page: session.lastPage >= 1 ? session.lastPage : (hasCovers ? 0 : 1) });
+      // 앞·뒤표지가 있는 책은 처음 읽거나(읽던 쪽 0·1쪽) 마지막 쪽까지 읽은 기록이면 앞표지(0쪽)부터 보여줘요.
+      // 중간 쪽에서 멈췄으면 그 쪽부터 이어서 읽어요. 표지가 없는 책은 지금처럼 읽던 쪽(없으면 1쪽)부터예요.
+      const lastPage = session.lastPage ?? 0;
+      const startPage = hasBookCovers(book)
+        ? (lastPage <= 1 || lastPage >= book.pages.length ? 0 : lastPage)
+        : Math.max(1, lastPage);
+      clearTimeout(backCoverTimer.current);
+      setReading({ session, book, page: startPage });
     } catch (error) {
       setNotice(error.message || '읽기를 시작하지 못했어요.');
     } finally {
@@ -160,6 +173,16 @@ function StoryDetailPage() {
     if (page >= 1 && page <= reading.book.pages.length) {
       saveReadingProgress(reading.session.sessionId, page).catch(() => {});
     }
+    // 뒤표지까지 넘기면 다 읽은 거예요. 뒤표지를 잠깐 보여준 뒤 읽기를 마쳐요. (그 사이에 다시 넘기면 취소돼요)
+    clearTimeout(backCoverTimer.current);
+    if (hasBookCovers(reading.book) && page === reading.book.pages.length + 1) {
+      backCoverTimer.current = setTimeout(handleReadCompleteClick, BACK_COVER_PAUSE_MS);
+    }
+  };
+
+  const closeReading = () => {
+    clearTimeout(backCoverTimer.current);
+    setReading(null);
   };
 
   const handleFinishReading = async (feedback) => {
@@ -277,15 +300,15 @@ function StoryDetailPage() {
           pages={reading.book.pages}
           page={reading.page}
           onPage={handlePage}
-          onClose={() => setReading(null)}
+          onClose={closeReading}
           closeLabel="읽기 닫기"
           // 앞·뒤표지가 있는 동화(frontCoverUrl·backCoverUrl)만 표지를 붙여요.
           // 앞표지는 서재와 같은 정사각형 표지(coverUrl)를 그대로 쓰고, 뒤표지는 가로 그림의 가운데를 정사각형으로 보여줘요.
-          frontCover={reading.book.frontCoverUrl && reading.book.backCoverUrl ? (reading.book.coverUrl || reading.book.frontCoverUrl) : null}
-          backCover={reading.book.frontCoverUrl && reading.book.backCoverUrl ? reading.book.backCoverUrl : null}
+          frontCover={hasBookCovers(reading.book) ? (reading.book.coverUrl || reading.book.frontCoverUrl) : null}
+          backCover={hasBookCovers(reading.book) ? reading.book.backCoverUrl : null}
         >
-          {/* 마지막 쪽과 뒤표지에서 '다 읽었어요'를 보여줘요. */}
-          {reading.page >= reading.book.pages.length && (
+          {/* 표지가 있는 책은 뒤표지에 닿으면 저절로 다 읽은 것으로 해요. 뒤표지가 없는 옛 동화만 마지막 쪽에 '다 읽었어요'가 있어요. */}
+          {!hasBookCovers(reading.book) && reading.page >= reading.book.pages.length && (
             <button className={readerStyles.primary} type="button" onClick={handleReadCompleteClick} disabled={checkingReadingFeedback}>
               {checkingReadingFeedback ? '확인하는 중…' : '다 읽었어요'}
             </button>
