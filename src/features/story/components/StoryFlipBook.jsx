@@ -41,7 +41,7 @@ const COVER_EDGE = 0.022;
 
 // 앞표지·뒤표지 한 면이에요. 탁자에 놓인 실제 그림책처럼 서재 표지와 같은 정사각형에 책 두께(종이 단면)·책등 주름·빛·그림자를 그려요.
 // 앞표지는 책의 오른쪽 면이라 왼쪽(책등)에, 뒤표지는 왼쪽 면이라 오른쪽(책등)에 붙어요. 둘레는 비워서 뒤의 서재 벽이 보여요.
-const StoryCoverPage = forwardRef(function StoryCoverPage({ src, label, side, portrait, lastPage, peekSrc }, ref) {
+const StoryCoverPage = forwardRef(function StoryCoverPage({ src, label, side, portrait, lastPage }, ref) {
   const activePage = useContext(ActivePageContext);
   const nearCover = side === 'front' ? activePage <= 1 : activePage >= lastPage - 1;
   const currentCover = side === 'front' ? activePage === 0 : activePage === lastPage;
@@ -50,7 +50,7 @@ const StoryCoverPage = forwardRef(function StoryCoverPage({ src, label, side, po
       {/* 라이브러리가 책장 요소의 display를 바꿔서, 가운데 맞춤은 안쪽 틀에서 해요. */}
       <CoverFace src={src} label={label} side={side} portrait={portrait}
         loading={nearCover ? 'eager' : 'lazy'} fetchPriority={currentCover ? 'high' : 'low'}
-        openable={side === 'front'} peek={side === 'front' && !portrait && peekSrc ? { src: peekSrc } : null} />
+        openable={side === 'front'} />
     </div>
   );
 });
@@ -154,7 +154,7 @@ const StoryFlipBook = forwardRef(function StoryFlipBook({
     });
     if (!covers) return storyPages;
     return [
-      <StoryCoverPage key="front-cover" src={frontCover} label="앞표지" side="front" portrait={portrait} lastPage={count + 1} peekSrc={pages[0]?.imageUrl} />,
+      <StoryCoverPage key="front-cover" src={frontCover} label="앞표지" side="front" portrait={portrait} lastPage={count + 1} />,
       ...storyPages,
       <StoryCoverPage key="back-cover" src={backCover} label="뒤표지" side="back" portrait={portrait} lastPage={count + 1} />,
     ];
@@ -234,8 +234,11 @@ const StoryFlipBook = forwardRef(function StoryFlipBook({
     // 같은 움직임의 끝 알림이 두 번 와도 한 번만 처리해요.
     if (!motionRunningRef.current) return;
     motionRunningRef.current = false;
-    bookRef.current?.pageFlip?.()?.turnToPage(pageIndexFor(page, portrait, covers, count));
-    setRestingPage(page);
+    const target = page;
+    bookRef.current?.pageFlip?.()?.turnToPage(pageIndexFor(target, portrait, covers, count));
+    // 라이브러리는 바뀐 쪽을 다음 그림(프레임)에 그려요. 그 전에 움직임을 걷으면 한 프레임 동안 이전 쪽이 화면 가득 번쩍여서,
+    // 두 프레임 뒤(라이브러리가 표지를 그린 뒤)에 움직임을 걷어요.
+    requestAnimationFrame(() => requestAnimationFrame(() => setRestingPage(target)));
   };
 
   const handleFlip = useCallback((event) => {
