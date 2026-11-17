@@ -1,7 +1,8 @@
-import { forwardRef, lazy, Suspense, useCallback, useEffect, useImperativeHandle, useLayoutEffect, useMemo, useRef, useState } from 'react';
+import { forwardRef, lazy, Suspense, useCallback, useContext, useEffect, useImperativeHandle, useLayoutEffect, useMemo, useRef, useState } from 'react';
 import HTMLFlipBook from 'react-pageflip';
 import CoverFace from './CoverFace';
 import StoryFlipPage from './StoryFlipPage';
+import { ActivePageContext } from '../activePageContext';
 import styles from './StoryReader.module.css';
 
 // 책장 한 장이 넘어가는 시간(ms)이에요. 어느 화면, 어떤 크기의 책이든 같아요.
@@ -38,11 +39,15 @@ const COVER_EDGE = 0.022;
 
 // 앞표지·뒤표지 한 면이에요. 탁자에 놓인 실제 그림책처럼 서재 표지와 같은 정사각형에 책 두께(종이 단면)·책등 주름·빛·그림자를 그려요.
 // 앞표지는 책의 오른쪽 면이라 왼쪽(책등)에, 뒤표지는 왼쪽 면이라 오른쪽(책등)에 붙어요. 둘레는 비워서 뒤의 서재 벽이 보여요.
-const StoryCoverPage = forwardRef(function StoryCoverPage({ src, label, side, portrait }, ref) {
+const StoryCoverPage = forwardRef(function StoryCoverPage({ src, label, side, portrait, lastPage }, ref) {
+  const activePage = useContext(ActivePageContext);
+  const nearCover = side === 'front' ? activePage <= 1 : activePage >= lastPage - 1;
+  const currentCover = side === 'front' ? activePage === 0 : activePage === lastPage;
   return (
     <div className={`${styles.flipPage} ${styles.coverPage}`} ref={ref} data-density="hard">
       {/* 라이브러리가 책장 요소의 display를 바꿔서, 가운데 맞춤은 안쪽 틀에서 해요. */}
-      <CoverFace src={src} label={label} side={side} portrait={portrait} />
+      <CoverFace src={src} label={label} side={side} portrait={portrait}
+        loading={nearCover ? 'eager' : 'lazy'} fetchPriority={currentCover ? 'high' : 'low'} />
     </div>
   );
 });
@@ -136,11 +141,11 @@ const StoryFlipBook = forwardRef(function StoryFlipBook({
     });
     if (!covers) return storyPages;
     return [
-      <StoryCoverPage key="front-cover" src={frontCover} label="앞표지" side="front" portrait={portrait} />,
+      <StoryCoverPage key="front-cover" src={frontCover} label="앞표지" side="front" portrait={portrait} lastPage={count + 1} />,
       ...storyPages,
-      <StoryCoverPage key="back-cover" src={backCover} label="뒤표지" side="back" portrait={portrait} />,
+      <StoryCoverPage key="back-cover" src={backCover} label="뒤표지" side="back" portrait={portrait} lastPage={count + 1} />,
     ];
-  }, [pages, portrait, covers, frontCover, backCover, copyClassName, fallbackClassName]);
+  }, [pages, portrait, covers, frontCover, backCover, count, copyClassName, fallbackClassName]);
 
   useEffect(() => {
     pageRef.current = page;
@@ -242,6 +247,7 @@ const StoryFlipBook = forwardRef(function StoryFlipBook({
     >
       {area?.width > 0 && area?.height > 0 && (
         <div className={styles.flipSlide} ref={slideRef} style={{ transform: `translateX(${shift}px)` }}>
+          <ActivePageContext.Provider value={page}>
           <HTMLFlipBook
             key={`${portrait ? 'portrait' : 'spread'}-${covers ? 'covers' : 'plain'}`}
             ref={bookRef}
@@ -264,6 +270,7 @@ const StoryFlipBook = forwardRef(function StoryFlipBook({
           >
             {bookPages}
           </HTMLFlipBook>
+          </ActivePageContext.Provider>
         </div>
       )}
       {motionKind && (

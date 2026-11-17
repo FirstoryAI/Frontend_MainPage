@@ -62,7 +62,9 @@ export function useImageQueue(urls, currentPage) {
 
       requested.current.add(url);
       try {
-        const response = await fetch(url);
+        const response = await fetch(url, {
+          priority: url === urls[currentPage - 1] ? 'high' : 'low',
+        });
         if (!response.ok) throw new Error(`image ${response.status}`);
         const blobUrl = URL.createObjectURL(await response.blob());
         if (mounted.current) blobUrls.current.set(url, blobUrl);

@@ -4,7 +4,7 @@ import { CHAT_INTRO } from '../categoryContent';
 import { answerInterview } from '../../../services/storiesApi';
 import { extractChoices } from '../interviewChoices';
 import { INTERVIEW_QUESTION_LIMIT } from '../constants';
-import avatar from '../../../assets/images/chat-avatar.png';
+import avatar from '../../../assets/images/chat-avatar.webp';
 import sendCircle from '../../../assets/icons/send-circle.svg';
 import sendArrow from '../../../assets/icons/send-arrow.svg';
 import styles from './ChatStep.module.css';

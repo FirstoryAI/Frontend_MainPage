@@ -252,7 +252,8 @@ function StoryPreviewPage({ initialRemakeOpen = false }) {
                   <SafeImage
                     src={sourceOf(item)}
                     alt=""
-                    loading="lazy"
+                    loading={selected ? 'eager' : 'lazy'}
+                    fetchPriority={selected ? 'high' : 'low'}
                     decoding="async"
                     fallback={<div className={styles.noImage} aria-hidden="true" />}
                   />

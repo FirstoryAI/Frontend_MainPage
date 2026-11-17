@@ -1,7 +1,7 @@
 import { useState } from 'react';
 import { Link, useNavigate } from 'react-router-dom';
 import Header from '../../components/layout/Header';
-import { useSignupDraft } from '../../features/auth/SignupDraftContext';
+import { useSignupDraft } from '../../features/auth/useSignupDraft';
 import EmailVerification from '../../features/auth/components/EmailVerification';
 import styles from './EmailSignUpPage.module.css';
 

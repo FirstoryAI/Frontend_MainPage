@@ -17,15 +17,14 @@ import avatarProfile from '../../assets/images/home/day-design/profile.svg';
 import dayBell from '../../assets/images/home/day-design/notification.svg';
 import iconPencil from '../../assets/images/home/day-design/section-pencil.svg';
 import createPlus from '../../assets/images/home/day-design/create-plus.svg';
-import dayBackground from '../../assets/images/home/day-design/day-background.png';
 import treeCanopy from '../../assets/images/home/day-design/tree-canopy.svg';
 import friendWave from '../../assets/images/home/day-design/friend-wave.svg';
 import familyWave from '../../assets/images/home/day-design/family-wave.svg';
 import kindergartenWave from '../../assets/images/home/day-design/kindergarten-wave.svg';
 import tantrumWave from '../../assets/images/home/day-design/tantrum-wave.svg';
-import friendCharacter from '../../assets/images/home/day-design/friend-character.png';
-import characterSheet from '../../assets/images/home/day-design/character-sheet.png';
-import kindergartenCharacter from '../../assets/images/home/day-design/kindergarten-character.png';
+import friendCharacter from '../../assets/images/home/day-design/friend-character.webp';
+import characterSheet from '../../assets/images/home/day-design/character-sheet.webp';
+import kindergartenCharacter from '../../assets/images/home/day-design/kindergarten-character.webp';
 import styles from './DashboardPage.module.css';
 
 // 서버에 저장된 '만들던 동화'(아직 인터뷰·확정 전)를 이어 만들 목록으로 바꿔요.
@@ -33,6 +32,7 @@ const DRAFT_STATUSES = ['DRAFT', 'INTERVIEWING', 'CONFIRMING'];
 const MAX_DRAFTS = 10;
 const cardWaves = { friend: friendWave, emotion: familyWave, kindergarten: kindergartenWave, tantrum: tantrumWave, habit: familyWave };
 const designedCards = new Set(['friend', 'emotion', 'kindergarten', 'tantrum']);
+const dayBackground = '/images/home-day-background.webp';
 
 async function loadDrafts() {
   const { items = [] } = await getStories({ filter: 'CREATING', size: 50 });
@@ -114,7 +114,7 @@ function DashboardPage({ guest = false }) {
   return (
     <div className={styles.page}>
       <div className={styles.shell} data-theme="day" inert={onboardingOpen || storyModal !== null || selectedScenario !== null}>
-        <img className={styles.dayBackground} src={dayBackground} alt="" />
+        <img className={styles.dayBackground} src={dayBackground} alt="" fetchPriority="high" decoding="async" />
         <img className={styles.treeCanopy} src={treeCanopy} alt="" />
         <Sidebar guest={guest} compact />
 

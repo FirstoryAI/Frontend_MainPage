@@ -1,43 +1,29 @@
 import { createBrowserRouter } from 'react-router-dom';
 import App from './App';
-import HomePage from '../pages/HomePage/HomePage';
-import AuthStartPage from '../pages/AuthStartPage/AuthStartPage';
-import EmailSignUpPage from '../pages/EmailSignUpPage/EmailSignUpPage';
-import EmailLoginPage from '../pages/EmailLoginPage/EmailLoginPage';
-import GuardianConsentPage from '../pages/GuardianConsentPage/GuardianConsentPage';
-import LibraryPage from '../pages/LibraryPage/LibraryPage';
-import ScenarioListPage from '../pages/ScenarioListPage/ScenarioListPage';
-import StoryCreateRoute from '../pages/StoryCreatePage/StoryCreateRoute';
-import StoryDetailPage from '../pages/StoryDetailPage/StoryDetailPage';
-import StoryRemakePage from '../pages/StoryRemakePage/StoryRemakePage';
-import StoryPreviewPage from '../pages/StoryPreviewPage/StoryPreviewPage';
-import NotFoundPage from '../pages/NotFoundPage/NotFoundPage';
-import MyPage from '../pages/MyPage/MyPage';
-import KakaoCallbackPage from '../pages/KakaoCallbackPage/KakaoCallbackPage';
-import KakaoSignUpPage from '../pages/KakaoSignUpPage/KakaoSignUpPage';
-import PasswordResetPage from '../pages/PasswordResetPage/PasswordResetPage';
+
+const page = (load) => async () => ({ Component: (await load()).default });
 
 export const router = createBrowserRouter([
   {
     element: <App />,
     children: [
-      { path: '/', element: <HomePage /> },
-      { path: '/auth', element: <AuthStartPage /> },
-      { path: '/auth/email/signup', element: <EmailSignUpPage /> },
-      { path: '/auth/email/login', element: <EmailLoginPage /> },
-      { path: '/oauth/kakao', element: <KakaoCallbackPage /> },
-      { path: '/auth/kakao/signup', element: <KakaoSignUpPage /> },
-      { path: '/auth/password/reset', element: <PasswordResetPage /> },
-      { path: '/auth/consent', element: <GuardianConsentPage /> },
-      { path: '/home', element: <HomePage /> },
-      { path: '/mypage', element: <MyPage /> },
-      { path: '/library', element: <LibraryPage /> },
-      { path: '/library/:storyId', element: <StoryDetailPage /> },
-      { path: '/scenarios', element: <ScenarioListPage /> },
-      { path: '/story/new', element: <StoryCreateRoute /> },
-      { path: '/story/:storyId/preview', element: <StoryPreviewPage /> },
-      { path: '/story/:storyId/remake', element: <StoryRemakePage /> },
-      { path: '*', element: <NotFoundPage /> },
+      { path: '/', lazy: page(() => import('../pages/HomePage/HomePage')) },
+      { path: '/auth', lazy: page(() => import('../pages/AuthStartPage/AuthStartPage')) },
+      { path: '/auth/email/signup', lazy: page(() => import('../pages/EmailSignUpPage/EmailSignUpPage')) },
+      { path: '/auth/email/login', lazy: page(() => import('../pages/EmailLoginPage/EmailLoginPage')) },
+      { path: '/oauth/kakao', lazy: page(() => import('../pages/KakaoCallbackPage/KakaoCallbackPage')) },
+      { path: '/auth/kakao/signup', lazy: page(() => import('../pages/KakaoSignUpPage/KakaoSignUpPage')) },
+      { path: '/auth/password/reset', lazy: page(() => import('../pages/PasswordResetPage/PasswordResetPage')) },
+      { path: '/auth/consent', lazy: page(() => import('../pages/GuardianConsentPage/GuardianConsentPage')) },
+      { path: '/home', lazy: page(() => import('../pages/HomePage/HomePage')) },
+      { path: '/mypage', lazy: page(() => import('../pages/MyPage/MyPage')) },
+      { path: '/library', lazy: page(() => import('../pages/LibraryPage/LibraryPage')) },
+      { path: '/library/:storyId', lazy: page(() => import('../pages/StoryDetailPage/StoryDetailPage')) },
+      { path: '/scenarios', lazy: page(() => import('../pages/ScenarioListPage/ScenarioListPage')) },
+      { path: '/story/new', lazy: page(() => import('../pages/StoryCreatePage/StoryCreateRoute')) },
+      { path: '/story/:storyId/preview', lazy: page(() => import('../pages/StoryPreviewPage/StoryPreviewPage')) },
+      { path: '/story/:storyId/remake', lazy: page(() => import('../pages/StoryRemakePage/StoryRemakePage')) },
+      { path: '*', lazy: page(() => import('../pages/NotFoundPage/NotFoundPage')) },
     ],
   },
 ]);
