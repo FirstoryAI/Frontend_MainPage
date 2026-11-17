@@ -10,6 +10,27 @@ body {
   -webkit-font-smoothing: antialiased;
 }
 
+::view-transition-old(root) {
+  animation: 180ms ease-out both fade-out-page;
+}
+
+::view-transition-new(root) {
+  animation: 180ms ease-out both fade-in-page;
+}
+
+@keyframes fade-out-page {
+  to { opacity: 0; }
+}
+
+@keyframes fade-in-page {
+  from { opacity: 0; }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  ::view-transition-old(root),
+  ::view-transition-new(root) { animation-duration: 0.01ms; }
+}
+
 :focus-visible {
   outline: 3px solid rgb(255 138 91 / 55%);
   outline-offset: 3px;
