@@ -168,7 +168,7 @@ function DashboardPage({ guest = false }) {
                 <div className={styles.cards} ref={trackRef}>
                   {Array.from({ length: SET_COUNT }, (_, copy) => conveyorScenarios.map((scenario, index) => (
                     <button
-                      className={`${styles.card} ${styles[scenario.color]}`}
+                      className={`${styles.card} ${styles[scenario.color]} ${styles[scenario.id] ?? ''}`}
                       type="button"
                       key={`${copy}-${index}-${scenario.id}`}
                       data-scenario-id={scenario.id}

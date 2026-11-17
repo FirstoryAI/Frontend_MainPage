@@ -48,7 +48,12 @@
 .kindergartenCharacter img { top: -114.23%; left: -84.96%; width: 271.86%; height: 214.23%; }
 .tantrumCharacter { top: 103px; left: 22px; width: 182px; height: 186px; }
 .tantrumCharacter img { top: -139.9%; left: -113.44%; width: 412.9%; height: 268.77%; }
-.fallbackCharacter { position: absolute; z-index: 2; bottom: -3px; left: 50%; width: 190px; height: 150px; object-fit: contain; object-position: center bottom; transform: translateX(-50%); }
+.fallbackCharacter { position: absolute; z-index: 2; top: var(--character-top); left: var(--character-left); width: var(--character-width); height: var(--character-height); max-width: none; pointer-events: none; }
+.friendLeftOut { --character-top: 102px; --character-left: -10px; --character-width: 245px; --character-height: 178px; }
+.familyApart { --character-top: 109px; --character-left: 38.25px; --character-width: 148px; --character-height: 196px; }
+.kindergartenScared { --character-top: 118px; --character-left: 33.5px; --character-width: 160px; --character-height: 184px; }
+.clothesTeeth { --character-top: 95px; --character-left: 12.74px; --character-width: 200px; --character-height: 207px; }
+.grandmaPassed { --character-top: 118px; --character-left: 22.99px; --character-width: 193px; --character-height: 179px; }
 @media (min-width: 901px) and (max-height: 950px) {
   .content { zoom: .95; }
 }
