@@ -5,6 +5,8 @@ import NotificationBell from '../../components/layout/NotificationBell';
 import OnboardingModal from '../../features/onboarding/components/OnboardingModal';
 import StoryDraftModal from '../../features/story/components/StoryDraftModal';
 import HomeScenarioModal from '../../features/home/components/HomeScenarioModal';
+import LaunchNoticeModal from '../../features/home/components/LaunchNoticeModal';
+import { FREE_STORY_LIMIT, getFreeStoryRemaining } from '../../features/home/storyQuota';
 import { listScenarios, scenarioCategoryLabel } from '../../features/home/scenarios';
 import { PRIMARY_COPY, SET_COUNT, useConveyor } from '../../features/home/hooks/useConveyor';
 import { hasSeenOnboarding, markOnboardingSeen } from '../../features/onboarding/onboardingSeen';
@@ -25,6 +27,7 @@ import tantrumWave from '../../assets/images/home/day-design/tantrum-wave.svg';
 import friendCharacter from '../../assets/images/home/day-design/friend-character.webp';
 import characterSheet from '../../assets/images/home/day-design/character-sheet.webp';
 import kindergartenCharacter from '../../assets/images/home/day-design/kindergarten-character.webp';
+import remainingBubble from '../../assets/images/home/day-design/remaining-bubble.svg';
 import styles from './DashboardPage.module.css';
 
 // 서버에 저장된 '만들던 동화'(아직 인터뷰·확정 전)를 이어 만들 목록으로 바꿔요.
@@ -65,6 +68,8 @@ function DashboardPage({ guest = false }) {
   const [storyModal, setStoryModal] = useState(null);
   const [selectedScenario, setSelectedScenario] = useState(null);
   const [drafts, setDrafts] = useState([]);
+  const [remaining, setRemaining] = useState(() => location.state?.launchNotice ? 0 : null);
+  const [launchNoticeOpen, setLaunchNoticeOpen] = useState(() => Boolean(location.state?.launchNotice));
   const conveyorScenarios = listScenarios;
   const { resumeGeneration } = useStoryGeneration();
 
@@ -78,11 +83,51 @@ function DashboardPage({ guest = false }) {
   }, [guest, resumeGeneration]);
 
   useEffect(() => {
+    if (guest) return undefined;
+    let active = true;
+    getFreeStoryRemaining()
+      .then((count) => { if (active) setRemaining(count); })
+      .catch(() => {});
+    return () => { active = false; };
+  }, [guest]);
+
+  const checkRemaining = useCallback(async () => {
+    try {
+      const count = await getFreeStoryRemaining();
+      setRemaining(count);
+      if (count === 0) {
+        setLaunchNoticeOpen(true);
+        return false;
+      }
+      return true;
+    } catch {
+      return true;
+    }
+  }, []);
+
+  useEffect(() => {
     if (guest || !location.state?.chooseStory) return;
-    loadDrafts()
-      .then(setDrafts)
-      .catch(() => setDrafts([]))
-      .finally(() => setStoryModal('choose'));
+    getFreeStoryRemaining().then((count) => {
+      setRemaining(count);
+      if (count === 0) {
+        setLaunchNoticeOpen(true);
+        return;
+      }
+      loadDrafts()
+        .then(setDrafts)
+        .catch(() => setDrafts([]))
+        .finally(() => setStoryModal('choose'));
+    }).catch(() => {
+      loadDrafts()
+        .then(setDrafts)
+        .catch(() => setDrafts([]))
+        .finally(() => setStoryModal('choose'));
+    });
+    navigate(location.pathname, { replace: true, state: null });
+  }, [guest, location.pathname, location.state, navigate]);
+
+  useEffect(() => {
+    if (guest || !location.state?.launchNotice) return;
     navigate(location.pathname, { replace: true, state: null });
   }, [guest, location.pathname, location.state, navigate]);
 
@@ -93,9 +138,14 @@ function DashboardPage({ guest = false }) {
     navigate(location.pathname, { replace: true, state: null });
   }, [navigate, location.pathname, onboardingKey]);
 
-  const startStory = () => navigate('/story/new');
+  const startStory = async () => {
+    if (await checkRemaining()) navigate('/story/new');
+  };
 
-  const startNewStory = () => navigate('/story/new', { state: { startFresh: true } });
+  const startNewStory = async () => {
+    setStoryModal(null);
+    if (await checkRemaining()) navigate('/story/new', { state: { startFresh: true } });
+  };
 
   const startFirstStory = () => {
     closeOnboarding();
@@ -113,10 +163,12 @@ function DashboardPage({ guest = false }) {
 
   return (
     <div className={styles.page}>
-      <div className={styles.shell} data-theme="day" inert={onboardingOpen || storyModal !== null || selectedScenario !== null}>
+      <div className={styles.shell} data-theme="day" inert={onboardingOpen || storyModal !== null || selectedScenario !== null || launchNoticeOpen}>
         <img className={styles.dayBackground} src={dayBackground} alt="" fetchPriority="high" decoding="async" />
         <img className={styles.treeCanopy} src={treeCanopy} alt="" />
-        <Sidebar guest={guest} compact />
+        <Sidebar guest={guest} compact onCreate={async () => {
+          if (await checkRemaining()) navigate('/home', { state: { chooseStory: true } });
+        }} />
 
         <div className={styles.main}>
           <div className={styles.topbar}>
@@ -139,9 +191,23 @@ function DashboardPage({ guest = false }) {
                 <h1 id="greeting-title" className={styles.greetingText}>
                   아이에게 전하고 싶은 마음, 동화로 시작해 보세요
                 </h1>
-                <button className={styles.createStory} type="button" onClick={() => guest ? navigate('/auth') : navigate('/home', { state: { chooseStory: true } })}>
-                  <img src={createPlus} alt="" /> 동화 만들기
-                </button>
+                <div className={styles.createAction}>
+                  <button className={styles.createStory} type="button" onClick={() => {
+                    if (guest) navigate('/auth');
+                    else if (remaining === 0) setLaunchNoticeOpen(true);
+                    else navigate('/home', { state: { chooseStory: true } });
+                  }}>
+                    <img src={createPlus} alt="" /> 동화 만들기{!guest && ` (${remaining ?? '–'}/${FREE_STORY_LIMIT})`}
+                  </button>
+                  {!guest && <div className={styles.remainingBubble} role="status">
+                    <img src={remainingBubble} alt="" />
+                    <span>{remaining === null
+                      ? '무료 동화 생성 횟수를 확인하고 있어요'
+                      : remaining === 0
+                      ? '무료 동화 생성 횟수를 모두 소진했어요'
+                      : `무료로 동화를 만들어볼 수 있는 횟수가 ${remaining}회 남았어요`}</span>
+                  </div>}
+                </div>
               </div>
             </section>
 
@@ -202,9 +268,12 @@ function DashboardPage({ guest = false }) {
         <HomeScenarioModal
           scenario={selectedScenario}
           onClose={() => setSelectedScenario(null)}
-          onStart={() => guest
-            ? navigate('/auth')
-            : navigate('/story/new', { state: { scenarioId: selectedScenario.id } })}
+          onStart={async () => {
+            if (guest) { navigate('/auth'); return; }
+            const scenarioId = selectedScenario.id;
+            setSelectedScenario(null);
+            if (await checkRemaining()) navigate('/story/new', { state: { scenarioId } });
+          }}
         />
       )}
       {storyModal && (
@@ -218,6 +287,7 @@ function DashboardPage({ guest = false }) {
           onOpenDraft={(draft) => navigate('/story/new', { state: { draftStoryId: draft.id } })}
         />
       )}
+      {launchNoticeOpen && <LaunchNoticeModal onClose={() => setLaunchNoticeOpen(false)} />}
     </div>
   );
 }
