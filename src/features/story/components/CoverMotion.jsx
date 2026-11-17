@@ -16,6 +16,9 @@ const COVER_EDGE = 0.022;
 // 마우스를 올려 표지가 살짝 열려 있던 채로 누르면, 그 기울기에서 시작해 움직임 앞쪽(PEEK_SETTLE까지)에 곧게 펴져요. (CSS .coverSwing과 같아요)
 const PEEK_DEG = 38;
 const PEEK_SETTLE = 0.1;
+// 덮을 때 뒤표지가 이만큼(접힌 정도) 넘어오면 뒤에 깔린 쪽을 서서히 걷어요.
+const CLOSE_FADE_FROM = 0.6;
+const CLOSE_FADE_TO = 0.92;
 
 const clamp01 = (value) => Math.min(1, Math.max(0, value));
 const easeInOut = (t) => (t < 0.5 ? 4 * t * t * t : 1 - ((-2 * t + 2) ** 3) / 2);
@@ -152,6 +155,8 @@ export default function CoverMotion({ kind, reverse, src, insideSrc, pageWidth, 
       }
       // 앞표지 안쪽 종이는 다 넘어간 뒤 펼친 쪽으로 자연스럽게 바뀌어요.
       flipRef.current.style.opacity = front ? String(1 - grow) : '1';
+      // 덮기: 뒤표지가 거의 내려앉으면 뒤에 깔린 동화 쪽을 걷어요. (표지 모서리·아래로 쪽이 삐져나와 겹쳐 보이지 않게요)
+      slide.style.opacity = front ? '' : String(1 - easeInOut(clamp01((fold - CLOSE_FADE_FROM) / (CLOSE_FADE_TO - CLOSE_FADE_FROM))));
       root.style.visibility = 'visible';
     };
 
@@ -160,6 +165,7 @@ export default function CoverMotion({ kind, reverse, src, insideSrc, pageWidth, 
     return () => {
       unsubscribe();
       slide.style.clipPath = '';
+      slide.style.opacity = '';
       slide.style.translate = '';
       slide.style.scale = '';
       slide.style.transformOrigin = '';

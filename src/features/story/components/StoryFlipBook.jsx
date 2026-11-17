@@ -124,6 +124,11 @@ const StoryFlipBook = forwardRef(function StoryFlipBook({
   const motionKind = coverStep ? (page <= 1 && restingPage <= 1 ? 'open' : 'close') : null;
   // 앞표지 → 1쪽, 뒤표지 → 마지막 쪽은 처음부터 쪽을 깔아 두고, 반대 방향은 움직임이 끝난 뒤에 표지로 바꿔요.
   const turnFirst = coverStep && (restingPage === 0 || restingPage === count + 1);
+  // 표지 움직임이 도는 중인지예요. 그 사이 라이브러리가 보내는 '멈춤' 알림이 머문 쪽을 바꿔 움직임을 끊고 책장을 한 번 더 넘기지 않게 써요.
+  const motionRunningRef = useRef(false);
+  useLayoutEffect(() => {
+    motionRunningRef.current = Boolean(motionKind);
+  }, [motionKind]);
 
   useImperativeHandle(ref, () => ({
     pageFlip: () => bookRef.current?.pageFlip?.(),
@@ -195,7 +200,9 @@ const StoryFlipBook = forwardRef(function StoryFlipBook({
       book.turnToPage(pageIndexFor(page, portrait, covers, count));
       pendingRef.current = null;
       // 넘기지 않고 바로 바꾸면 멈춤 알림(onChangeState)이 오지 않아서, 다음 그림 때 멈춘 쪽을 맞춰요.
-      requestAnimationFrame(() => setRestingPage(pageRef.current));
+      requestAnimationFrame(() => {
+        if (!motionRunningRef.current) setRestingPage(pageRef.current);
+      });
     }
   }, [page, portrait, covers, count, area, motionKind, turnFirst]);
 
@@ -208,6 +215,9 @@ const StoryFlipBook = forwardRef(function StoryFlipBook({
 
   // 표지 움직임이 끝나면 책을 가려던 쪽에 두고 멈춰요.
   const finishCoverMotion = () => {
+    // 같은 움직임의 끝 알림이 두 번 와도 한 번만 처리해요.
+    if (!motionRunningRef.current) return;
+    motionRunningRef.current = false;
     bookRef.current?.pageFlip?.()?.turnToPage(pageIndexFor(page, portrait, covers, count));
     setRestingPage(page);
   };
@@ -223,7 +233,7 @@ const StoryFlipBook = forwardRef(function StoryFlipBook({
   }, []);
 
   const handleChangeState = useCallback((event) => {
-    if (event.data === 'read') setRestingPage(pageRef.current);
+    if (event.data === 'read' && !motionRunningRef.current) setRestingPage(pageRef.current);
   }, []);
 
   const isCoverPage = (value) => covers && (value <= 0 || value > count);
