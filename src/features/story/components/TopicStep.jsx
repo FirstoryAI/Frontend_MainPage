@@ -2,6 +2,7 @@ import MascotBubble from './MascotBubble';
 import radioOff from '../../../assets/icons/radio-off.svg';
 import radioOnRing from '../../../assets/icons/radio-on-ring.svg';
 import radioOnDot from '../../../assets/icons/radio-on-dot.svg';
+import exampleAvatar from '../../../assets/images/chat-avatar.webp';
 import { getCategoryContent } from '../categoryContent';
 import form from './FormControls.module.css';
 import styles from './TopicStep.module.css';
@@ -49,7 +50,23 @@ function TopicStep({ category, topic, onChange }) {
         </span>
         <span className={styles.optionTitle}>아직 잘 모르겠어요</span>
         <span className={styles.optionDescription}>
-          AI와 대화하며 이야기 방향을 함께 찾아요. 언제든 넘어갈 수 있어요.
+          AI가 질문하면서 나눌 수 있는 방향을 2~3개 함께 찾아요.
+        </span>
+
+        {/* '아직 잘 모르겠어요'를 고르면 이어지는 AI 대화가 어떤 모습인지 보여주는 예시예요. */}
+        <span className={styles.example} aria-hidden="true">
+          <span className={styles.exampleNote}>* 예시 화면입니다</span>
+          <span className={styles.exampleAi}>
+            <img className={styles.exampleAvatar} src={exampleAvatar} alt="" width="68" height="68" />
+            <span className={styles.aiBubble}>
+              <span className={styles.line}>{'아이 마음을 먼저 다독여 주고 싶으신지, 다른 친구와도 지낼 수 있다는 걸 '}</span>
+              <span className={styles.line}>알려 주고 싶으신지, 어느 쪽이 더 마음에 걸리세요?</span>
+            </span>
+          </span>
+          <span className={styles.userBubble}>
+            <span className={styles.line}>{'친했던 친구가 요즘 다른 친구하고만 노는 게 속상한 것 같아요. '}</span>
+            <span className={styles.line}>그런데 뭐라고 말해 줘야 할지 모르겠어요.</span>
+          </span>
         </span>
       </label>
     </div>

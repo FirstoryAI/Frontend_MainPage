@@ -2,9 +2,9 @@ import { Link } from 'react-router-dom';
 import closeIcon from '../../assets/mypage/close.svg';
 import styles from './Header.module.css';
 
-function Header({ showCloseButton = false, raiseLogo = false }) {
+function Header({ showCloseButton = false }) {
   return (
-    <header className={`${styles.header} ${raiseLogo ? styles.raiseLogo : ''}`}>
+    <header className={styles.header}>
       <Link className={styles.logo} to="/" aria-label="FIRSTORY 홈">
         FIRSTORY
       </Link>

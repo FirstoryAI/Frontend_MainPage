@@ -93,11 +93,12 @@
   --color-link: #ff635b;
   --color-kakao: #ffe300;
   --color-kakao-text: #381f1e;
-  --header-height: 109px;
+  /* 상단바 높이예요. (이야기 화면 Figma 기준, 모든 상단바가 같아요) */
+  --header-height: 115px;
   --header-height-mobile: 76px;
-  /* 동화 만들기 화면의 상단바예요. 상단바가 줄어도 본문은 제자리에 있도록, 줄어든 만큼(offset)을 본문 위에 비워요. */
-  --story-header-height: 85.5px;
-  --story-header-offset: 29.5px;
+  /* 동화 만들기 화면의 상단바예요. 큰 화면에서는 다른 화면과 같은 115px이고, 본문은 그 아래에서 시작해요. */
+  --story-header-height: 115px;
+  --story-header-offset: 0px;
   /* 동화 만들기 입력 단계(상황·설명·아이 정보·이야기)의 높이예요. 가장 긴 아이 정보 단계에 맞춰서,
      화면에 맞춰 줄일 때 네 단계가 같은 비율로 줄어 글자·캐릭터 크기가 같아요. */
   --story-step-height: 698px;
@@ -112,16 +113,24 @@
   }
 }
 
-@media (min-width: 761px) and (max-height: 850px) {
-  :root {
-    --header-height: 88px;
-  }
-}
-
 /* 낮은 화면에서는 입력 단계의 간격을 줄여요. (네 단계 모두 같은 만큼) */
 @media (max-height: 850px) {
   :root {
     --story-step-height: 598px;
+  }
+}
+
+/* 큰 화면에서는 이야기 단계(Figma 2170:2389)가 가장 길어서 그 높이에 맞춰요.
+   아래 버튼 줄이 맨 아래 34px을 덮어서(StoryCreatePage .inputFooter), 화면 높이는 그대로 쓰고 본문이 그만큼 더 길어요. */
+@media (min-width: 901px) {
+  :root {
+    --story-step-height: 732px;
+  }
+}
+
+@media (min-width: 901px) and (max-height: 850px) {
+  :root {
+    --story-step-height: 632px;
   }
 }
 

@@ -74,6 +74,21 @@
   padding: 16px 74px 75px;
 }
 
+/* 큰 화면에서는 입력 단계 본문이 아래 버튼 줄까지 34px 내려와요. (이야기 단계 Figma)
+   버튼 줄이 그 위를 덮지만, 버튼이 아닌 곳은 눌리지 않게 해요. */
+@media (min-width: 901px) {
+  .fitPage > .inputFooter {
+    position: relative;
+    z-index: 1;
+    margin-top: -34px;
+    pointer-events: none;
+  }
+
+  .inputFooter > * {
+    pointer-events: auto;
+  }
+}
+
 .error {
   margin: 0 auto 0 0;
   color: #a34439;
