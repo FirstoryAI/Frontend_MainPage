@@ -435,9 +435,29 @@
     linear-gradient(0deg, rgb(0 0 0 / 8%), rgb(0 0 0 / 0%) 18%);
 }
 
-/* 표지를 보는 동안 둘레에 보이는 서재 벽(선반 없는 서재 배경)이에요. */
+/* 표지를 보는 동안 둘레에 보이는 서재 벽(선반 없는 서재 배경)이에요.
+   '동화 한 눈에 보기' 화면처럼 흐리게(5px) 하고 회색(8%)을 살짝 덮어서, 표지가 앞으로 나와 보여요.
+   backdrop-filter는 표지가 움직이는 매 프레임 다시 계산돼서, 흐린 벽을 책 뒤에 따로 한 장 깔아요. (한 번 그리면 그대로 써요)
+   흐린 가장자리가 투명해지지 않게 둘레보다 조금 크게 깔아요. */
 .flipHost[data-wall] {
-  background: #2b1e17 url('../../../assets/images/library/shelf-background.webp') center top / cover no-repeat;
+  background: #2b1e17;
+}
+
+.flipHost[data-wall]::before {
+  position: absolute;
+  z-index: 0;
+  inset: -12px;
+  background:
+    linear-gradient(rgb(71 71 71 / 8%), rgb(71 71 71 / 8%)),
+    url('../../../assets/images/library/shelf-background.webp') center top / cover no-repeat;
+  content: '';
+  filter: blur(5px);
+  pointer-events: none;
+}
+
+.flipHost[data-wall] > .flipSlide {
+  position: relative;
+  z-index: 1;
 }
 
 .flipPage {
