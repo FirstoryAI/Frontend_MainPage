@@ -886,7 +886,7 @@ function StoryCreatePage() {
 
   return (
     <div className={`${styles.page} ${fitStageToViewport ? styles.fitPage : ''}`}>
-      <StoryHeader progress={progress} onExit={() => setExitPromptOpen(true)} inert={visibleStep === STEP.COMPLETE || waitingNext} complete={visibleStep === STEP.COMPLETE} />
+      <StoryHeader progress={progress} onExit={() => setExitPromptOpen(true)} inert={visibleStep === STEP.COMPLETE || waitingNext} />
 
       <div
         className={styles.stageGroup}
@@ -983,7 +983,7 @@ function StoryCreatePage() {
 
       {!toneOpen && showFooter && (
         <footer
-          className={`${styles.footer} ${step === STEP.SUMMARY ? styles.summaryFooter : ''}`}
+          className={`${styles.footer} ${step === STEP.SUMMARY ? styles.summaryFooter : ''} ${INPUT_STEPS.includes(step) ? styles.inputFooter : ''}`}
           inert={editing !== null || waitingNext}
         >
           {notice && (

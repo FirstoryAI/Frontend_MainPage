@@ -16,7 +16,7 @@
 }
 
 .storyField {
-  margin-top: 46px;
+  margin-top: 43px;
 }
 
 .storyField > label {
@@ -24,7 +24,7 @@
 }
 
 .textarea {
-  height: 163px;
+  height: 75px;
   transition: opacity 0.15s ease;
 }
 
@@ -35,9 +35,9 @@
 .option {
   position: relative;
   display: block;
-  height: 84px;
-  margin-top: 25px;
-  padding: 15px 20px 0 58px;
+  height: 339px;
+  margin-top: 20px;
+  padding: 16px 20px 0 58.5px;
   background: var(--color-surface);
   border: 1px solid var(--field-border);
   border-radius: 12px;
@@ -62,8 +62,8 @@
 
 .radio {
   position: absolute;
-  top: 17px;
-  left: 21px;
+  top: 18px;
+  left: 21.5px;
   width: 20px;
   height: 20px;
 }
@@ -92,6 +92,94 @@
   color: var(--color-field-placeholder);
   font-size: 17px;
   line-height: 1.5;
+}
+
+/* 예시 화면: 802×215 칸 안에 AI 질문과 보호자 답이 있어요. 좌표는 모두 이 칸 기준이에요. */
+.example {
+  position: absolute;
+  top: 89px;
+  left: 46px;
+  width: 802px;
+  height: 215px;
+  background: #f7f2ed;
+  border-radius: 18px;
+}
+
+/* 아직 고르지 않았을 땐 살짝 흐리게 보여요. */
+.example::after {
+  position: absolute;
+  inset: 0;
+  background: rgb(247 242 237 / 30%);
+  border-radius: inherit;
+  content: '';
+  transition: opacity 0.15s ease;
+}
+
+.checked .example::after {
+  opacity: 0;
+}
+
+.exampleNote {
+  position: absolute;
+  top: 19px;
+  left: 673px;
+  color: #888;
+  font-size: 14px;
+  line-height: 1.5;
+  white-space: nowrap;
+}
+
+.exampleAi {
+  display: contents;
+}
+
+.exampleAvatar {
+  position: absolute;
+  top: 26px;
+  left: 17px;
+  width: 68.145px;
+  height: 68.145px;
+  object-fit: cover;
+  /* 동그란 아바타 모양을 따라 그림자가 생기도록 filter를 써요. */
+  filter: drop-shadow(0 0.831px 3.324px rgb(0 0 0 / 25%));
+}
+
+.aiBubble,
+.userBubble {
+  position: absolute;
+  display: block;
+  color: var(--color-text);
+  font-weight: 400;
+  line-height: 1.5;
+}
+
+.aiBubble {
+  top: 40.13px;
+  left: 95.12px;
+  width: 429.643px;
+  height: 62.327px;
+  padding: 8.31px 0 0 14.96px;
+  background: var(--color-surface);
+  border: 0.831px solid var(--field-border);
+  border-radius: 11.634px;
+  font-size: 14.128px;
+}
+
+.userBubble {
+  top: 129.57px;
+  left: 416.63px;
+  width: 366.127px;
+  height: 61.431px;
+  padding: 9.01px 0 0 13.93px;
+  background: #fff0cc;
+  border: 0.819px solid var(--field-border);
+  border-radius: 11.467px;
+  font-size: 13.924px;
+}
+
+.line {
+  display: block;
+  white-space: nowrap;
 }
 
 /* 테두리를 두껍게 보이게 하되 레이아웃은 밀리지 않도록 안쪽 그림자로 한 줄을 더해요. */
@@ -128,6 +216,60 @@
     min-height: 84px;
     padding-bottom: 15px;
   }
+
+  .example {
+    position: relative;
+    display: flex;
+    flex-direction: column;
+    gap: 10px;
+    width: auto;
+    height: auto;
+    margin-top: 14px;
+    padding: 14px;
+  }
+
+  .exampleNote,
+  .exampleAvatar,
+  .aiBubble,
+  .userBubble {
+    position: static;
+  }
+
+  .exampleNote {
+    align-self: flex-end;
+  }
+
+  .exampleAi {
+    display: flex;
+    gap: 10px;
+    align-items: flex-start;
+  }
+
+  .exampleAvatar {
+    flex: none;
+  }
+
+  .aiBubble,
+  .userBubble {
+    width: auto;
+    height: auto;
+    padding: 9px 14px;
+  }
+
+  .aiBubble {
+    flex: 1 1 auto;
+    min-width: 0;
+  }
+
+  .userBubble {
+    align-self: flex-end;
+    max-width: 88%;
+  }
+
+  .line {
+    display: inline;
+    white-space: normal;
+  }
 }
 
 @media (max-height: 850px) {
@@ -141,6 +283,32 @@
 
   .option {
     margin-top: 16px;
+  }
+}
+
+@media (min-width: 901px) and (max-height: 850px) {
+  .option {
+    height: 294px;
+  }
+
+  .example {
+    height: 170px;
+  }
+
+  .exampleNote {
+    top: 10px;
+  }
+
+  .exampleAvatar {
+    top: 18px;
+  }
+
+  .aiBubble {
+    top: 30px;
+  }
+
+  .userBubble {
+    top: 94px;
   }
 }
 
@@ -182,6 +350,10 @@
   .radio {
     top: 13px;
     left: 17px;
+  }
+
+  .example {
+    display: none;
   }
 
   .optionTitle {

@@ -804,7 +804,7 @@
   .reader:not(.previewReader) .readerArrow { top: calc(50% - 2.137cqw); }
 
   /* 아이와 읽기 상단바는 기본 상단바의 0.7배 크기예요. 양쪽 여백 위치는 그대로 두고, X와 제목 사이 간격도 0.7배로 줄여요. */
-  .reader:not(.previewReader) .readerHeader { height: calc(var(--header-height) * 0.7); }
+  .reader:not(.previewReader) .readerHeader { height: calc(109px * 0.7); }
   .reader:not(.previewReader) .readerClose,
   .reader:not(.previewReader) .readerClose img { width: 18.9px; height: 18.9px; }
   .reader:not(.previewReader) .readerTitle {

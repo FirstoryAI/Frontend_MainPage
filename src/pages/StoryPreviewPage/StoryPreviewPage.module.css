@@ -26,12 +26,11 @@
   .desktopHeader { display: block; }
   .desktopHeader .header {
     display: flex;
-    align-items: center;
+    align-items: flex-start;
     height: var(--header-height);
-    padding: 0 46px;
+    padding: 29px 46px 0;
   }
-  .desktopHeader .logo { transform: translateY(-6px); }
-  .desktopHeader .close { top: 50%; transform: translateY(-50%); }
+  .desktopHeader .logo { transform: none; }
   .canvasHeader { display: none; }
 }
 
@@ -66,11 +65,6 @@
   background: transparent;
   border: 0;
   cursor: pointer;
-}
-
-@media (min-width: 761px) and (max-height: 850px) {
-  .desktopHeader .header { padding: 0 36px; }
-  .desktopHeader .logo { font-size: 34px; }
 }
 
 .heading {
