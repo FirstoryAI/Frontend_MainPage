@@ -47,7 +47,12 @@
 .kindergartenCharacter img { top: -114.23%; left: -84.96%; width: 271.86%; height: 214.23%; }
 .tantrumCharacter { top: calc(105.6 * var(--u)); left: calc(22.56 * var(--u)); width: calc(186.39 * var(--u)); height: calc(190.9 * var(--u)); }
 .tantrumCharacter img { top: -139.9%; left: -113.44%; width: 412.9%; height: 268.77%; }
-.fallbackCharacter { position: absolute; z-index: 2; bottom: calc(-3 * var(--u)); left: 50%; width: calc(195 * var(--u)); height: calc(155 * var(--u)); object-fit: contain; object-position: center bottom; transform: translateX(-50%); }
+.fallbackCharacter { position: absolute; z-index: 2; top: calc(var(--character-top) * var(--u)); left: calc(var(--character-left) * var(--u)); width: calc(var(--character-width) * var(--u)); height: calc(var(--character-height) * var(--u)); max-width: none; pointer-events: none; }
+.friendLeftOut { --character-top: 104.6; --character-left: -10.25; --character-width: 251.2; --character-height: 182.5; }
+.familyApart { --character-top: 111.8; --character-left: 39.2; --character-width: 151.7; --character-height: 200.9; }
+.kindergartenScared { --character-top: 121; --character-left: 34.3; --character-width: 164; --character-height: 188.7; }
+.clothesTeeth { --character-top: 97.4; --character-left: 13.1; --character-width: 205; --character-height: 212.2; }
+.grandmaPassed { --character-top: 121; --character-left: 23.6; --character-width: 197.9; --character-height: 183.5; }
 @media (min-width: 1400px) and (min-aspect-ratio: 8/5) {
   .filters { column-gap: 18px; }
   .filter { min-height: 38px; padding: 0 18px; border-radius: 19px; font-size: 15px; }
