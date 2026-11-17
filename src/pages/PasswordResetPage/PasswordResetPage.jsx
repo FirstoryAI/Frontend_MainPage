@@ -5,6 +5,7 @@ import EmailVerification from '../../features/auth/components/EmailVerification'
 import { resetPassword } from '../../services/authApi';
 import { EMAIL_PATTERN, PASSWORD_PATTERN } from '../EmailSignUpPage/EmailSignUpPage';
 import styles from '../EmailSignUpPage/EmailSignUpPage.module.css';
+import resetStyles from './PasswordResetPage.module.css';
 
 function PasswordResetPage() {
   const navigate = useNavigate();
@@ -27,19 +28,23 @@ function PasswordResetPage() {
   };
 
   return <div className={styles.page}><Header /><main className={styles.main}>
-    <section className={styles.card} aria-labelledby="reset-title">
-      <Link className={styles.backLink} to="/auth/email/login">← 로그인으로</Link>
+    <section className={`${styles.card} ${resetStyles.card}`} aria-labelledby="reset-title">
+      <Link className={styles.backLink} to="/auth/email/login">← 로그인</Link>
       <h1 id="reset-title" className={styles.title}>비밀번호 찾기</h1>
       <form className={styles.form} onSubmit={submit}>
         <label className={styles.label} htmlFor="reset-email">이메일</label>
         <EmailVerification inputId="reset-email" email={email} purpose="PASSWORD_RESET"
+          fieldClassName={resetStyles.emailField}
           onEmailChange={(value) => { setEmail(value); setVerifiedEmail(''); }}
           verified={Boolean(verifiedEmail) && verifiedEmail === email.trim()} onVerified={setVerifiedEmail} />
-        <label className={`${styles.label} ${styles.passwordLabel}`} htmlFor="new-password">새 비밀번호</label>
+        <label className={`${styles.label} ${styles.passwordLabel} ${resetStyles.passwordLabel}`} htmlFor="new-password">새 비밀번호</label>
         <input className={styles.input} id="new-password" type="password" autoComplete="new-password"
+          placeholder="8~20자/ 영문·숫자·특수기호 포함"
           value={password} onChange={(event) => setPassword(event.target.value)} maxLength={20} />
         {error && <p className={styles.error} role="alert">{error}</p>}
-        <button className={styles.submitButton} type="submit" disabled={busy}>{busy ? '설정 중…' : '비밀번호 설정'}</button>
+        <button className={`${styles.submitButton} ${resetStyles.submitButton}`} type="submit" disabled={busy}>
+          {busy ? '재설정 중…' : '비밀번호 재설정'}
+        </button>
       </form>
     </section>
   </main></div>;

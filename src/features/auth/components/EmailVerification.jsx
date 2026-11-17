@@ -13,7 +13,8 @@ const formatTimer = (seconds) => `${Math.floor(seconds / 60)} : ${String(seconds
 
 // 이메일 입력 칸과 인증번호 받기·확인을 묶은 부분이에요.
 // 이메일을 바꾸면 처음 상태로 돌아가고, 인증번호를 보내면 아래에 입력 칸과 남은 시간이 나와요.
-export default function EmailVerification({ inputId, email, onEmailChange, purpose, verified, onVerified }) {
+// fieldClassName: 이메일 입력 칸 틀에 더할 클래스예요. (화면마다 칸 폭·버튼 자리를 맞출 때 써요)
+export default function EmailVerification({ inputId, email, onEmailChange, purpose, verified, onVerified, fieldClassName = '' }) {
   const trimmedEmail = email.trim();
   const [sentTo, setSentTo] = useState('');
   const [code, setCode] = useState('');
@@ -101,7 +102,7 @@ export default function EmailVerification({ inputId, email, onEmailChange, purpo
 
   return (
     <>
-      <div className={styles.emailField}>
+      <div className={`${styles.emailField} ${fieldClassName}`}>
         <input
           className={`${styles.input} ${styles.emailInput}`}
           id={inputId}

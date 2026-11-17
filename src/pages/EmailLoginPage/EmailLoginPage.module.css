@@ -179,17 +179,29 @@
   opacity: 0.7;
 }
 
+/* 로그인 버튼 아래 가운데 '비밀번호 찾기' 링크예요. */
 .findLink {
   position: absolute;
   top: 565px;
-  right: 0;
-  left: 0;
+  left: 50%;
   margin: 0;
   color: var(--color-secondary);
   font-size: 14px;
   font-weight: 500;
   line-height: 1.5;
-  text-align: center;
+  text-decoration: none;
+  white-space: nowrap;
+  transform: translateX(-50%);
+}
+
+.findLink:hover {
+  text-decoration: underline;
+}
+
+.findLink:focus-visible {
+  border-radius: 4px;
+  outline: 2px solid rgb(255 138 91 / 55%);
+  outline-offset: 2px;
 }
 
 @media (min-width: 761px) and (max-height: 850px) {
