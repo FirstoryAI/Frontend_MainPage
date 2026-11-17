@@ -141,6 +141,23 @@ function coverSvg(title, hue) {
 
 const coverUrl = (story, version) => `/api/stories/${story.id}/versions/${version.id}/character-sheet`;
 
+// 책 맨 앞·맨 뒤에 붙는 앞표지(제목)·뒤표지(빈 바탕에 주인공 작게)예요. 서버처럼 쪽 그림과 같은 가로 그림이에요.
+// 앞표지는 정사각형 표지를 가로로 넓힌 그림이라, 제목·주인공을 가운데에 모아 둬요.
+function bookCoverSvg(title, hue, side) {
+  const body = side === 'front'
+    ? `<circle cx="512" cy="360" r="110" fill="hsl(${hue} 60% 55%)" opacity=".8"/>
+<text x="512" y="170" font-size="34" font-family="sans-serif" font-weight="700" text-anchor="middle" fill="#575757">${title}</text>`
+    : `<circle cx="512" cy="330" r="46" fill="hsl(${hue} 60% 55%)" opacity=".75"/>`;
+  return `<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 1024 580" width="1920" height="1088">
+<defs><linearGradient id="g" x1="0" y1="0" x2="1" y2="1">
+<stop offset="0" stop-color="hsl(${hue} 70% ${side === 'front' ? 82 : 90}%)"/><stop offset="1" stop-color="hsl(${(hue + 50) % 360} 65% ${side === 'front' ? 68 : 82}%)"/></linearGradient></defs>
+<rect width="1024" height="580" fill="url(#g)"/>
+${body}
+</svg>`;
+}
+
+const bookCoverUrl = (story, version, side) => `/api/stories/${story.id}/versions/${version.id}/${side}-cover`;
+
 function makeVersion(story, { scope = 'ALL', parent = null, selectedPages = [] } = {}) {
   const versionNo = story.versions.length + 1;
   const versionId = id();
@@ -798,7 +815,8 @@ export function startMockApi({ port = Number(process.env.MOCK_API_PORT) || 8787,
 
     // --- 동화 ---
     params = match('/api/stories/{id}') ?? match('/api/stories/{id}/{section}') ?? match('/api/stories/{id}/{section}/{sub}')
-      ?? match('/api/stories/{id}/versions/{versionId}/pages/{pageNo}/image') ?? match('/api/stories/{id}/versions/{versionId}/character-sheet');
+      ?? match('/api/stories/{id}/versions/{versionId}/pages/{pageNo}/image') ?? match('/api/stories/{id}/versions/{versionId}/character-sheet')
+      ?? match('/api/stories/{id}/versions/{versionId}/front-cover') ?? match('/api/stories/{id}/versions/{versionId}/back-cover');
     if (!params) return error(res, 404, 'NOT_FOUND', '없는 주소예요.');
 
     const story = user.stories.get(Number(params.id));
@@ -808,13 +826,14 @@ export function startMockApi({ port = Number(process.env.MOCK_API_PORT) || 8787,
     const sub = params.sub;
     const conflict = (message = '지금은 할 수 없는 단계예요.') => error(res, 409, 'INVALID_STATUS_TRANSITION', message);
 
-    if (path.endsWith('/image') || path.endsWith('/character-sheet')) {
+    if (path.endsWith('/image') || path.endsWith('/character-sheet') || path.endsWith('-cover')) {
       const version = story.versions.find((candidate) => candidate.id === Number(params.versionId));
       if (!version) return error(res, 404, 'IMAGE_NOT_FOUND', '그림을 찾을 수 없어요.');
       // MOCK_IMAGE_DELAY_MS로 그림이 느리게 오는 상황을 흉내 낼 수 있어요. (서버처럼 캐시하지 않는다고 응답해요)
       const send = () => {
         res.writeHead(200, { 'Content-Type': 'image/svg+xml', 'Cache-Control': 'no-store' });
-        res.end(path.endsWith('/image') ? pageSvg(version.title, Number(params.pageNo), version.hue) : coverSvg(version.title, version.hue));
+        if (path.endsWith('-cover')) res.end(bookCoverSvg(version.title, version.hue, path.endsWith('/front-cover') ? 'front' : 'back'));
+        else res.end(path.endsWith('/image') ? pageSvg(version.title, Number(params.pageNo), version.hue) : coverSvg(version.title, version.hue));
       };
       const delay = Number(process.env.MOCK_IMAGE_DELAY_MS) || 0;
       if (delay > 0) setTimeout(send, delay);
@@ -1081,6 +1100,9 @@ export function startMockApi({ port = Number(process.env.MOCK_API_PORT) || 8787,
       return json(res, 200, {
         storyId: story.id, versionId: version.id, title: version.title,
         coverUrl: coverUrl(story, version), pageCount: version.pages.length,
+        // 앞·뒤표지가 없는 옛 동화처럼 보려면 MOCK_NO_BOOK_COVERS=1로 띄워요.
+        frontCoverUrl: process.env.MOCK_NO_BOOK_COVERS ? null : bookCoverUrl(story, version, 'front'),
+        backCoverUrl: process.env.MOCK_NO_BOOK_COVERS ? null : bookCoverUrl(story, version, 'back'),
         pages: pageView(story, version), prompts: guide(story).prompts,
       });
     }

@@ -158,6 +158,29 @@
   margin: 0 auto;
 }
 
+/* 표지를 화면 가운데에 두려고 책을 옆으로 옮기는 틀이에요. 책장이 넘어가는 시간에 맞춰 함께 움직여요. (StoryFlipBook) */
+.flipSlide {
+  width: 100%;
+  height: 100%;
+  transition: transform 720ms ease-in-out;
+}
+
+/* 앞표지·뒤표지 한 면이에요. 쪽 그림과 같은 가로 그림이라 가운데를 맞춰 채워요. */
+.coverPage {
+  background: #fffcef;
+}
+
+.coverImage {
+  display: block;
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+  object-position: center;
+  pointer-events: none;
+  user-select: none;
+  -webkit-user-drag: none;
+}
+
 .flipPage {
   position: relative;
   width: 100%;
@@ -485,6 +508,7 @@
 .previewReader .readerArrow { display: none; }
 
 @media (prefers-reduced-motion: reduce) {
+  .flipSlide { transition: none; }
   .previewGuide, .previewGuideOpen, .previewHint, .previewHintOpen { transition: none; }
   .previewGuideToggleAttention::before, .previewGuideToggleAttention::after { animation: none; }
   /* 움직이지 않고 서서히 나타나고 사라져요. */
