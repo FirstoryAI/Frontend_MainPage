@@ -51,6 +51,7 @@ import {
   startInterview,
 } from '../../services/storiesApi';
 import { getChildOptions, getChildren } from '../../services/childrenApi';
+import { getFreeStoryRemaining } from '../../features/home/storyQuota';
 import iconNotice from '../../assets/icons/icon-notice.svg';
 import styles from './StoryCreatePage.module.css';
 
@@ -675,6 +676,15 @@ function StoryCreatePage() {
 
   const handleStartGeneration = async () => {
     if (busy) return;
+
+    try {
+      if (await getFreeStoryRemaining() === 0) {
+        navigate('/home', { state: { launchNotice: true } });
+        return;
+      }
+    } catch {
+      // 확인이 불가능하면 생성 API의 판단을 따릅니다.
+    }
 
     // 입력 단계에서 서버가 막은 내용 그대로라면, 여기서 안내 화면을 보여줘요.
     if (isHiddenBlocked() && !needsRecreate) {

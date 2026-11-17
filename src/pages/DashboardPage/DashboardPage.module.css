@@ -12,9 +12,14 @@
 .avatarButton:focus-visible { outline: 3px solid var(--home-accent); outline-offset: 4px; }
 .content { position: relative; padding: 231px 0 72px 221px; }
 .greeting { min-height: 148px; }
+.greetingCopy { position: relative; }
 .greetingText { margin: 0; color: var(--home-text); font: 400 38px/1.3 var(--font-title); letter-spacing: -1.14px; }
-.createStory { display: flex; align-items: center; justify-content: center; gap: 10px; width: 213px; height: 54.5px; margin-top: 29px; padding: 0; border: 0; border-radius: 15.5px; background: var(--home-accent); box-shadow: inset 0 0 3.7px .8px rgb(255 255 255 / 46%); color: white; font: 600 17px var(--font-body); letter-spacing: -.51px; cursor: pointer; }
+.createAction { position: relative; width: 213px; margin-top: 29px; }
+.createStory { display: flex; align-items: center; justify-content: center; gap: 10px; width: 213px; height: 54.5px; padding: 0; border: 0; border-radius: 15.5px; background: var(--home-accent); box-shadow: inset 0 0 3.7px .8px rgb(255 255 255 / 46%); color: white; font: 600 17px var(--font-body); letter-spacing: -.51px; cursor: pointer; }
 .createStory img { width: 15px; height: 15px; }
+.remainingBubble { position: absolute; top: calc(100% + 3px); left: -5.5px; width: 351px; height: 61.127px; color: #7a7a7a; pointer-events: none; }
+.remainingBubble img { position: absolute; inset: 0; display: block; width: 351px; height: 61.127px; max-width: none; }
+.remainingBubble span { position: absolute; top: 21.5px; left: 50%; transform: translateX(-50%); width: 100%; font: 400 15px/27px var(--font-body); text-align: center; white-space: nowrap; }
 .createStory:focus-visible, .viewAll:focus-visible { outline: 3px solid var(--home-text); outline-offset: 4px; }
 .recommendations { position: relative; margin-top: 137px; }
 .sectionHeading { position: relative; }
@@ -95,7 +100,9 @@
   .dayBackground { top: 77px; right: -420px; width: 830px; opacity: .42; }
   .greeting { min-height: 225px; }
   .greetingText { max-width: 355px; font-size: 29px; }
-  .createStory { width: 190px; height: 50px; }
+  .createAction, .createStory { width: 190px; }
+  .createStory { height: 50px; }
+  .remainingBubble { transform: scale(.86); transform-origin: top left; }
   .sectionHeading h2 { align-items: flex-start; font-size: 20px; }
   .sectionHeading p { padding-right: 20px; font-size: 14px; line-height: 22px; }
   .viewAll { top: 93px; }

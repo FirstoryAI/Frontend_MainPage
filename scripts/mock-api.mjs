@@ -352,6 +352,14 @@ function counts(user) {
   };
 }
 
+function freeStoryRemaining(user) {
+  if (user.freeStoryUsed === undefined) {
+    user.freeStoryUsed = [...user.stories.values()].filter((story) =>
+      ['REQUESTED', 'GENERATING_TEXT', 'GENERATING_IMAGES', 'REVIEWING', 'COMPLETED', 'FAILED'].includes(story.status)).length;
+  }
+  return Math.max(0, 2 - user.freeStoryUsed);
+}
+
 function safetyCheck(...texts) {
   const text = texts.filter(Boolean).join(' ');
   if (text.includes('자해')) {
@@ -590,6 +598,7 @@ export function startMockApi({ port = Number(process.env.MOCK_API_PORT) || 8787,
       email: account.email,
       onboardingSeen: account.onboardingSeen,
       emailNotify: account.emailNotify,
+      freeStoryRemaining: freeStoryRemaining(account),
       kakaoLinked: Boolean(account.kakaoLinked),
       hasPassword: Boolean(account.password),
       feedbackSubmitted: account.feedbackSubmitted ?? { preview: false, reading: false },
@@ -757,6 +766,7 @@ export function startMockApi({ port = Number(process.env.MOCK_API_PORT) || 8787,
         inProgress: stories.filter((story) => inGroup(story, 'CREATING') || inGroup(story, 'REVIEWING') || inGroup(story, 'FAILED')).slice(0, 3).map(card),
         recent: stories.filter((story) => story.status === 'COMPLETED').slice(0, 3).map(card),
         counts: counts(user),
+        freeStoryRemaining: freeStoryRemaining(user),
       });
     }
     if (method === 'GET' && path === '/api/stories') {
@@ -1007,6 +1017,7 @@ export function startMockApi({ port = Number(process.env.MOCK_API_PORT) || 8787,
     }
     if (method === 'POST' && section === 'confirm') {
       if (story.status !== 'CONFIRMING') return conflict();
+      if (freeStoryRemaining(user) === 0) return error(res, 409, 'FREE_STORY_LIMIT_REACHED', '무료 동화 생성 횟수를 모두 소진했어요.');
       if (story.toneRequired && !story.tone) return error(res, 400, 'TONE_REQUIRED', '이야기 분위기를 골라 주세요.');
       if (story.situation?.description?.includes('유사테스트') && !story.similarOnce) {
         story.similarOnce = true;
@@ -1017,6 +1028,7 @@ export function startMockApi({ port = Number(process.env.MOCK_API_PORT) || 8787,
         return error(res, 409, 'STORY_BLOCKED', '이 내용으로는 동화를 만들 수 없어요.');
       }
       startGeneration(story);
+      user.freeStoryUsed += 1;
       return json(res, 202, generationResponse(story));
     }
     if (method === 'GET' && section === 'generation') return json(res, 200, generationResponse(story));

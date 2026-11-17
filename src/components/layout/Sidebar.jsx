@@ -13,7 +13,7 @@ import styles from './Sidebar.module.css';
 import dayRail from '../../assets/images/home/day-design/sidebar-rail.svg';
 import libraryRail from '../../assets/images/library/sidebar-rail-library.svg';
 
-function Sidebar({ guest = false, compact = false, showLogo = true }) {
+function Sidebar({ guest = false, compact = false, showLogo = true, onCreate }) {
   const navigate = useNavigate();
   const location = useLocation();
   const [isLoggingOut, setIsLoggingOut] = useState(false);
@@ -43,7 +43,7 @@ function Sidebar({ guest = false, compact = false, showLogo = true }) {
           {/* 지금 화면(홈·서재)의 아이콘이 주황색인 막대 그림이에요. */}
           <img src={libraryActive ? libraryRail : dayRail} alt="" aria-hidden="true" />
           <button className={`${styles.railAction} ${styles.railCreate}`} type="button" aria-label="동화 만들기"
-            onClick={() => guest ? navigate('/auth') : navigate('/home', { state: { chooseStory: true } })} />
+            onClick={() => guest ? navigate('/auth') : onCreate ? onCreate() : navigate('/home', { state: { chooseStory: true } })} />
           <Link className={`${styles.railAction} ${styles.railHome}`} to={guest ? '/' : '/home'} viewTransition aria-label="홈" aria-current={libraryActive ? undefined : 'page'}><img src={libraryActive ? iconHomeMuted : iconHome} alt="" /><span>홈</span></Link>
           <Link className={`${styles.railAction} ${styles.railLibrary}`} to="/library" viewTransition aria-label="서재" aria-current={libraryActive ? 'page' : undefined}><img src={libraryActive ? iconLibraryActive : iconLibrary} alt="" /><span>서재</span></Link>
           {guest ? (
@@ -67,7 +67,7 @@ function Sidebar({ guest = false, compact = false, showLogo = true }) {
       <CtaButton
         className={styles.createButton}
         icon={iconPlus}
-        onClick={() => guest ? navigate('/auth') : navigate('/home', { state: { chooseStory: true } })}
+        onClick={() => guest ? navigate('/auth') : onCreate ? onCreate() : navigate('/home', { state: { chooseStory: true } })}
       >
         동화 만들기
       </CtaButton>
