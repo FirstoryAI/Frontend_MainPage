@@ -1,4 +1,4 @@
-import { useEffect, useRef, useState } from 'react';
+import { useCallback, useEffect, useRef, useState } from 'react';
 import { useLocation, useNavigate } from 'react-router-dom';
 import closeIcon from '../../../assets/icons/scenario-modal-close.svg';
 import dialogueFriend from '../../../assets/icons/scenario-dialogue-friend.svg';
@@ -20,9 +20,11 @@ const PLACEHOLDER_SAMPLE_STORY = { title: '토리와 빨간 블록', coverUrl: s
 function HomeScenarioModal({ scenario, onClose, onStart }) {
   const dialogRef = useRef(null);
   const coverButtonRef = useRef(null);
+  const closeTimerRef = useRef(null);
   const location = useLocation();
   const navigate = useNavigate();
   const [samplePage, setSamplePage] = useState(null);
+  const [closing, setClosing] = useState(false);
   // 예시 동화는 브라우저 기록에 한 칸을 더해서 열어요. 그래서 브라우저 뒤로가기를 누르면 페이지를 떠나지 않고
   // 예시 동화만 닫혀요. (이 팝업과 읽던 쪽은 그대로 남고, 앞으로가기를 누르면 읽던 쪽이 다시 열려요)
   const readerOpen = samplePage !== null && location.state?.sampleReader === scenario.id;
@@ -38,6 +40,18 @@ function HomeScenarioModal({ scenario, onClose, onStart }) {
     tantrum: dialogueTantrum,
   };
 
+  const requestClose = useCallback(() => {
+    if (closing) return;
+    if (window.matchMedia('(prefers-reduced-motion: reduce)').matches) {
+      onClose();
+      return;
+    }
+    setClosing(true);
+    closeTimerRef.current = window.setTimeout(onClose, 150);
+  }, [closing, onClose]);
+
+  useEffect(() => () => window.clearTimeout(closeTimerRef.current), []);
+
   useEffect(() => {
     const previousOverflow = document.body.style.overflow;
     document.body.style.overflow = 'hidden';
@@ -50,12 +64,12 @@ function HomeScenarioModal({ scenario, onClose, onStart }) {
 
   useEffect(() => {
     const handleKeyDown = (event) => {
-      if (event.key === 'Escape' && !readerOpen) onClose();
+      if (event.key === 'Escape' && !readerOpen) requestClose();
     };
 
     window.addEventListener('keydown', handleKeyDown);
     return () => window.removeEventListener('keydown', handleKeyDown);
-  }, [onClose, readerOpen]);
+  }, [readerOpen, requestClose]);
 
   const openReader = () => {
     setSamplePage(1);
@@ -70,9 +84,9 @@ function HomeScenarioModal({ scenario, onClose, onStart }) {
 
   return (
     <div
-      className={styles.backdrop}
+      className={`${styles.backdrop} ${closing ? styles.closing : ''}`}
       onMouseDown={(event) => {
-        if (event.target === event.currentTarget) onClose();
+        if (event.target === event.currentTarget) requestClose();
       }}
     >
       <section
@@ -89,7 +103,7 @@ function HomeScenarioModal({ scenario, onClose, onStart }) {
         <button
           className={styles.closeButton}
           type="button"
-          onClick={onClose}
+          onClick={requestClose}
           aria-label="팝업 닫기"
         >
           <img src={closeIcon} alt="" />

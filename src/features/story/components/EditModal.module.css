@@ -8,12 +8,25 @@
   justify-content: center;
   padding: 16px;
   overflow: hidden;
+}
+
+.overlay::before {
+  position: absolute;
+  inset: 0;
   background: rgb(0 0 0 / 44%);
-  backdrop-filter: blur(3.6px);
+  content: '';
+  pointer-events: none;
+  animation: edit-backdrop-enter 180ms ease-out both;
+}
+
+@keyframes edit-backdrop-enter {
+  from { opacity: 0; }
+  to { opacity: 1; }
 }
 
 .modal {
   position: relative;
+  z-index: 1;
   display: flex;
   flex: none;
   flex-direction: column;
@@ -25,6 +38,12 @@
   box-shadow: 0 0 12.3px rgb(0 0 0 / 10%);
   transform: scale(var(--modal-scale, 1));
   transform-origin: center;
+  animation: edit-modal-enter 220ms cubic-bezier(.22, 1, .36, 1) both;
+}
+
+@keyframes edit-modal-enter {
+  from { opacity: .85; translate: 0 8px; }
+  to { opacity: 1; translate: 0 0; }
 }
 
 /* 내용이 적은 모달은 694px로 늘리지 않아요. */
@@ -92,4 +111,8 @@
     font-size: 24px;
     line-height: 36px;
   }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .overlay::before, .modal { animation: none; }
 }

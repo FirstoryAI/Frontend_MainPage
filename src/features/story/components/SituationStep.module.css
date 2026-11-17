@@ -35,7 +35,14 @@
   border: 2.55px solid var(--color-card-border);
   border-radius: 20.4px;
   cursor: pointer;
+  transition: border-color 200ms ease, box-shadow 200ms ease, transform 200ms ease;
 }
+
+@media (hover: hover) {
+  .card:hover:not(.selected) { transform: translateY(-3px); }
+}
+
+.card:active { transform: scale(.985); }
 
 .card:has(:focus-visible) {
   outline: 3px solid rgb(255 138 91 / 55%);
@@ -93,6 +100,7 @@
 .selected {
   border-color: var(--color-brand-light);
   box-shadow: 0 0 6.949px rgb(0 0 0 / 10%);
+  transform: translateY(-3px);
 }
 
 .selected .title {
@@ -174,4 +182,9 @@
   .cards {
     margin-top: 12px;
   }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .card { transition: none; }
+  .card:hover:not(.selected), .card:active, .selected { transform: none; }
 }

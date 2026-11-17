@@ -2,6 +2,7 @@ import { useEffect, useRef, useState } from 'react';
 import { createPortal } from 'react-dom';
 import closeIcon from '../../../assets/notification/close.svg';
 import styles from './TermsModal.module.css';
+import motionStyles from './ProfileModalMotion.module.css';
 
 function TermsModal({ onClose }) {
   const closeButton = useRef(null);
@@ -35,13 +36,13 @@ function TermsModal({ onClose }) {
 
   return (
     createPortal(<div
-      className={styles.backdrop}
+      className={`${styles.backdrop} ${motionStyles.backdrop}`}
       onMouseDown={(event) => {
         if (event.target === event.currentTarget) onClose();
       }}
     >
       <section
-        className={styles.dialog}
+        className={`${styles.dialog} ${motionStyles.dialog}`}
         style={{ '--dialog-scale': dialogScale }}
         role="dialog"
         aria-modal="true"

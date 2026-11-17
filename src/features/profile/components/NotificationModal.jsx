@@ -5,6 +5,7 @@ import { loadNotificationSettings, saveNotificationSettings } from '../notificat
 import { getCurrentMember } from '../../../services/homeApi';
 import { setEmailNotify } from '../../../services/meApi';
 import styles from './NotificationModal.module.css';
+import motionStyles from './ProfileModalMotion.module.css';
 
 const settings = [
   { id: 'email', label: '이메일 알림' },
@@ -61,13 +62,13 @@ function NotificationModal({ onClose }) {
 
   return (
     createPortal(<div
-      className={styles.backdrop}
+      className={`${styles.backdrop} ${motionStyles.backdrop}`}
       onMouseDown={(event) => {
         if (event.target === event.currentTarget) onClose();
       }}
     >
       <section
-        className={styles.dialog}
+        className={`${styles.dialog} ${motionStyles.dialog}`}
         role="dialog"
         aria-modal="true"
         aria-labelledby="notification-title"

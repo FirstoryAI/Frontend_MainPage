@@ -5,18 +5,37 @@
   display: grid;
   place-items: center;
   padding: 20px;
+}
+
+.overlay::before {
+  position: absolute;
+  inset: 0;
   background: rgb(0 0 0 / 44%);
-  backdrop-filter: blur(3.6px);
+  content: '';
+  pointer-events: none;
+  animation: story-draft-backdrop-enter 180ms ease-out both;
+}
+
+@keyframes story-draft-backdrop-enter {
+  from { opacity: 0; }
+  to { opacity: 1; }
 }
 
 .dialog {
   position: relative;
+  z-index: 1;
   width: min(552px, 100%);
   padding: 102px 32px 53px;
   border-radius: 30px;
   background: var(--color-surface);
   box-shadow: 0 0 8px rgb(0 0 0 / 10%);
   text-align: center;
+  animation: story-draft-dialog-enter 220ms cubic-bezier(.22, 1, .36, 1) both;
+}
+
+@keyframes story-draft-dialog-enter {
+  from { opacity: .85; translate: 0 8px; }
+  to { opacity: 1; translate: 0 0; }
 }
 
 .exitDialog {
@@ -139,7 +158,11 @@
   border-radius: 16px;
   text-align: left;
   cursor: pointer;
+  transition: border-color 180ms ease, background-color 180ms ease, transform 180ms ease;
 }
+
+.choice:active,
+.draftItem:active { transform: scale(.99); }
 
 .choice:hover,
 .draftItem:hover {
@@ -243,4 +266,10 @@
   .listDialog {
     padding-top: 60px;
   }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .overlay::before, .dialog { animation: none; }
+  .choice, .draftItem { transition: none; }
+  .choice:active, .draftItem:active { transform: none; }
 }

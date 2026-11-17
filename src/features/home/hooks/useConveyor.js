@@ -72,11 +72,12 @@ export function useConveyor({ setSize, paused = false, onCardClick }) {
       last = now;
       if (!reduced.matches && !dragging.current && !externalPause.current && !document.hidden && !isHeld()) {
         offset.current += (SPEED * elapsed) / 1000;
+        render();
       }
-      render();
       frame = requestAnimationFrame(tick);
     };
 
+    render();
     frame = requestAnimationFrame(tick);
     return () => cancelAnimationFrame(frame);
   }, [render]);

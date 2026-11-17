@@ -1,5 +1,6 @@
 import { useEffect, useMemo, useState } from 'react';
 import { Link, useLocation, useNavigate, useParams } from 'react-router-dom';
+import { transitionScene } from '../../app/transitionScene';
 import pageArrowInactive from '../../assets/story-preview-guide/page-left.svg';
 import pageArrowActive from '../../assets/story-preview-guide/page-right.svg';
 import headerClose from '../../assets/remake/header-close.svg';
@@ -272,11 +273,11 @@ function StoryPreviewPage({ initialRemakeOpen = false }) {
             role="button"
             tabIndex={0}
             aria-label={`${currentPage}쪽 동화 크게 보기`}
-            onClick={() => setIsReaderOpen(true)}
+            onClick={() => transitionScene(() => setIsReaderOpen(true))}
             onKeyDown={(event) => {
               if (event.key === 'Enter' || event.key === ' ') {
                 event.preventDefault();
-                setIsReaderOpen(true);
+                transitionScene(() => setIsReaderOpen(true));
               }
             }}
           >
@@ -389,7 +390,7 @@ function StoryPreviewPage({ initialRemakeOpen = false }) {
           pages={bookPages}
           page={currentPage}
           onPage={showPage}
-          onClose={() => setIsReaderOpen(false)}
+          onClose={() => transitionScene(() => setIsReaderOpen(false))}
           closeLabel="미리보기로 돌아가기"
           guide={guide}
           previewMode

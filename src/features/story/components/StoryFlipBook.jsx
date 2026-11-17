@@ -153,7 +153,7 @@ const StoryFlipBook = forwardRef(function StoryFlipBook({
     layoutRef.current = { portrait, covers, count };
   }, [page, onPage, portrait, covers, count]);
 
-  useEffect(() => {
+  useLayoutEffect(() => {
     const host = hostRef.current;
     if (!host) return undefined;
     // 화면에 맞춰 장면을 줄인 미리보기(transform: scale)에서도 줄이기 전 크기로 재요.

@@ -5,6 +5,7 @@ import closeIcon from '../../../assets/child-info/close.svg';
 import removeIcon from '../../../assets/child-info/chip-remove.svg';
 import addIcon from '../../../assets/child-info/add.svg';
 import styles from './ChildInfoModal.module.css';
+import motionStyles from './ProfileModalMotion.module.css';
 import { childFromAge } from '../childAge';
 import { calcAge, joinLikes, parseLikes } from '../../story/utils';
 
@@ -92,13 +93,13 @@ function ChildInfoModal({ child, onSave, onClose }) {
 
   return (
     createPortal(<div
-      className={styles.backdrop}
+      className={`${styles.backdrop} ${motionStyles.backdrop}`}
       onMouseDown={(event) => {
         if (event.target === event.currentTarget) onClose();
       }}
     >
       <section
-        className={styles.dialog}
+        className={`${styles.dialog} ${motionStyles.dialog}`}
         style={{ '--dialog-scale': dialogScale }}
         role="dialog"
         aria-modal="true"

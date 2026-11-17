@@ -5,8 +5,6 @@
   display: grid;
   place-items: center;
   padding: 16px;
-  background: rgb(0 0 0 / 44%);
-  backdrop-filter: blur(3.6px);
 }
 
 .dialog {
