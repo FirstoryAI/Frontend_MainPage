@@ -157,7 +157,7 @@
 
 /* 책장 칸 높이는 디자인(244)대로 두고, 표지는 200으로 줄여 책 사이를 80만큼 띄워요.
    (표지 4권 800 + 사이 3칸 240 + 양옆 36씩 = 책장 폭 1112)
-   표지 바닥은 칸 바닥에서 40px 위예요. 윗판(칸 바닥에서 22~66px 위) 위에 서 있고, 앞판(0~31px)과는 겹치지 않아요. */
+   표지 바닥은 칸 바닥에서 46px 위예요. 윗판(칸 바닥에서 22~66px 위) 안쪽에 서 있고, 앞판(0~31px)과는 겹치지 않아요. */
 .shelfBooks {
   position: relative;
   z-index: 1;
@@ -166,7 +166,7 @@
   align-items: flex-end;
   gap: calc(var(--book) * 80 / 244);
   min-height: var(--book);
-  padding: 0 0 calc(var(--book) * 22 / 244) calc(var(--book) * 36 / 244);
+  padding: 0 0 calc(var(--book) * 28 / 244) calc(var(--book) * 36 / 244);
 }
 
 .shelvesReady .book {
