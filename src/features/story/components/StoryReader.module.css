@@ -517,7 +517,14 @@
 
 .flipSceneRight { left: -100%; }
 
-.flipScene > img {
+.flipSceneImage {
+  position: relative;
+  width: 100%;
+  height: 100%;
+  container-type: inline-size;
+}
+
+.flipSceneImage > img {
   display: block;
   -webkit-user-drag: none;
   width: 100%;
@@ -832,7 +839,8 @@
   .readerPage { inset: 0; width: 100%; height: 100%; padding: 10px; border-radius: 12px; }
   .reader .flipHost { border-radius: 6px; }
   .reader .flipScene { display: flex; flex-direction: column; width: 100%; overflow-y: auto; }
-  .reader .flipScene > img { flex: 0 0 auto; width: 100%; height: auto; aspect-ratio: 956.5 / 541; object-fit: cover; }
+  .reader .flipSceneImage { flex: 0 0 auto; height: auto; aspect-ratio: 956.5 / 541; }
+  .reader .flipSceneImage > img { width: 100%; height: 100%; object-fit: cover; }
   .reader .flipFallback { flex: 1 0 100px; }
   .reader .readerCopy { position: relative; inset: auto; flex: 0 0 auto; padding: 12px 10px; color: #4a4a4a; font-size: clamp(21px, 5.4vw, 24px); text-align: left; background: transparent; border-radius: 0; white-space: pre-line; }
   .reader .readerCopy p { margin-bottom: 2px; }
