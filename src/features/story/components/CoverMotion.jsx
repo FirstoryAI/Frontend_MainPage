@@ -12,9 +12,10 @@ import styles from './StoryReader.module.css';
 const CURL_SECONDS = 1.8;
 const FOLD_SHARE = 0.6;
 const ZOOM_FROM = 0.26;
-// 표지가 내려앉을 때 느려지는 정도예요. (1이면 그대로, 클수록 앞에서 빠르고 내려앉을 때 부드럽게 멈춰요)
-// 표지가 느려지는 동안 책이 커지는 움직임이 빨라져서, 전체 빠르기는 끊기지 않아요.
-const FOLD_EASE_OUT = 2.2;
+// 표지가 들릴 때와 내려앉을 때 느려지는 정도예요. (0이면 고르게, 1에 가까울수록 양 끝에서 부드럽게 멈춰요)
+// 양 끝을 똑같이 부드럽게 해서, 펼치기와 덮기의 빠르기가 서로 거울처럼 같아요.
+// 표지가 느려지는 동안 책이 커지는(작아지는) 움직임이 이어받아서, 전체 빠르기는 끊기지 않아요.
+const FOLD_SOFT_ENDS = 0.5;
 // 내려앉은 표지 안쪽 종이가 같은 그림의 왼쪽 쪽으로 바뀌는 구간(전체 진행 비율)이에요.
 const INSIDE_SWAP = 0.04;
 // 접히는 선이 기우는 정도예요. 오른쪽 아래 모서리부터 들려서, 넘어가는 중간에 정사각형 한 변의 이만큼 기울어요.
@@ -68,8 +69,9 @@ export default function CoverMotion({ kind, reverse, src, insideSrc, pageWidth, 
       // 전체 진행이에요. 처음과 끝만 부드럽게 느리고, 그 사이는 끊김 없이 이어져요.
       const progress = easeInOutSine(value);
       const turned = clamp01(progress / FOLD_SHARE);
-      // 펼치기는 표지가 왼쪽에 내려앉을 때(turned → 1), 덮기는 뒤표지가 내려앉을 때(turned → 0) 부드럽게 멈춰요.
-      const fold = front ? 1 - (1 - turned) ** FOLD_EASE_OUT : turned ** FOLD_EASE_OUT;
+      // 펼치기·덮기 모두 같은 식이에요. 양 끝(들릴 때·내려앉을 때)이 똑같이 부드러워서,
+      // 덮기(진행 1 → 0)는 펼치기(진행 0 → 1)를 시간만 거꾸로 돌린 것과 같은 빠르기로 움직여요.
+      const fold = turned - (FOLD_SOFT_ENDS * Math.sin(2 * Math.PI * turned)) / (2 * Math.PI);
       const zoom = clamp01((progress - ZOOM_FROM) / (1 - ZOOM_FROM)) ** 1.6;
       const reveal = clamp01((progress - FOLD_SHARE) / (1 - FOLD_SHARE)) ** 1.4;
       // 접히는 선(책등 기준 좌표, x는 책등에서 오른쪽, y는 화면 위에서 아래)이에요.

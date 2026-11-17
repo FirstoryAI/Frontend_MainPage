@@ -35,8 +35,9 @@ const pageNumberFor = (index, portrait, covers, count) => {
   return Math.floor((index - 1) / 2) + 1;
 };
 
-// 표지 정사각형은 한 면(폭·높이 중 짧은 쪽)의 94%이고, 옆·아래로 책 두께(종이 단면)가 정사각형의 2.2%만큼 보여요. (CSS와 같아요)
-const COVER_SCALE = 0.94;
+// 넓은 화면(두 쪽 펼침)에서 앞·뒤표지 정사각형은 한 면(폭·높이 중 짧은 쪽)의 80%이고, 옆·아래로 책 두께(종이 단면)가 정사각형의 2.2%만큼 보여요.
+// (CSS .coverBook의 --s·--edge와 같아요. 한 쪽씩 보는 화면은 94%예요)
+const COVER_SCALE = 0.8;
 const COVER_EDGE = 0.022;
 
 // 앞표지·뒤표지 한 면이에요. 탁자에 놓인 실제 그림책처럼 서재 표지와 같은 정사각형에 책 두께(종이 단면)·책등 주름·빛·그림자를 그려요.
@@ -170,13 +171,14 @@ const StoryFlipBook = forwardRef(function StoryFlipBook({
     layoutRef.current = { portrait, covers, count };
   }, [page, onPage, onTurningChange, portrait, covers, count]);
 
+  // 넘어가는 중인지 알려줘요. 쪽이 바뀔 때마다도 알려줘서, StoryReader가 누른 순간 미리 막아 둔 것을 책 상태에 맞춰 풀어요.
   useEffect(() => {
     onTurningChangeRef.current?.(turning);
     if (!turning) return undefined;
     // 멈춤 알림이 오지 않는 드문 경우에도 계속 넘어가는 중으로 남지 않게, 넉넉히 기다린 뒤 지금 쪽에 멈춘 것으로 봐요.
     const timer = window.setTimeout(() => setRestingPage(pageRef.current), TURN_TIMEOUT_MS);
     return () => window.clearTimeout(timer);
-  }, [turning]);
+  }, [turning, page]);
 
   useLayoutEffect(() => {
     const host = hostRef.current;
