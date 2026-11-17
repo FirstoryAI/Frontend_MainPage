@@ -4,7 +4,7 @@
 .shell::before { position: fixed; z-index: 1; inset: 0; background: rgb(255 255 255 / 8%); content: ''; pointer-events: none; }
 .main { position: relative; z-index: 2; height: 100%; padding: 60px 0 0; }
 .content { display: flex; flex-direction: column; height: 100%; min-height: 0; }
-.topbar { position: absolute; z-index: 4; top: 58.6px; right: 75px; display: flex; align-items: center; gap: 39.6px; height: 58.8px; }
+.topbar { position: absolute; z-index: 10; top: 58.6px; right: 75px; display: flex; align-items: center; gap: 39.6px; height: 58.8px; }
 .guestBell { display: block; padding: 0; border: 0; background: transparent; cursor: pointer; }
 .guestBell img { display: block; }
 .avatarButton { display: block; flex: 0 0 58.8px; width: 58.8px; height: 58.8px; padding: 0; border: 0; border-radius: 50%; background: transparent; cursor: pointer; }

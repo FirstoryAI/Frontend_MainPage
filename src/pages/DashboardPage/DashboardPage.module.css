@@ -4,7 +4,7 @@
 .dayBackground { top: 0; left: -134px; width: 1574px; height: 1052px; max-width: none; opacity: .95; }
 .treeCanopy { top: 0; right: 0; width: 547px; height: 414px; }
 .main { position: relative; z-index: 1; height: 100%; }
-.topbar { position: absolute; z-index: 4; top: 58.6px; right: 75px; display: flex; align-items: center; gap: 39.6px; height: 58.8px; }
+.topbar { position: absolute; z-index: 10; top: 58.6px; right: 75px; display: flex; align-items: center; gap: 39.6px; height: 58.8px; }
 .loginLink { color: white; font: 600 20px var(--font-body); text-decoration: none; }
 .loginLink:focus-visible { outline: 3px solid var(--home-accent); outline-offset: 4px; }
 .avatar { display: block; width: 66.8px; height: 66.8px; max-width: none; margin: 0 0 0 -4px; }
