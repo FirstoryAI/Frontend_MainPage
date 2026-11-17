@@ -243,12 +243,19 @@
   height: 100%;
 }
 
-/* 접히는 선 근처, 넘어간 종이 쪽 그늘이에요. 접힌 곳에 가까울수록 짙어요. */
+/* 접히는 선 근처, 넘어간 종이 쪽 그늘이에요. 접힌 곳에 가까울수록 짙어요. (기울기는 JS가 정해요) */
 .curlFoldShade {
   position: absolute;
+  pointer-events: none;
   background: linear-gradient(90deg, rgb(40 25 10 / 0%), rgb(40 25 10 / 14%) 60%, rgb(40 25 10 / 30%) 92%, rgb(255 255 255 / 25%));
 }
 
+/* 들린 종이가 걷힌 쪽 바닥(쪽·벽)에 드리우는 그림자예요. 정사각형 책 안에서만 보이게 잘라요. */
+.curlCastClip {
+  position: absolute;
+  left: 0;
+  overflow: hidden;
+}
 /* 들린 종이가 걷힌 쪽 바닥(쪽·벽)에 드리우는 그림자예요. */
 .curlCast {
   position: absolute;
