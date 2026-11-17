@@ -2,10 +2,13 @@ import { StrictMode } from 'react';
 import { createRoot } from 'react-dom/client';
 import { RouterProvider } from 'react-router-dom';
 import { router } from './app/router';
+import { watchPreloadErrors } from './app/chunkReload';
 import { initializeCsrf } from './services/apiClient';
 import './styles/reset.css';
 import './styles/variables.css';
 import './styles/global.css';
+
+watchPreloadErrors();
 
 initializeCsrf().catch(() => {
   // Keep the app usable while the local backend is stopped; mutating requests

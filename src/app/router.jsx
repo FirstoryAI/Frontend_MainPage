@@ -2,12 +2,14 @@ import { createBrowserRouter } from 'react-router-dom';
 import App from './App';
 import HomePage from '../pages/HomePage/HomePage';
 import LibraryPage from '../pages/LibraryPage/LibraryPage';
+import RouteErrorPage from './RouteErrorPage';
 
 const page = (load) => async () => ({ Component: (await load()).default });
 
 export const router = createBrowserRouter([
   {
     element: <App />,
+    errorElement: <RouteErrorPage />,
     children: [
       { path: '/', Component: HomePage },
       { path: '/auth', lazy: page(() => import('../pages/AuthStartPage/AuthStartPage')) },
