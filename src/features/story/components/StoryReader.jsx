@@ -61,6 +61,10 @@ function StoryReader({ title, pages, page, onPage, onClose, closeLabel = '돌아
     if (target === page) return;
     setClosedGuidePage(null);
     setIsHintOpen(false);
+    // 책이 넘어가기 시작했다고 알려주기(다음 그림) 전에 또 누르면 두 장이 넘어가서, 누른 순간 바로 막아요.
+    // (책이 다 넘어가 멈추면 StoryFlipBook이 onTurningChange(false)로 풀어줘요)
+    turningRef.current = true;
+    setTurning(true);
     onPage(target);
   }, [onPage, page, firstPage, lastPage]);
   // 손으로 끌어 넘긴 뒤 책이 알려준 쪽이에요.

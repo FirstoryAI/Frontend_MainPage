@@ -342,6 +342,8 @@
 
 .coverFrame[data-side='back'] { justify-content: flex-end; }
 .coverFrame[data-portrait] { justify-content: center; }
+/* 넓은 화면(두 쪽 펼침)에서는 표지를 조금 작게 놓아 둘레에 서재 벽이 더 보여요. (StoryFlipBook의 COVER_SCALE과 같아요) */
+.coverFrame:not([data-portrait]) .coverBook { --s: min(80cqw, 80cqh); }
 
 /* 탁자에 놓인 그림책이에요. 크기는 정사각형 한 변(--s)에 비례해요. (StoryFlipBook의 COVER_SCALE·COVER_EDGE와 같아요) */
 .coverBook {
