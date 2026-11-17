@@ -31,14 +31,22 @@ const pageNumberFor = (index, portrait, covers, count) => {
   return Math.floor((index - 1) / 2) + 1;
 };
 
-// 앞표지·뒤표지 한 면이에요. 서재 표지와 같은 정사각형으로, 책등(가운데 접는 곳)에 붙여 세로 가운데에 놓아요.
+// 표지 정사각형은 한 면(폭·높이 중 짧은 쪽)의 94%이고, 옆·아래로 책 두께(종이 단면)가 정사각형의 2.2%만큼 보여요. (CSS와 같아요)
+const COVER_SCALE = 0.94;
+const COVER_EDGE = 0.022;
+
+// 앞표지·뒤표지 한 면이에요. 탁자에 놓인 실제 그림책처럼 서재 표지와 같은 정사각형에 책 두께(종이 단면)·책등 주름·빛·그림자를 그려요.
 // 앞표지는 책의 오른쪽 면이라 왼쪽(책등)에, 뒤표지는 왼쪽 면이라 오른쪽(책등)에 붙어요. 둘레는 비워서 뒤의 서재 벽이 보여요.
-const StoryCoverPage = forwardRef(function StoryCoverPage({ src, label, side }, ref) {
+// portrait(한 쪽씩 보는 화면)에서는 책등 없이 화면 가운데에 놓아요.
+const StoryCoverPage = forwardRef(function StoryCoverPage({ src, label, side, portrait }, ref) {
   return (
     <div className={`${styles.flipPage} ${styles.coverPage}`} ref={ref} data-density="hard">
       {/* 라이브러리가 책장 요소의 display를 바꿔서, 가운데 맞춤은 안쪽 틀에서 해요. */}
-      <div className={styles.coverFrame} data-side={side}>
-        <img className={styles.coverImage} src={src} alt={label} draggable="false" />
+      <div className={styles.coverFrame} data-side={side} data-portrait={portrait || undefined}>
+        <div className={styles.coverBook}>
+          <img className={styles.coverImage} src={src} alt={label} draggable="false" />
+          <span className={styles.coverSheen} aria-hidden="true" />
+        </div>
       </div>
     </div>
   );
@@ -98,9 +106,9 @@ const StoryFlipBook = forwardRef(function StoryFlipBook({
     });
     if (!covers) return storyPages;
     return [
-      <StoryCoverPage key="front-cover" src={frontCover} label="앞표지" side="front" />,
+      <StoryCoverPage key="front-cover" src={frontCover} label="앞표지" side="front" portrait={portrait} />,
       ...storyPages,
-      <StoryCoverPage key="back-cover" src={backCover} label="뒤표지" side="back" />,
+      <StoryCoverPage key="back-cover" src={backCover} label="뒤표지" side="back" portrait={portrait} />,
     ];
   }, [pages, portrait, covers, frontCover, backCover, copyClassName, fallbackClassName]);
 
@@ -163,7 +171,7 @@ const StoryFlipBook = forwardRef(function StoryFlipBook({
   const isCoverPage = (value) => covers && (value <= 0 || value > count);
   // 넓은 화면에서 표지는 한 면만 보여요. 앞표지는 책등 오른쪽, 뒤표지는 책등 왼쪽에 붙은 정사각형이라,
   // 정사각형 반만큼 옮겨 화면 가운데에 둬요.
-  const coverSize = area ? Math.min(pageWidth, area.height) : 0;
+  const coverSize = area ? Math.min(pageWidth, area.height) * COVER_SCALE * (1 + COVER_EDGE) : 0;
   const shift = !portrait && covers && coverSize
     ? (page <= 0 ? -coverSize / 2 : page > count ? coverSize / 2 : 0)
     : 0;

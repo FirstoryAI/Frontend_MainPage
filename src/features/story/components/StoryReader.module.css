@@ -182,19 +182,96 @@
 }
 
 .coverFrame[data-side='back'] { justify-content: flex-end; }
+.coverFrame[data-portrait] { justify-content: center; }
+
+/* 탁자에 놓인 그림책이에요. 크기는 정사각형 한 변(--s)에 비례해요. (StoryFlipBook의 COVER_SCALE·COVER_EDGE와 같아요) */
+.coverBook {
+  --s: min(94cqw, 94cqh);
+  --edge: calc(var(--s) * 0.022);
+  --round: calc(var(--s) * 0.012);
+
+  position: relative;
+  flex: none;
+  width: var(--s);
+  height: var(--s);
+  margin-bottom: var(--edge);
+}
+
+/* 책 두께: 표지 뒤로 종이 단면이 옆·아래로 비쳐 보여요. 옆은 세로줄, 아래는 가로줄로 종이가 겹친 결을 그려요. */
+.coverBook::before {
+  position: absolute;
+  z-index: 0;
+  inset: var(--edge) calc(var(--edge) * -1) calc(var(--edge) * -1) var(--edge);
+  border-radius: 0 var(--round) var(--round) 0;
+  background:
+    repeating-linear-gradient(0deg, #e4dac4 0 1px, #fbf7ee 1px 3px) left bottom / 100% var(--edge) no-repeat,
+    repeating-linear-gradient(90deg, #e4dac4 0 1px, #fbf7ee 1px 3px) right top / var(--edge) 100% no-repeat,
+    #f3ecdc;
+  /* 위왼쪽에서 빛이 들어와 오른쪽 아래 벽으로 그림자가 져요. */
+  box-shadow:
+    calc(var(--s) * 0.012) calc(var(--s) * 0.024) calc(var(--s) * 0.05) rgb(0 0 0 / 45%),
+    calc(var(--s) * 0.004) calc(var(--s) * 0.008) calc(var(--s) * 0.012) rgb(0 0 0 / 30%);
+  content: '';
+}
+
+.coverFrame[data-side='back'] .coverBook::before {
+  inset: var(--edge) var(--edge) calc(var(--edge) * -1) calc(var(--edge) * -1);
+  border-radius: var(--round) 0 0 var(--round);
+  background:
+    repeating-linear-gradient(0deg, #e4dac4 0 1px, #fbf7ee 1px 3px) right bottom / 100% var(--edge) no-repeat,
+    repeating-linear-gradient(90deg, #e4dac4 0 1px, #fbf7ee 1px 3px) left top / var(--edge) 100% no-repeat,
+    #f3ecdc;
+}
 
 .coverImage {
+  position: relative;
+  z-index: 1;
   display: block;
-  flex: none;
-  width: min(100cqw, 100cqh);
-  height: min(100cqw, 100cqh);
+  width: 100%;
+  height: 100%;
   /* 뒤표지는 가로 그림이라 가운데를 정사각형으로 잘라 보여줘요. (앞표지는 서재와 같은 정사각형 표지예요) */
   object-fit: cover;
   object-position: center;
-  box-shadow: 0 6px 16px rgb(0 0 0 / 35%);
+  border-radius: 2px var(--round) var(--round) 2px;
   pointer-events: none;
   user-select: none;
   -webkit-user-drag: none;
+}
+
+.coverFrame[data-side='back'] .coverImage { border-radius: var(--round) 2px 2px var(--round); }
+
+/* 책등 쪽 접힌 주름(어둡게-밝게-어둡게), 표지에 비친 빛, 아래쪽 옅은 그늘이에요. */
+.coverSheen {
+  position: absolute;
+  z-index: 2;
+  inset: 0;
+  border-radius: 2px var(--round) var(--round) 2px;
+  background:
+    linear-gradient(90deg,
+      rgb(0 0 0 / 30%) 0,
+      rgb(0 0 0 / 10%) 0.9%,
+      rgb(255 255 255 / 30%) 1.5%,
+      rgb(255 255 255 / 0%) 2.4%,
+      rgb(0 0 0 / 14%) 2.9%,
+      rgb(0 0 0 / 0%) 5.5%),
+    linear-gradient(120deg, rgb(255 255 255 / 22%) 0%, rgb(255 255 255 / 0%) 42%),
+    linear-gradient(0deg, rgb(0 0 0 / 8%), rgb(0 0 0 / 0%) 18%);
+  box-shadow: inset 0 0 0 1px rgb(0 0 0 / 6%);
+  pointer-events: none;
+}
+
+.coverFrame[data-side='back'] .coverSheen {
+  border-radius: var(--round) 2px 2px var(--round);
+  background:
+    linear-gradient(270deg,
+      rgb(0 0 0 / 30%) 0,
+      rgb(0 0 0 / 10%) 0.9%,
+      rgb(255 255 255 / 30%) 1.5%,
+      rgb(255 255 255 / 0%) 2.4%,
+      rgb(0 0 0 / 14%) 2.9%,
+      rgb(0 0 0 / 0%) 5.5%),
+    linear-gradient(240deg, rgb(255 255 255 / 18%) 0%, rgb(255 255 255 / 0%) 42%),
+    linear-gradient(0deg, rgb(0 0 0 / 8%), rgb(0 0 0 / 0%) 18%);
 }
 
 /* 표지를 보는 동안 둘레에 보이는 서재 벽(선반 없는 서재 배경)이에요. */

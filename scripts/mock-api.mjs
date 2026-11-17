@@ -133,7 +133,7 @@ function coverSvg(title, hue) {
   return `<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 600 600" width="600" height="600">
 <defs><linearGradient id="g" x1="0" y1="0" x2="1" y2="1">
 <stop offset="0" stop-color="hsl(${hue} 70% 82%)"/><stop offset="1" stop-color="hsl(${(hue + 50) % 360} 65% 68%)"/></linearGradient></defs>
-<rect width="600" height="600" rx="28" fill="url(#g)"/>
+<rect width="600" height="600" fill="url(#g)"/>
 <circle cx="300" cy="360" r="130" fill="hsl(${hue} 60% 55%)" opacity=".7"/>
 <text x="300" y="130" font-size="46" font-family="sans-serif" font-weight="700" text-anchor="middle" fill="#575757">${title}</text>
 </svg>`;
