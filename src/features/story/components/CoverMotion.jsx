@@ -17,8 +17,8 @@ const COVER_EDGE = 0.022;
 const PEEK_DEG = 38;
 const PEEK_SETTLE = 0.1;
 // 덮을 때 뒤표지가 이만큼(접힌 정도) 넘어오면 뒤에 깔린 쪽을 서서히 걷어요.
-const CLOSE_FADE_FROM = 0.6;
-const CLOSE_FADE_TO = 0.92;
+const CLOSE_FADE_FROM = 0.94;
+const CLOSE_FADE_TO = 0.985;
 
 const clamp01 = (value) => Math.min(1, Math.max(0, value));
 const easeInOut = (t) => (t < 0.5 ? 4 * t * t * t : 1 - ((-2 * t + 2) ** 3) / 2);
@@ -156,7 +156,9 @@ export default function CoverMotion({ kind, reverse, src, insideSrc, pageWidth, 
       // 앞표지 안쪽 종이는 다 넘어간 뒤 펼친 쪽으로 자연스럽게 바뀌어요.
       flipRef.current.style.opacity = front ? String(1 - grow) : '1';
       // 덮기: 뒤표지가 거의 내려앉으면 뒤에 깔린 동화 쪽을 걷어요. (표지 모서리·아래로 쪽이 삐져나와 겹쳐 보이지 않게요)
-      slide.style.opacity = front ? '' : String(1 - easeInOut(clamp01((fold - CLOSE_FADE_FROM) / (CLOSE_FADE_TO - CLOSE_FADE_FROM))));
+      // (덮기에서 fold는 1 → 0으로 줄어요. 내려앉은 정도는 1 - fold예요)
+      const landed = 1 - fold;
+      slide.style.opacity = front ? '' : String(1 - easeInOut(clamp01((landed - CLOSE_FADE_FROM) / (CLOSE_FADE_TO - CLOSE_FADE_FROM))));
       root.style.visibility = 'visible';
     };
 
