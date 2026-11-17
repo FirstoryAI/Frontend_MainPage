@@ -27,7 +27,7 @@ export const categories = [
 
 // 화면에 보여 주는 분류 이름이에요. 내부 값은 기존 API 분류 코드와 연결된 채 유지해요.
 export const categoryDisplayNames = {
-  '등원 · 적응': '처음',
+  '등원 · 적응': '첫 경험',
   '친구 관계': '친구',
   '가족': '가족',
   '떼쓰기 · 훈육': '교육·훈육',
