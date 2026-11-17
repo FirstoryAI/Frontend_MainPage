@@ -40,7 +40,12 @@ function TopicStep({ category, topic, onChange }) {
         />
       </div>
 
-      <label className={`${styles.option} ${topic.undecided ? styles.checked : ''}`}>
+      {/* 직접 적고 있으면(입력 칸을 누르거나 글자가 있으면) 이 칸은 흐려져요. */}
+      <label
+        className={`${styles.option} ${topic.undecided ? styles.checked : ''} ${
+          !topic.undecided && topic.message.trim() ? styles.dimmed : ''
+        }`}
+      >
         <input
           className={styles.input}
           type="checkbox"
