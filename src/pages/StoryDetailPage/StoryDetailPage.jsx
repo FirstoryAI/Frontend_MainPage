@@ -279,8 +279,10 @@ function StoryDetailPage() {
           onPage={handlePage}
           onClose={() => setReading(null)}
           closeLabel="읽기 닫기"
-          frontCover={reading.book.frontCoverUrl}
-          backCover={reading.book.backCoverUrl}
+          // 앞·뒤표지가 있는 동화(frontCoverUrl·backCoverUrl)만 표지를 붙여요.
+          // 앞표지는 서재와 같은 정사각형 표지(coverUrl)를 그대로 쓰고, 뒤표지는 가로 그림의 가운데를 정사각형으로 보여줘요.
+          frontCover={reading.book.frontCoverUrl && reading.book.backCoverUrl ? (reading.book.coverUrl || reading.book.frontCoverUrl) : null}
+          backCover={reading.book.frontCoverUrl && reading.book.backCoverUrl ? reading.book.backCoverUrl : null}
         >
           {/* 마지막 쪽과 뒤표지에서 '다 읽었어요'를 보여줘요. */}
           {reading.page >= reading.book.pages.length && (

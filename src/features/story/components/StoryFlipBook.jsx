@@ -31,11 +31,15 @@ const pageNumberFor = (index, portrait, covers, count) => {
   return Math.floor((index - 1) / 2) + 1;
 };
 
-// 앞표지·뒤표지 한 면이에요. 쪽 그림과 같은 크기(1920×1088)라, 한 면 칸에 가운데를 맞춰 채워요.
-const StoryCoverPage = forwardRef(function StoryCoverPage({ src, label }, ref) {
+// 앞표지·뒤표지 한 면이에요. 서재 표지와 같은 정사각형으로, 책등(가운데 접는 곳)에 붙여 세로 가운데에 놓아요.
+// 앞표지는 책의 오른쪽 면이라 왼쪽(책등)에, 뒤표지는 왼쪽 면이라 오른쪽(책등)에 붙어요. 둘레는 비워서 뒤의 서재 벽이 보여요.
+const StoryCoverPage = forwardRef(function StoryCoverPage({ src, label, side }, ref) {
   return (
     <div className={`${styles.flipPage} ${styles.coverPage}`} ref={ref} data-density="hard">
-      <img className={styles.coverImage} src={src} alt={label} draggable="false" />
+      {/* 라이브러리가 책장 요소의 display를 바꿔서, 가운데 맞춤은 안쪽 틀에서 해요. */}
+      <div className={styles.coverFrame} data-side={side}>
+        <img className={styles.coverImage} src={src} alt={label} draggable="false" />
+      </div>
     </div>
   );
 });
@@ -94,9 +98,9 @@ const StoryFlipBook = forwardRef(function StoryFlipBook({
     });
     if (!covers) return storyPages;
     return [
-      <StoryCoverPage key="front-cover" src={frontCover} label="앞표지" />,
+      <StoryCoverPage key="front-cover" src={frontCover} label="앞표지" side="front" />,
       ...storyPages,
-      <StoryCoverPage key="back-cover" src={backCover} label="뒤표지" />,
+      <StoryCoverPage key="back-cover" src={backCover} label="뒤표지" side="back" />,
     ];
   }, [pages, portrait, covers, frontCover, backCover, copyClassName, fallbackClassName]);
 
@@ -157,9 +161,11 @@ const StoryFlipBook = forwardRef(function StoryFlipBook({
   }, []);
 
   const isCoverPage = (value) => covers && (value <= 0 || value > count);
-  // 넓은 화면에서 표지는 한 면만 보여요. 앞표지는 책의 오른쪽, 뒤표지는 왼쪽에 놓여서, 반 쪽만큼 옮겨 화면 가운데에 둬요.
-  const shift = !portrait && covers && pageWidth
-    ? (page <= 0 ? -pageWidth / 2 : page > count ? pageWidth / 2 : 0)
+  // 넓은 화면에서 표지는 한 면만 보여요. 앞표지는 책등 오른쪽, 뒤표지는 책등 왼쪽에 붙은 정사각형이라,
+  // 정사각형 반만큼 옮겨 화면 가운데에 둬요.
+  const coverSize = area ? Math.min(pageWidth, area.height) : 0;
+  const shift = !portrait && covers && coverSize
+    ? (page <= 0 ? -coverSize / 2 : page > count ? coverSize / 2 : 0)
     : 0;
   // 뒤에 까는 그림은 쪽에서 멈춰 있거나 쪽 사이를 넘길 때만 깔아요. 표지에서 펼치는 동안 깔면 덮인 쪽에 그림이 먼저 비쳐요.
   const showBackdrop = seamless && !portrait && current?.imageUrl && !(isCoverPage(restingPage) && restingPage !== page);
@@ -169,6 +175,8 @@ const StoryFlipBook = forwardRef(function StoryFlipBook({
       className={`${styles.flipHost} ${className}`}
       ref={hostRef}
       data-seamless={seamless || undefined}
+      // 표지가 있는 책은 쪽 그림을 깔지 않는 동안(표지를 보거나 펼치고 덮는 동안) 뒤에 서재 벽을 보여줘요.
+      data-wall={covers && !showBackdrop ? true : undefined}
       style={showBackdrop ? { backgroundImage: `url("${current.imageUrl}")` } : undefined}
       {...hostProps}
     >
