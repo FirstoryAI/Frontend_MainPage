@@ -308,7 +308,8 @@
   height: max(100%, calc(200% * var(--spread-ratio, 0.6)));
   object-fit: cover;
   pointer-events: none;
-  transform: translateY(-50%);
+  /* 정사각형 표지는 아래 책 두께만큼 위로 올라가 있어요. 그 절반만큼 내려서, 뒤의 쪽 그림(화면 세로 가운데)과 같은 자리에 맞춰요. */
+  transform: translateY(calc(-50% + var(--edge) / 2));
 }
 
 /* 책등 쪽(오른쪽)이 약간 어두워 쪽이 접힌 느낌이 나요. */
@@ -320,67 +321,8 @@
   pointer-events: none;
 }
 
-/* 앞표지 호버: 표지가 책등을 축으로 살짝 열리고, 안쪽 첫 쪽의 오른쪽 그림이 비쳐요. 두 쪽을 펼친 그림(폭 2배)의 오른쪽 절반이에요. */
-.coverPeek {
-  position: absolute;
-  z-index: 1;
-  inset: 0;
-  overflow: hidden;
-  background: #f3ecdc;
-  border-radius: 0 var(--round) var(--round) 0;
-}
-
-.coverPeek img {
-  position: absolute;
-  top: 50%;
-  left: -100%;
-  display: block;
-  width: 200%;
-  max-width: none;
-  height: max(100%, calc(200% * var(--spread-ratio, 0.6)));
-  object-fit: cover;
-  pointer-events: none;
-  transform: translateY(-50%);
-}
-
-/* 표지가 드리우는 그림자예요. 책등 쪽이 짙어요. */
-.coverPeek::after {
-  position: absolute;
-  inset: 0;
-  background: linear-gradient(90deg, rgb(0 0 0 / 42%), rgb(0 0 0 / 0%) 60%);
-  content: '';
-  opacity: 0;
-  transition: opacity 0.35s ease;
-}
-
-.coverSwing {
-  position: absolute;
-  z-index: 2;
-  inset: 0;
-  display: block;
-  transform-origin: left center;
-}
-
+/* 누르면 책이 열리는 앞표지예요. */
 .coverBook[data-openable] { cursor: pointer; }
-
-/* 마우스가 있는 화면에서만 열려요. 태블릿·휴대폰은 표지나 '다음' 버튼을 눌러요. (CoverMotion의 PEEK_DEG와 같은 각도) */
-@media (hover: hover) and (pointer: fine) {
-  .coverBook[data-peek] .coverSwing {
-    /* 살짝 넘쳤다 돌아오는 스프링 같은 움직임이에요. */
-    transition: transform 0.55s cubic-bezier(0.3, 1.5, 0.5, 1);
-  }
-
-  .coverBook[data-peek]:hover .coverSwing {
-    transform: perspective(3200px) rotateY(-38deg);
-  }
-
-  .coverBook[data-peek]:hover .coverPeek::after { opacity: 1; }
-}
-
-@media (prefers-reduced-motion: reduce) {
-  .coverBook[data-peek] .coverSwing,
-  .coverPeek::after { transition: none; }
-}
 
 /* 앞표지·뒤표지 한 면이에요. 서재 표지와 같은 정사각형을 책등에 붙여 세로 가운데에 놓고, 둘레는 비워 서재 벽이 보여요. */
 .flipHost .coverPage {
