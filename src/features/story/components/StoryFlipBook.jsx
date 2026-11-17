@@ -39,7 +39,7 @@ const COVER_EDGE = 0.022;
 
 // 앞표지·뒤표지 한 면이에요. 탁자에 놓인 실제 그림책처럼 서재 표지와 같은 정사각형에 책 두께(종이 단면)·책등 주름·빛·그림자를 그려요.
 // 앞표지는 책의 오른쪽 면이라 왼쪽(책등)에, 뒤표지는 왼쪽 면이라 오른쪽(책등)에 붙어요. 둘레는 비워서 뒤의 서재 벽이 보여요.
-const StoryCoverPage = forwardRef(function StoryCoverPage({ src, label, side, portrait, lastPage }, ref) {
+const StoryCoverPage = forwardRef(function StoryCoverPage({ src, label, side, portrait, lastPage, peekSrc }, ref) {
   const activePage = useContext(ActivePageContext);
   const nearCover = side === 'front' ? activePage <= 1 : activePage >= lastPage - 1;
   const currentCover = side === 'front' ? activePage === 0 : activePage === lastPage;
@@ -47,7 +47,8 @@ const StoryCoverPage = forwardRef(function StoryCoverPage({ src, label, side, po
     <div className={`${styles.flipPage} ${styles.coverPage}`} ref={ref} data-density="hard">
       {/* 라이브러리가 책장 요소의 display를 바꿔서, 가운데 맞춤은 안쪽 틀에서 해요. */}
       <CoverFace src={src} label={label} side={side} portrait={portrait}
-        loading={nearCover ? 'eager' : 'lazy'} fetchPriority={currentCover ? 'high' : 'low'} />
+        loading={nearCover ? 'eager' : 'lazy'} fetchPriority={currentCover ? 'high' : 'low'}
+        openable={side === 'front'} peek={side === 'front' && !portrait && peekSrc ? { src: peekSrc } : null} />
     </div>
   );
 });
@@ -123,6 +124,11 @@ const StoryFlipBook = forwardRef(function StoryFlipBook({
   const motionKind = coverStep ? (page <= 1 && restingPage <= 1 ? 'open' : 'close') : null;
   // 앞표지 → 1쪽, 뒤표지 → 마지막 쪽은 처음부터 쪽을 깔아 두고, 반대 방향은 움직임이 끝난 뒤에 표지로 바꿔요.
   const turnFirst = coverStep && (restingPage === 0 || restingPage === count + 1);
+  // 표지 움직임이 도는 중인지예요. 그 사이 라이브러리가 보내는 '멈춤' 알림이 머문 쪽을 바꿔 움직임을 끊고 책장을 한 번 더 넘기지 않게 써요.
+  const motionRunningRef = useRef(false);
+  useLayoutEffect(() => {
+    motionRunningRef.current = Boolean(motionKind);
+  }, [motionKind]);
 
   useImperativeHandle(ref, () => ({
     pageFlip: () => bookRef.current?.pageFlip?.(),
@@ -141,11 +147,14 @@ const StoryFlipBook = forwardRef(function StoryFlipBook({
     });
     if (!covers) return storyPages;
     return [
-      <StoryCoverPage key="front-cover" src={frontCover} label="앞표지" side="front" portrait={portrait} lastPage={count + 1} />,
+      <StoryCoverPage key="front-cover" src={frontCover} label="앞표지" side="front" portrait={portrait} lastPage={count + 1} peekSrc={pages[0]?.imageUrl} />,
       ...storyPages,
       <StoryCoverPage key="back-cover" src={backCover} label="뒤표지" side="back" portrait={portrait} lastPage={count + 1} />,
     ];
   }, [pages, portrait, covers, frontCover, backCover, count, copyClassName, fallbackClassName]);
+
+  // 두 쪽을 펼친 그림의 가로 대비 세로예요. 표지 안쪽·열리는 표지 뒤에 첫 쪽 그림을 같은 크기로 깔 때 써요.
+  const spreadRatio = area && pageWidth ? area.height / (pageWidth * 2) : 0.6;
 
   useEffect(() => {
     pageRef.current = page;
@@ -191,7 +200,9 @@ const StoryFlipBook = forwardRef(function StoryFlipBook({
       book.turnToPage(pageIndexFor(page, portrait, covers, count));
       pendingRef.current = null;
       // 넘기지 않고 바로 바꾸면 멈춤 알림(onChangeState)이 오지 않아서, 다음 그림 때 멈춘 쪽을 맞춰요.
-      requestAnimationFrame(() => setRestingPage(pageRef.current));
+      requestAnimationFrame(() => {
+        if (!motionRunningRef.current) setRestingPage(pageRef.current);
+      });
     }
   }, [page, portrait, covers, count, area, motionKind, turnFirst]);
 
@@ -204,6 +215,9 @@ const StoryFlipBook = forwardRef(function StoryFlipBook({
 
   // 표지 움직임이 끝나면 책을 가려던 쪽에 두고 멈춰요.
   const finishCoverMotion = () => {
+    // 같은 움직임의 끝 알림이 두 번 와도 한 번만 처리해요.
+    if (!motionRunningRef.current) return;
+    motionRunningRef.current = false;
     bookRef.current?.pageFlip?.()?.turnToPage(pageIndexFor(page, portrait, covers, count));
     setRestingPage(page);
   };
@@ -219,7 +233,7 @@ const StoryFlipBook = forwardRef(function StoryFlipBook({
   }, []);
 
   const handleChangeState = useCallback((event) => {
-    if (event.data === 'read') setRestingPage(pageRef.current);
+    if (event.data === 'read' && !motionRunningRef.current) setRestingPage(pageRef.current);
   }, []);
 
   const isCoverPage = (value) => covers && (value <= 0 || value > count);
@@ -242,7 +256,7 @@ const StoryFlipBook = forwardRef(function StoryFlipBook({
       // 표지가 있는 책은 쪽 그림을 깔지 않는 동안(표지를 보거나 펼치고 덮는 동안) 뒤에 서재 벽을 보여줘요.
       data-wall={covers && !showBackdrop ? true : undefined}
       data-motion={motionKind ?? undefined}
-      style={showBackdrop ? { backgroundImage: `url("${current.imageUrl}")` } : undefined}
+      style={{ '--spread-ratio': spreadRatio, ...(showBackdrop ? { backgroundImage: `url("${current.imageUrl}")` } : {}) }}
       {...hostProps}
     >
       {area?.width > 0 && area?.height > 0 && (
@@ -289,6 +303,7 @@ const StoryFlipBook = forwardRef(function StoryFlipBook({
           // 펼치기는 앞표지 → 1쪽, 덮기는 마지막 쪽 → 뒤표지가 앞으로 가는 방향이에요.
           reverse={motionKind === 'open' ? page === 0 : page === count}
           src={motionKind === 'open' ? frontCover : backCover}
+          insideSrc={pages[0]?.imageUrl}
           pageWidth={pageWidth}
           square={coverSize / (1 + COVER_EDGE)}
           slideRef={slideRef}

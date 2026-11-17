@@ -43,6 +43,8 @@ function StoryReader({ title, pages, page, onPage, onClose, closeLabel = '돌아
   const [headerTimerKey, setHeaderTimerKey] = useState(0);
   const headerRef = useRef(null);
   const tapStart = useRef(null);
+  // 누른 곳이 앞표지(누르면 열리는 곳)인지예요.
+  const tapOnCover = useRef(false);
   const bookRef = useRef(null);
   const [portrait, setPortrait] = useState(() => window.matchMedia('(max-width: 760px)').matches);
   // 쪽이 바뀌면 책이 그 쪽으로 책장을 넘겨요.
@@ -129,12 +131,20 @@ function StoryReader({ title, pages, page, onPage, onClose, closeLabel = '돌아
   // 책장 라이브러리가 터치를 막아 click이 오지 않아서, 누르고 뗀 위치로 직접 판단해요.
   const handlePointerDown = (event) => {
     tapStart.current = event.target.closest('button') ? null : { x: event.clientX, y: event.clientY };
+    tapOnCover.current = Boolean(event.target.closest('[data-openable]'));
   };
   const handlePointerUp = (event) => {
     const start = tapStart.current;
+    const onCover = tapOnCover.current;
     tapStart.current = null;
+    tapOnCover.current = false;
     if (previewMode || !start) return;
     if (Math.hypot(event.clientX - start.x, event.clientY - start.y) > TAP_MOVE_PX) return;
+    // 마우스를 올릴 수 없는 태블릿·휴대폰에서도 앞표지를 한 번 누르면 책이 열려요. (상단바는 그대로예요)
+    if (onCover && page === 0) {
+      showPage(1);
+      return;
+    }
     // 책장 모서리를 눌러 넘기기 시작했으면 상단바는 그대로 둬요.
     setTimeout(() => {
       const state = bookRef.current?.pageFlip()?.getState();
