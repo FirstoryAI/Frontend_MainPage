@@ -158,12 +158,106 @@
   margin: 0 auto;
 }
 
-/* 표지를 화면 가운데에 두려고 책을 옆으로 옮기는 틀이에요. 책장이 넘어가는 시간에 맞춰 함께 움직여요. (StoryFlipBook) */
+/* 표지를 화면 가운데에 두려고 책을 옆으로 옮기는 틀이에요. (StoryFlipBook) */
 .flipSlide {
   width: 100%;
   height: 100%;
-  transition: transform 720ms ease-in-out;
 }
+
+/* ---------- 표지를 펼치고 덮는 움직임 (StoryFlipBook의 CoverMotion) ----------
+   펼치기: 표지가 책등을 축으로 왼쪽으로 넘어가며 사라지고, 뒤에서 쪽이 살짝 커지며 나타나요.
+   덮기: 쪽이 살짝 작아지며 사라지고, 뒤표지가 오른쪽에서 넘어와 가운데에 놓여요. 되돌아갈 땐 거꾸로 움직여요. */
+.flipHost {
+  --cover-motion: 1000ms cubic-bezier(.45, .05, .35, 1);
+}
+
+.flipHost[data-motion] .flipSlide {
+  animation: spread-in var(--cover-motion) both;
+}
+
+.flipHost[data-motion-reverse] .flipSlide {
+  animation-direction: reverse;
+}
+
+@keyframes spread-in {
+  0%, 35% { opacity: 0; scale: .9; }
+  100% { opacity: 1; scale: 1; }
+}
+
+.coverMotion {
+  position: absolute;
+  z-index: 3;
+  inset: 0;
+  perspective: 2400px;
+  pointer-events: none;
+}
+
+.coverLeaf {
+  position: absolute;
+  top: 0;
+  width: var(--page-w);
+  height: 100%;
+  transform-style: preserve-3d;
+}
+
+/* 앞표지: 책등(왼쪽 가장자리)을 축으로 넘어가요. */
+.coverMotion[data-kind='open'] .coverLeaf {
+  left: 50%;
+  transform-origin: left center;
+  animation: cover-open var(--cover-motion) both;
+}
+
+/* 뒤표지: 책등(오른쪽 가장자리)을 축으로 넘어와요. */
+.coverMotion[data-kind='close'] .coverLeaf {
+  left: calc(50% - var(--page-w));
+  transform-origin: right center;
+  animation: cover-close var(--cover-motion) both;
+}
+
+.coverMotion[data-reverse] .coverLeaf { animation-direction: reverse; }
+
+/* 넘어가는 표지에 투명도를 주면 입체가 평평해져서 뒷면 숨김이 안 돼요. 투명도는 바깥 틀에 줘요. */
+.coverMotion[data-kind='open'] { animation: cover-open-fade var(--cover-motion) both; }
+.coverMotion[data-kind='close'] { animation: cover-close-fade var(--cover-motion) both; }
+.coverMotion[data-reverse] { animation-direction: reverse; }
+
+@keyframes cover-open {
+  0% { transform: translateX(calc(var(--shift) * -1)) rotateY(0deg); }
+  100% { transform: translateX(0) rotateY(-180deg); }
+}
+
+@keyframes cover-close {
+  0% { transform: translateX(0) rotateY(180deg); }
+  100% { transform: translateX(var(--shift)) rotateY(0deg); }
+}
+
+@keyframes cover-open-fade {
+  0%, 70% { opacity: 1; }
+  100% { opacity: 0; }
+}
+
+@keyframes cover-close-fade {
+  0% { opacity: 0; }
+  30%, 100% { opacity: 1; }
+}
+
+.coverLeafFace {
+  position: absolute;
+  inset: 0;
+  backface-visibility: hidden;
+  -webkit-backface-visibility: hidden;
+}
+
+.coverLeafInside { transform: rotateY(180deg); }
+
+/* 표지 안쪽 종이예요. 두께(종이 단면)는 그리지 않아요. */
+.coverInsidePaper {
+  background: linear-gradient(90deg, #efe6d2, #fbf6ea 12%, #f6efdf);
+  border-radius: 2px var(--round) var(--round) 2px;
+  box-shadow: 0 calc(var(--s) * 0.02) calc(var(--s) * 0.05) rgb(0 0 0 / 30%);
+}
+
+.coverInsidePaper::before { content: none; }
 
 /* 앞표지·뒤표지 한 면이에요. 서재 표지와 같은 정사각형을 책등에 붙여 세로 가운데에 놓고, 둘레는 비워 서재 벽이 보여요. */
 .flipHost .coverPage {
@@ -606,7 +700,9 @@
 .previewReader .readerArrow { display: none; }
 
 @media (prefers-reduced-motion: reduce) {
-  .flipSlide { transition: none; }
+  .flipHost[data-motion] .flipSlide,
+  .coverMotion,
+  .coverMotion .coverLeaf { animation-duration: 1ms; }
   .previewGuide, .previewGuideOpen, .previewHint, .previewHintOpen { transition: none; }
   .previewGuideToggleAttention::before, .previewGuideToggleAttention::after { animation: none; }
   /* 움직이지 않고 서서히 나타나고 사라져요. */
