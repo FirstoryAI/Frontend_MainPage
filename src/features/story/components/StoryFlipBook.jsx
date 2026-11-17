@@ -1,4 +1,4 @@
-import { forwardRef, lazy, Suspense, useCallback, useContext, useEffect, useImperativeHandle, useLayoutEffect, useMemo, useRef, useState } from 'react';
+import { forwardRef, useCallback, useContext, useEffect, useImperativeHandle, useLayoutEffect, useMemo, useRef, useState } from 'react';
 import HTMLFlipBook from 'react-pageflip';
 import CoverFace from './CoverFace';
 import StoryFlipPage from './StoryFlipPage';
@@ -56,9 +56,40 @@ const StoryCoverPage = forwardRef(function StoryCoverPage({ src, label, side, po
   );
 });
 
-// 표지를 펼치고 덮는 움직임(Motion 라이브러리)은 아이와 읽기에서만 써서, 처음 쓸 때 따로 받아요.
-const loadCoverMotion = () => import('./CoverMotion');
-const CoverMotion = lazy(loadCoverMotion);
+// 표지를 펼치고 덮는 움직임(Motion 라이브러리)은 아이와 읽기에서만 써서, 처음 쓸 때 따로 받아요. (홈 첫 화면 번들에는 들어가지 않아요)
+// React.lazy + Suspense로 그리면, 코드를 미리 받아 둬도 처음 그릴 때 한 번은 기다림(fallback)으로 처리되고
+// React가 그 화면을 최소 300ms 붙잡아 둬서 책을 처음 펼칠 때 0.3초 멈췄어요. (#220)
+// 그래서 받은 컴포넌트를 모듈 변수에 넣어 두고, 있으면 바로 그려요.
+let loadedCoverMotion = null;
+let coverMotionRequest = null;
+const loadCoverMotion = () => {
+  coverMotionRequest ??= import('./CoverMotion')
+    .then((module) => {
+      loadedCoverMotion = module.default;
+      return loadedCoverMotion;
+    })
+    .catch((error) => {
+      // 받지 못했으면 다음에 다시 받아 볼 수 있게 비워 둬요.
+      coverMotionRequest = null;
+      throw error;
+    });
+  return coverMotionRequest;
+};
+
+// 책을 처음 펼칠 때 큰 그림을 처음 푸는(디코딩) 시간이 움직임에 겹치지 않게, 표지·첫 쪽·마지막 쪽 그림을 미리 풀어 둬요. (#220)
+// 푼 그림을 들고 있어야 브라우저가 풀어 둔 결과를 버리지 않아서, 최근 몇 장만 붙잡아 둬요.
+const decodedImages = new Map();
+const decodeAhead = (urls) => {
+  urls.filter(Boolean).forEach((url) => {
+    if (decodedImages.has(url)) return;
+    const image = new Image();
+    image.decoding = 'async';
+    image.src = url;
+    image.decode?.().catch(() => {});
+    decodedImages.set(url, image);
+    if (decodedImages.size > 8) decodedImages.delete(decodedImages.keys().next().value);
+  });
+};
 
 // 움직임 코드를 아직 받는 중이면, 덮인 표지를 그대로 보여주고 뒤의 쪽은 숨겨 둬요. (받는 대로 CoverMotion이 이어서 움직여요)
 function CoverMotionPending({ kind, src, pageWidth, shift, slideRef }) {
@@ -227,9 +258,24 @@ const StoryFlipBook = forwardRef(function StoryFlipBook({
   // 펼치고 덮는 동안 책(쪽)이 나타나고 사라지는 건 CoverMotion이 이 틀의 투명도·크기를 바꿔요.
   const slideRef = useRef(null);
   // 표지가 있는 책을 넓은 화면으로 보면, 표지를 펼치기 전에 움직임 코드를 미리 받아 둬요.
+  const [CoverMotion, setCoverMotion] = useState(() => loadedCoverMotion);
   useEffect(() => {
-    if (covers && !portrait) loadCoverMotion();
-  }, [covers, portrait]);
+    if (!covers || portrait || CoverMotion) return undefined;
+    let alive = true;
+    loadCoverMotion()
+      .then((component) => {
+        if (alive) setCoverMotion(() => component);
+      })
+      .catch(() => {});
+    return () => {
+      alive = false;
+    };
+  }, [covers, portrait, CoverMotion]);
+  const firstImage = pages[0]?.imageUrl;
+  const lastImage = pages[count - 1]?.imageUrl;
+  useEffect(() => {
+    if (covers && !portrait) decodeAhead([frontCover, firstImage, lastImage, backCover]);
+  }, [covers, portrait, frontCover, firstImage, lastImage, backCover]);
 
   // 표지 움직임이 끝나면 책을 가려던 쪽에 두고 멈춰요.
   const finishCoverMotion = () => {
@@ -308,16 +354,17 @@ const StoryFlipBook = forwardRef(function StoryFlipBook({
           </ActivePageContext.Provider>
         </div>
       )}
-      {motionKind && (
-        <Suspense fallback={turnFirst ? (
-          <CoverMotionPending
-            kind={motionKind}
-            src={motionKind === 'open' ? frontCover : backCover}
-            pageWidth={pageWidth}
-            shift={coverSize / 2}
-            slideRef={slideRef}
-          />
-        ) : null}>
+      {/* 움직임 코드가 아직 없으면(받는 중) 덮인 표지를 그대로 보여주고, 받는 대로 이어서 움직여요. */}
+      {motionKind && !CoverMotion && turnFirst && (
+        <CoverMotionPending
+          kind={motionKind}
+          src={motionKind === 'open' ? frontCover : backCover}
+          pageWidth={pageWidth}
+          shift={coverSize / 2}
+          slideRef={slideRef}
+        />
+      )}
+      {motionKind && CoverMotion && (
         <CoverMotion
           key={`${restingPage}-${page}`}
           kind={motionKind}
@@ -330,7 +377,6 @@ const StoryFlipBook = forwardRef(function StoryFlipBook({
           slideRef={slideRef}
           onEnd={finishCoverMotion}
         />
-        </Suspense>
       )}
     </div>
   );
