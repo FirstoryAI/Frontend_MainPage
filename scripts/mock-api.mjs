@@ -176,13 +176,25 @@ function currentVersion(story) {
 
 const imageUrl = (story, versionId, pageNo) => `/api/stories/${story.id}/versions/${versionId}/pages/${pageNo}/image`;
 
-// 쪽 글의 **말**(의성어·의태어)을 그림 위에 띄울 자리예요. 실제 서버처럼 말의 가운데를 그림 대비 %로 줘요.
-// 가짜 그림(pageSvg)의 동그라미(인물) 바로 위에 놓아요. 별표 말이 없는 쪽은 null이에요.
+// 서버처럼 의성어·의태어를 그 소리를 내는 인물(그림의 동그라미) 옆에 띄워요. 별표 말이 없는 쪽은 null이에요.
+// { text, color: '#RRGGBB', pieces: [{ text, x, y, side }] } — x·y는 조각 가운데(%)예요.
+// '콩닥콩닥'처럼 되풀이하는 네 글자 말은 인물 양옆에 두 조각으로 나눠요.
+const SOUND_COLORS = ['#ff6a2b', '#2d7be0', '#14a394', '#ec4a86'];
+
 function soundWordOf(page) {
   const word = String(page.text ?? '').match(/\*\*(.+?)\*\*/)?.[1];
   if (!word) return null;
-  const x = ((200 + page.pageNo * 70) / 1024) * 100;
-  return { text: word, x: Math.round(Math.min(x, 88) * 10) / 10, y: 38, color: page.pageNo % 2 === 0 ? 'LIGHT' : 'DARK' };
+  const cx = ((200 + page.pageNo * 70) / 1024) * 100;
+  const at = (value) => Math.round(Math.min(Math.max(value, 6), 94) * 10) / 10;
+  const chars = Array.from(word);
+  const repeated = chars.length === 4 && chars[0] === chars[2] && chars[1] === chars[3];
+  const pieces = repeated
+    ? [
+      { text: chars.slice(0, 2).join(''), x: at(cx - 11), y: 50, side: 'LEFT' },
+      { text: chars.slice(2).join(''), x: at(cx + 11), y: 50, side: 'RIGHT' },
+    ]
+    : [{ text: word, x: at(cx), y: 44, side: 'CENTER' }];
+  return { text: word, color: SOUND_COLORS[page.pageNo % SOUND_COLORS.length], pieces };
 }
 
 function pageView(story, version) {
