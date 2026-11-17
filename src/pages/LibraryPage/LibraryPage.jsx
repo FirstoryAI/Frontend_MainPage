@@ -289,10 +289,10 @@ function LibraryPage() {
   const shownStoryShelves = shelves.slice(page * shelvesPerPage, (page + 1) * shelvesPerPage);
 
   // 보여줄 동화가 없으면 빈 책장 위에 안내를 보여줘요. 로그인하지 않았으면 로그인으로 이어 주는 버튼이 함께 나와요.
-  // 전체에서 비었으면 '아직 제작된 동화가 없어요', 주제 칩에서 비었으면 '조건에 해당하는 동화가 없어요'예요.
+  // 전체에서 비었으면 '아직 제작된 동화가 없어요', 주제 칩에서 비었으면 '상황에 해당하는 동화가 없어요'예요.
   const isLibraryEmpty = isSignedIn && !isLoading && !error && filtered.length === 0;
   const showEmptyScreen = guest || isLibraryEmpty;
-  const emptyTitle = guest || activeFilter === ALL_FILTER ? '아직 제작된 동화가 없어요' : '조건에 해당하는 동화가 없어요';
+  const emptyTitle = guest || activeFilter === ALL_FILTER ? '아직 제작된 동화가 없어요' : '상황에 해당하는 동화가 없어요';
 
   if (isSignedIn === null) {
     return <div className={styles.page} role="status" aria-label="서재를 불러오는 중" />;
