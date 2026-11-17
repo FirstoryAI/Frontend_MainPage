@@ -53,8 +53,6 @@ function useFitStage() {
 
 // 앞·뒤표지가 둘 다 있는 책이에요. (이 기능 전에 만든 동화·표지가 실패한 동화는 없어요)
 const hasBookCovers = (book) => Boolean(book?.frontCoverUrl && book?.backCoverUrl);
-// 뒤표지에 닿은 뒤 읽기를 마치기 전에 뒤표지를 보여주는 시간이에요. (책을 덮는 움직임 1.7초 포함, 덮인 뒤 1초쯤 보여요)
-const BACK_COVER_PAUSE_MS = 2700;
 
 // 서재에서 '아직 읽지 않았어요'·'함께 읽었어요' 동화를 누르면 보이는 '동화 한 눈에 보기' 화면이에요.
 // 밤 나무 벽(서재와 같은 배경) 위에 비스듬히 놓인 표지, 제목·줄거리, '아이와 읽기 시작하기'·'대화 가이드 보기'가 있어요.
@@ -75,9 +73,6 @@ function StoryDetailPage() {
   const [readingFeedbackOpen, setReadingFeedbackOpen] = useState(false);
   const [feedbackMemberId, setFeedbackMemberId] = useState(null);
   const [checkingReadingFeedback, setCheckingReadingFeedback] = useState(false);
-  // 뒤표지에 닿은 뒤 읽기를 마치는 타이머예요.
-  const backCoverTimer = useRef(null);
-  useEffect(() => () => clearTimeout(backCoverTimer.current), []);
   // '대화 가이드 보기'로 미리보기와 같은 크게 보기 화면을 연 동안 { book, page }
   const [guideView, setGuideView] = useState(null);
   const [guideLoading, setGuideLoading] = useState(false);
@@ -128,7 +123,6 @@ function StoryDetailPage() {
       const startPage = hasBookCovers(book)
         ? (lastPage <= 1 || lastPage >= book.pages.length ? 0 : lastPage)
         : Math.max(1, lastPage);
-      clearTimeout(backCoverTimer.current);
       setReading({ session, book, page: startPage });
     } catch (error) {
       setNotice(error.message || '읽기를 시작하지 못했어요.');
@@ -173,16 +167,10 @@ function StoryDetailPage() {
     if (page >= 1 && page <= reading.book.pages.length) {
       saveReadingProgress(reading.session.sessionId, page).catch(() => {});
     }
-    // 뒤표지까지 넘기면 다 읽은 거예요. 뒤표지를 잠깐 보여준 뒤 읽기를 마쳐요. (그 사이에 다시 넘기면 취소돼요)
-    clearTimeout(backCoverTimer.current);
-    if (hasBookCovers(reading.book) && page === reading.book.pages.length + 1) {
-      backCoverTimer.current = setTimeout(handleReadCompleteClick, BACK_COVER_PAUSE_MS);
-    }
   };
 
-  const closeReading = () => {
-    clearTimeout(backCoverTimer.current);
-    setReading(null);
+  const handleCloseReading = () => {
+    handleReadCompleteClick();
   };
 
   const handleFinishReading = async (feedback) => {
@@ -300,14 +288,15 @@ function StoryDetailPage() {
           pages={reading.book.pages}
           page={reading.page}
           onPage={handlePage}
-          onClose={closeReading}
+          onClose={handleCloseReading}
           closeLabel="읽기 닫기"
+          keepHeaderShown={hasBookCovers(reading.book) && reading.page === reading.book.pages.length + 1}
           // 앞·뒤표지가 있는 동화(frontCoverUrl·backCoverUrl)만 표지를 붙여요.
           // 앞표지는 서재와 같은 정사각형 표지(coverUrl)를 그대로 쓰고, 뒤표지는 가로 그림의 가운데를 정사각형으로 보여줘요.
           frontCover={hasBookCovers(reading.book) ? (reading.book.coverUrl || reading.book.frontCoverUrl) : null}
           backCover={hasBookCovers(reading.book) ? reading.book.backCoverUrl : null}
         >
-          {/* 표지가 있는 책은 뒤표지에 닿으면 저절로 다 읽은 것으로 해요. 뒤표지가 없는 옛 동화만 마지막 쪽에 '다 읽었어요'가 있어요. */}
+          {/* 표지가 있는 책은 뒤표지의 X로 읽기를 마쳐요. 뒤표지가 없는 옛 동화만 마지막 쪽에 '다 읽었어요'가 있어요. */}
           {!hasBookCovers(reading.book) && reading.page >= reading.book.pages.length && (
             <button className={readerStyles.primary} type="button" onClick={handleReadCompleteClick} disabled={checkingReadingFeedback}>
               {checkingReadingFeedback ? '확인하는 중…' : '다 읽었어요'}

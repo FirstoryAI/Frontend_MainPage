@@ -27,7 +27,7 @@ const HEADER_VISIBLE_MS = 2000;
 // 동화를 화면 가득 크게 읽는 화면이에요. 미리보기(확정 전)와 아이와 읽기(확정 후)가 함께 써요.
 // pages: [{ pageNo, text, imageUrl, imageStatus }], page: 지금 쪽(1부터), children: 쪽 아래에 띄울 보조 영역
 // frontCover·backCover: 아이와 읽기에서 맨 앞·맨 뒤에 붙일 앞표지·뒤표지 그림이에요. 둘 다 있으면 page 0이 앞표지, 마지막 쪽+1이 뒤표지예요.
-function StoryReader({ title, pages, page, onPage, onClose, closeLabel = '돌아가기', children, guide, previewMode = false, className = '', suspended = false, frontCover = null, backCover = null }) {
+function StoryReader({ title, pages, page, onPage, onClose, closeLabel = '돌아가기', children, guide, previewMode = false, className = '', suspended = false, keepHeaderShown = false, frontCover = null, backCover = null }) {
   const current = pages[page - 1];
   // 실제 책처럼 앞표지에서 시작해 뒤표지로 끝나요. (미리보기는 지금처럼 1쪽부터예요)
   const covers = !previewMode && Boolean(frontCover && backCover);
@@ -113,17 +113,17 @@ function StoryReader({ title, pages, page, onPage, onClose, closeLabel = '돌아
   }, [isHintOpen]);
 
   useEffect(() => {
-    if (previewMode || !isHeaderShown) return undefined;
+    if (previewMode || keepHeaderShown || !isHeaderShown) return undefined;
     const timer = window.setTimeout(() => {
       // 키보드로 닫기 버튼에 가 있는 동안에는 올리지 않아요.
       if (!headerRef.current?.contains(document.activeElement)) setIsHeaderShown(false);
     }, HEADER_VISIBLE_MS);
     return () => window.clearTimeout(timer);
-  }, [previewMode, isHeaderShown, headerTimerKey]);
+  }, [previewMode, keepHeaderShown, isHeaderShown, headerTimerKey]);
 
   if (!current && !coverLabel) return null;
 
-  const isHeaderHidden = !previewMode && !isHeaderShown;
+  const isHeaderHidden = !previewMode && !keepHeaderShown && !isHeaderShown;
 
   // 버튼을 뺀 화면 어디든 한 번 누르면 상단바가 내려오거나 올라가요. (내려오면 2초 뒤 저절로 올라가요)
   // 책장 라이브러리가 터치를 막아 click이 오지 않아서, 누르고 뗀 위치로 직접 판단해요.
