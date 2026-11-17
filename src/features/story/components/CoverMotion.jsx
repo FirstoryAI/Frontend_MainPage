@@ -4,15 +4,16 @@ import { animate, useMotionValue } from 'motion/react';
 import CoverFace from './CoverFace';
 import styles from './StoryReader.module.css';
 
-// 표지를 넘기는 시간(초)과, 그중 표지가 넘어가는 몫이에요. 나머지 시간에 펼친 책이 화면 가득 커져요.
-const CURL_SECONDS = 1.55;
-const FOLD_SHARE = 0.68;
+// 표지를 넘기는 시간(초)이에요. 앞쪽(FOLD_SHARE까지)에 표지가 넘어가고, GROW_FROM부터 펼친 책이 화면 가득 커져요.
+// 두 구간이 조금 겹쳐서, 표지가 내려앉으며 멈추지 않고 그대로 책이 커져요.
+const CURL_SECONDS = 1.7;
+const FOLD_SHARE = 0.66;
+const GROW_FROM = 0.52;
 // 정사각형 표지 아래로 보이는 책 두께예요. (CSS .coverBook의 --edge와 같아요)
 const COVER_EDGE = 0.022;
 
 const clamp01 = (value) => Math.min(1, Math.max(0, value));
 const easeInOut = (t) => (t < 0.5 ? 4 * t * t * t : 1 - ((-2 * t + 2) ** 3) / 2);
-const easeOut = (t) => 1 - (1 - t) ** 3;
 
 // 넓은 화면에서 표지를 펼치거나(앞표지 ↔ 1쪽) 덮을 때(마지막 쪽 ↔ 뒤표지)의 움직임이에요. 실제 책장을 넘기듯 넘겨요.
 //  - 펼치기: 앞표지의 오른쪽 끝자락이 들려 접히는 선이 책등 쪽으로 움직여요. 접혀 넘어간 부분은 표지 안쪽 종이가 보이고,
@@ -49,7 +50,7 @@ export default function CoverMotion({ kind, reverse, src, pageWidth, square, sli
       // 정사각형 책의 위아래 자리(표지는 세로 가운데, 아래로 두께만큼 올라가 있어요)
       const top = (height - c - edge) / 2;
       const fold = easeInOut(clamp01(value / FOLD_SHARE));
-      const grow = easeOut(clamp01((value - FOLD_SHARE) / (1 - FOLD_SHARE)));
+      const grow = easeInOut(clamp01((value - GROW_FROM) / (1 - GROW_FROM)));
       // 접히는 선의 자리(책등에서 오른쪽으로). 펼치기는 표지 끝(c) → 책등(0), 덮기는 반대로 움직여요.
       const x = front ? c * (1 - fold) : c * fold;
       // 덮인 책은 화면 가운데에 있어야 해서, 넘어가는 동안 책을 반 정사각형만큼 옮겨요.
@@ -79,19 +80,22 @@ export default function CoverMotion({ kind, reverse, src, pageWidth, square, sli
         opacity: x > 0.5 && x < c - 0.5 ? String(lift) : '0',
       });
 
-      // 책(쪽)은 넘기는 동안 정사각형 책 크기만큼만 보여요. 표지가 다 넘어간 뒤에 화면 가득 커져요.
-      const sideGap = width / 2 - c;
-      if (fold < 1) {
-        // 펼치기: 표지가 걷힌 오른쪽 쪽만 보여요. (왼쪽은 넘어오는 종이가 덮어요)
-        // 덮기: 왼쪽 쪽은 그대로, 오른쪽 쪽은 아직 넘어가지 않은 부분만 보여요.
-        const clip = front
-          ? `inset(${top}px ${sideGap}px ${height - top - c}px ${width / 2}px)`
-          : `inset(${top}px ${width / 2 - x}px ${height - top - c}px ${sideGap}px)`;
-        slide.style.clipPath = clip;
-      } else {
-        const keep = 1 - grow;
-        slide.style.clipPath = `inset(${top * keep}px ${sideGap * keep}px ${(height - top - c) * keep}px ${sideGap * keep}px)`;
-      }
+      // 책(쪽)은 펼친 정사각형 책 폭(2c)에 맞게 줄어 있다가, 화면 가득 커져요. (쪽 그림이 그대로 커지는 거라 매끄러워요)
+      // 줄어 있는 동안은 정사각형 책 높이만큼만 보이고, 커지면서 위아래도 함께 드러나요.
+      const baseScale = (2 * c) / width;
+      const scale = baseScale + (1 - baseScale) * grow;
+      const centerY = top + c / 2;
+      slide.style.transformOrigin = `50% ${centerY}px`;
+      slide.style.scale = String(scale);
+      // 보일 영역(화면 기준)을 책 안의 좌표로 바꿔 잘라요. (자르기는 크기를 바꾸기 전 좌표로 해요)
+      const toLocalY = (screenY) => centerY + (screenY - centerY) / scale;
+      const bandTop = Math.max(0, toLocalY(top * (1 - grow)));
+      const bandBottom = Math.min(height, toLocalY(top + c + (height - top - c) * grow));
+      const half = width / 2;
+      // 펼치기: 왼쪽 쪽은 넘어오는 종이가 덮은 만큼만 보여요. 덮기: 오른쪽 쪽은 아직 넘어가지 않은 부분만 보여요.
+      const left = front ? Math.min(half, Math.max(0, half + (2 * x - c) / scale)) : 0;
+      const right = front ? 0 : Math.min(half, Math.max(0, half - x / scale));
+      slide.style.clipPath = `inset(${bandTop}px ${right}px ${height - bandBottom}px ${left}px)`;
       // 앞표지 안쪽 종이는 다 넘어간 뒤 펼친 쪽으로 자연스럽게 바뀌어요.
       flipRef.current.style.opacity = front ? String(1 - grow) : '1';
       root.style.visibility = 'visible';
@@ -103,6 +107,8 @@ export default function CoverMotion({ kind, reverse, src, pageWidth, square, sli
       unsubscribe();
       slide.style.clipPath = '';
       slide.style.translate = '';
+      slide.style.scale = '';
+      slide.style.transformOrigin = '';
     };
   }, [open, slideRef, square, pageWidth, front]);
 
