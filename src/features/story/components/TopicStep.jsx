@@ -30,6 +30,10 @@ function TopicStep({ category, topic, onChange }) {
           name="message"
           placeholder={content.topicExample}
           value={topic.message}
+          // '아직 잘 모르겠어요'를 고른 뒤 입력 칸을 누르면(또는 탭으로 들어오면) 직접 적겠다는 뜻이라 선택을 풀어요.
+          onFocus={() => {
+            if (topic.undecided) onChange({ undecided: false });
+          }}
           onChange={(event) =>
             onChange({ message: event.target.value, undecided: false })
           }
