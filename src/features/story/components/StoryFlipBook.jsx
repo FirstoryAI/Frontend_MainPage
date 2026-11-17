@@ -283,7 +283,6 @@ const StoryFlipBook = forwardRef(function StoryFlipBook({
           reverse={motionKind === 'open' ? page === 0 : page === count}
           src={motionKind === 'open' ? frontCover : backCover}
           pageWidth={pageWidth}
-          shift={coverSize / 2}
           square={coverSize / (1 + COVER_EDGE)}
           slideRef={slideRef}
           onEnd={finishCoverMotion}

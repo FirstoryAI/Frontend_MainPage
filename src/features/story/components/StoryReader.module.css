@@ -199,47 +199,6 @@
   transform-origin: right center;
 }
 
-/* 표지가 받는 빛이에요. 정사각형 표지 위에만 어둡게 덮여요. (투명도는 Motion이 바꿔요) */
-.coverLeafShade {
-  position: absolute;
-  top: 50%;
-  width: var(--square);
-  height: var(--square);
-  margin-top: calc(var(--square) / -2);
-  background: linear-gradient(90deg, rgb(20 12 4 / 70%), rgb(20 12 4 / 45%));
-  opacity: 0;
-  pointer-events: none;
-}
-
-.coverMotion[data-kind='open'] .coverLeafFace:not(.coverLeafInside) .coverLeafShade,
-.coverMotion[data-kind='close'] .coverLeafInside .coverLeafShade { left: 0; }
-
-.coverMotion[data-kind='open'] .coverLeafInside .coverLeafShade,
-.coverMotion[data-kind='close'] .coverLeafFace:not(.coverLeafInside) .coverLeafShade { right: 0; }
-
-/* 들린 표지가 책등 옆 바닥에 드리우는 그림자예요. 책등에서 멀어질수록 옅어져요. */
-.coverCastShadow {
-  position: absolute;
-  top: 50%;
-  width: var(--square);
-  height: var(--square);
-  margin-top: calc(var(--square) / -2);
-  opacity: 0;
-  pointer-events: none;
-}
-
-.coverCastShadow[data-side='right'] {
-  left: 50%;
-  transform-origin: left center;
-  background: linear-gradient(90deg, rgb(0 0 0 / 55%), rgb(0 0 0 / 0%));
-}
-
-.coverCastShadow[data-side='left'] {
-  right: 50%;
-  transform-origin: right center;
-  background: linear-gradient(270deg, rgb(0 0 0 / 55%), rgb(0 0 0 / 0%));
-}
-
 .coverLeafFace {
   position: absolute;
   inset: 0;
@@ -247,7 +206,54 @@
   -webkit-backface-visibility: hidden;
 }
 
-.coverLeafInside { transform: rotateY(180deg); }
+
+/* ---------- 책장을 넘기듯 표지를 펼치고 덮는 움직임 (CoverMotion) ----------
+   책등(화면 가운데)을 기준으로 놓고, 자리·잘라 보일 영역·그림자는 JS가 매 프레임 정해요. */
+.curl {
+  position: absolute;
+  z-index: 3;
+  inset: 0;
+  overflow: hidden;
+  pointer-events: none;
+}
+
+.curlSpine {
+  position: absolute;
+  top: 0;
+  bottom: 0;
+  left: 50%;
+  width: 0;
+}
+
+/* 아직 넘어가지 않은 앞표지(책등 오른쪽)예요. */
+.curlRemain {
+  position: absolute;
+  top: 0;
+  left: 0;
+  width: var(--page-w);
+  height: 100%;
+}
+
+/* 접혀 넘어간 면이에요. 책등 왼쪽에 놓일 자리에 그리고, 접히는 선에 맞춰 옮기고 잘라 보여요. */
+.curlFlip {
+  position: absolute;
+  top: 0;
+  left: calc(var(--page-w) * -1);
+  width: var(--page-w);
+  height: 100%;
+}
+
+/* 접히는 선 근처, 넘어간 종이 쪽 그늘이에요. 접힌 곳에 가까울수록 짙어요. */
+.curlFoldShade {
+  position: absolute;
+  background: linear-gradient(90deg, rgb(40 25 10 / 0%), rgb(40 25 10 / 14%) 60%, rgb(40 25 10 / 30%) 92%, rgb(255 255 255 / 25%));
+}
+
+/* 들린 종이가 걷힌 쪽 바닥(쪽·벽)에 드리우는 그림자예요. */
+.curlCast {
+  position: absolute;
+  background: linear-gradient(90deg, rgb(0 0 0 / 38%), rgb(0 0 0 / 12%) 40%, rgb(0 0 0 / 0%));
+}
 
 /* 표지 안쪽 종이예요. 두께(종이 단면)는 그리지 않아요. */
 .coverInsidePaper {
