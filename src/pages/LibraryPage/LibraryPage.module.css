@@ -51,8 +51,8 @@
   /* 책 한 권(디자인 244px)과 한 칸에 꽂는 책 수예요. JS가 화면에 맞춰 바꿔요. */
   --book: 244px;
   --per-shelf: 4;
-  /* 책장 폭: 책 수 × 283 - 20 (4권이면 디자인 그대로 1112px). 빈 서재 안내·쪽 넘기기도 이 폭 가운데에 놓여요. */
-  --shelf-width: calc(var(--book) * (var(--per-shelf) * 283 - 20) / 244);
+  /* 책장 폭: 책 수 × 280 - 8 (4권이면 디자인 그대로 1112px). 빈 서재 안내·쪽 넘기기도 이 폭 가운데에 놓여요. */
+  --shelf-width: calc(var(--book) * (var(--per-shelf) * 280 - 8) / 244);
 
   position: relative;
   z-index: 1;
@@ -130,7 +130,7 @@
   padding-bottom: calc(var(--book) * 18 / 244);
 }
 
-/* 책 뒤에 보이는 윗판, 책 아래를 덮는 앞판이에요. */
+/* 책 뒤에 보이는 윗판, 책 아래에 있는 앞판이에요. 책은 윗판 위에 서 있고, 앞판은 책 바닥보다 아래에 있어요. */
 .shelfBoard,
 .shelfFront {
   position: absolute;
@@ -155,16 +155,18 @@
   object-fit: cover;
 }
 
-/* 책장 칸 높이는 디자인(244)대로 두고, 표지는 210으로 줄여 책 사이를 73만큼 띄워요.
-   (표지 4권 840 + 사이 3칸 219 + 양옆 26씩 = 책장 폭 1111) */
+/* 책장 칸 높이는 디자인(244)대로 두고, 표지는 200으로 줄여 책 사이를 80만큼 띄워요.
+   (표지 4권 800 + 사이 3칸 240 + 양옆 36씩 = 책장 폭 1112)
+   표지 바닥은 칸 바닥에서 40px 위예요. 윗판(칸 바닥에서 22~66px 위) 위에 서 있고, 앞판(0~31px)과는 겹치지 않아요. */
 .shelfBooks {
   position: relative;
   z-index: 1;
+  box-sizing: border-box;
   display: flex;
   align-items: flex-end;
-  gap: calc(var(--book) * 73 / 244);
+  gap: calc(var(--book) * 80 / 244);
   min-height: var(--book);
-  padding-left: calc(var(--book) * 26 / 244);
+  padding: 0 0 calc(var(--book) * 22 / 244) calc(var(--book) * 36 / 244);
 }
 
 .shelvesReady .book {
@@ -186,8 +188,8 @@
   position: relative;
   display: block;
   flex: none;
-  width: calc(var(--book) * 210 / 244);
-  height: calc(var(--book) * 210 / 244);
+  width: calc(var(--book) * 200 / 244);
+  height: calc(var(--book) * 200 / 244);
   padding: 0;
   border: 0;
   background: none;
