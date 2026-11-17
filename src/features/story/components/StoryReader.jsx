@@ -64,6 +64,10 @@ function StoryReader({ title, pages, page, onPage, onClose, closeLabel = '돌아
   const flipDrag = useFlipDrag(bookRef, {
     canPrev: page > firstPage,
     canNext: page < lastPage,
+    // 넓은 화면에서 표지를 펼치고 덮는 건(앞표지 ↔ 1쪽, 마지막 쪽 ↔ 뒤표지) 책장을 끌지 않고 쓸어 넘기면 표지 움직임으로 넘어가요.
+    swipePrev: covers && !portrait && (page === 1 || page === lastPage),
+    swipeNext: covers && !portrait && (page === 0 || page === pages.length),
+    onSwipe: (forward) => showPage(page + (forward ? 1 : -1)),
   });
   const prompt = guide?.prompts?.find((item) => item.afterPage === page);
   const hasGuideContent = Boolean(

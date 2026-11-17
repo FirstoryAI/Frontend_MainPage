@@ -18,7 +18,8 @@ const add = (a, b) => ({ x: a.x + b.x, y: a.y + b.y });
 //  - 실제 책처럼 잡은 쪽의 책장만 넘어가요. 오른쪽 절반은 왼쪽으로 끌어 다음 쪽으로, 왼쪽 절반은 오른쪽으로 끌어 이전 쪽으로 가요.
 //    반대 방향으로 끌거나, 넘어갈 쪽이 없으면(첫 장의 왼쪽, 마지막 장의 오른쪽) 아무 모션도 나오지 않아요.
 // onTap: 끌지 않고 누르기만 했을 때 불러요. canPrev/canNext: 이전·다음 쪽이 있는지예요.
-export function useFlipDrag(bookRef, { onTap, canPrev = true, canNext = true } = {}) {
+// swipePrev/swipeNext: 그 방향은 책장을 끌지 않고, 쓸어 넘기면 onSwipe(앞으로인지)를 불러요. (표지를 펼치고 덮는 건 따로 움직여요)
+export function useFlipDrag(bookRef, { onTap, canPrev = true, canNext = true, swipePrev = false, swipeNext = false, onSwipe } = {}) {
   const drag = useRef(null);
 
   const bookOf = () => bookRef.current?.pageFlip?.();
@@ -105,6 +106,10 @@ export function useFlipDrag(bookRef, { onTap, canPrev = true, canNext = true } =
       }
       // 잡은 쪽과 반대 방향으로 끄는 동안에는 기다려요.
       if (forward ? dx > 0 : dx < 0) return;
+      if (forward ? swipeNext : swipePrev) {
+        d.swipe = { forward, dx };
+        return;
+      }
       begin(book, d, forward);
       event.currentTarget.setPointerCapture?.(event.pointerId);
     }
@@ -119,6 +124,14 @@ export function useFlipDrag(bookRef, { onTap, canPrev = true, canNext = true } =
     drag.current = null;
 
     if (!d.started) {
+      if (d.swipe) {
+        // 쓸어 넘긴 방향으로 쪽 폭의 1/10보다 많이 움직였으면 넘겨요.
+        const book = bookOf();
+        const dx = book ? pointOf(book, event).x - d.start.x : d.swipe.dx;
+        const far = book ? book.getBoundsRect().pageWidth * 0.1 : 30;
+        if (event.type === 'pointerup' && (d.swipe.forward ? dx < -far : dx > far)) onSwipe?.(d.swipe.forward);
+        return;
+      }
       if (event.type === 'pointerup') onTap?.(event);
       return;
     }
