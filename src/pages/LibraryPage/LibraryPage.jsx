@@ -24,7 +24,7 @@ import { useStoryGeneration } from '../../features/story/generation/useStoryGene
 import { useSignedIn } from '../../features/auth/useSignedIn';
 import styles from './LibraryPage.module.css';
 
-// 서재 칩은 주제별로 나눠요. (처음 / 친구 / 가족 / 교육·훈육 / 이별 / 기타)
+// 서재 칩은 주제별로 나눠요. (첫 경험 / 친구 / 가족 / 교육·훈육 / 이별 / 기타)
 const ALL_FILTER = 'ALL';
 const filters = [{ value: ALL_FILTER, label: '전체' }, ...LIBRARY_TOPICS.map((topic) => ({ value: topic, label: topic }))];
 const isTopicFilter = (value) => filters.some((filter) => filter.value === value);
