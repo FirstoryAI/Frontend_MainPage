@@ -13,6 +13,9 @@ const GROW_FROM = 0.52;
 const FOLD_TILT = 0.2;
 // 정사각형 표지 아래로 보이는 책 두께예요. (CSS .coverBook의 --edge와 같아요)
 const COVER_EDGE = 0.022;
+// 마우스를 올려 표지가 살짝 열려 있던 채로 누르면, 그 기울기에서 시작해 움직임 앞쪽(PEEK_SETTLE까지)에 곧게 펴져요. (CSS .coverSwing과 같아요)
+const PEEK_DEG = 38;
+const PEEK_SETTLE = 0.1;
 
 const clamp01 = (value) => Math.min(1, Math.max(0, value));
 const easeInOut = (t) => (t < 0.5 ? 4 * t * t * t : 1 - ((-2 * t + 2) ** 3) / 2);
@@ -24,7 +27,8 @@ const easeInOut = (t) => (t < 0.5 ? 4 * t * t * t : 1 - ((-2 * t + 2) ** 3) / 2)
 //  - 되돌아갈 때(1쪽 → 앞표지, 뒤표지 → 마지막 쪽)는 같은 움직임을 거꾸로 해요.
 // open은 책이 펼쳐진 정도예요. 0이면 덮인 책(표지), 1이면 화면 가득 펼친 쪽이에요.
 // 그리는 건 매 프레임 open 값으로 자리를 계산해 바로 적용해요. (접히는 선, 넘어간 종이, 그림자, 책의 보이는 영역)
-export default function CoverMotion({ kind, reverse, src, pageWidth, square, slideRef, onEnd }) {
+// insideSrc: 첫 쪽 그림이에요. 표지가 넘어가 내려앉는 안쪽 면에, 이 그림의 왼쪽 절반을 미리 깔아 빈 종이(여백)가 보이지 않게 해요.
+export default function CoverMotion({ kind, reverse, src, insideSrc, pageWidth, square, slideRef, onEnd }) {
   const front = kind === 'open';
   const open = useMotionValue(front === !reverse ? 0 : 1);
   const onEndRef = useRef(onEnd);
@@ -45,6 +49,8 @@ export default function CoverMotion({ kind, reverse, src, pageWidth, square, sli
     const root = rootRef.current;
     if (!slide || !root) return undefined;
 
+    // 표지를 열러 누른 순간 마우스가 표지 위에 있어서 살짝 열려 있었는지예요.
+    const peeked = front && !reverse && Boolean(document.querySelector('[data-peek]:hover'));
     const c = square;
     const edge = c * COVER_EDGE;
     const draw = (value) => {
@@ -94,6 +100,8 @@ export default function CoverMotion({ kind, reverse, src, pageWidth, square, sli
       flipRef.current.style.clipPath = `polygon(${flipLeft}px ${flipTop}px, ${flipEdge(flipTop)}px ${flipTop}px, ${flipEdge(flipBottom)}px ${flipBottom}px, ${flipLeft}px ${flipBottom}px)`;
       // 앞표지는 아직 넘어가지 않은 부분만 남겨요. (오른쪽 두께까지)
       if (remainRef.current) {
+        remainRef.current.style.transform = peeked
+          ? `perspective(3200px) rotateY(${-PEEK_DEG * (1 - clamp01(value / PEEK_SETTLE))}deg)` : '';
         const keep = (y) => Math.min(pageWidth, Math.max(0, lineX(y) + edge * (x / c)));
         remainRef.current.style.clipPath = `polygon(0 0, ${keep(0)}px 0, ${keep(height)}px ${height}px, 0 ${height}px)`;
       }
@@ -156,7 +164,7 @@ export default function CoverMotion({ kind, reverse, src, pageWidth, square, sli
       slide.style.scale = '';
       slide.style.transformOrigin = '';
     };
-  }, [open, slideRef, square, pageWidth, front]);
+  }, [open, slideRef, square, pageWidth, front, reverse]);
 
   useLayoutEffect(() => {
     // 앞으로(앞표지 → 1쪽, 뒤표지 → 마지막 쪽)면 펼치고, 거꾸로면 덮어요.
@@ -189,7 +197,10 @@ export default function CoverMotion({ kind, reverse, src, pageWidth, square, sli
         <div className={styles.curlFlip} ref={flipRef}>
           {front ? (
             <div className={styles.coverFrame} data-side="back">
-              <div className={`${styles.coverBook} ${styles.coverInsidePaper}`} />
+              <div className={`${styles.coverBook} ${styles.coverInsidePaper}`}>
+                {/* 첫 쪽 그림의 왼쪽 절반이에요. 표지가 넘어가 내려앉을 자리(왼쪽 쪽)에 있는 그림과 같아서, 종이가 사라질 때 여백 없이 이어져요. */}
+                {insideSrc && <img className={styles.coverInsideImage} src={insideSrc} alt="" decoding="async" draggable="false" />}
+              </div>
             </div>
           ) : <CoverFace src={src} label="" side="back" />}
           {/* 접히는 선 근처 그늘이에요. 넘어간 면과 함께 옮겨지고 잘려요. */}
