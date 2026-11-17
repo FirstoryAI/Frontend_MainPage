@@ -26,8 +26,14 @@ const HEADER_VISIBLE_MS = 2000;
 
 // 동화를 화면 가득 크게 읽는 화면이에요. 미리보기(확정 전)와 아이와 읽기(확정 후)가 함께 써요.
 // pages: [{ pageNo, text, imageUrl, imageStatus }], page: 지금 쪽(1부터), children: 쪽 아래에 띄울 보조 영역
-function StoryReader({ title, pages, page, onPage, onClose, closeLabel = '돌아가기', children, guide, previewMode = false, className = '', suspended = false }) {
+// frontCover·backCover: 아이와 읽기에서 맨 앞·맨 뒤에 붙일 앞표지·뒤표지 그림이에요. 둘 다 있으면 page 0이 앞표지, 마지막 쪽+1이 뒤표지예요.
+function StoryReader({ title, pages, page, onPage, onClose, closeLabel = '돌아가기', children, guide, previewMode = false, className = '', suspended = false, frontCover = null, backCover = null }) {
   const current = pages[page - 1];
+  // 실제 책처럼 앞표지에서 시작해 뒤표지로 끝나요. (미리보기는 지금처럼 1쪽부터예요)
+  const covers = !previewMode && Boolean(frontCover && backCover);
+  const firstPage = covers ? 0 : 1;
+  const lastPage = covers ? pages.length + 1 : pages.length;
+  const coverLabel = covers && page === 0 ? '앞표지' : covers && page === pages.length + 1 ? '뒤표지' : null;
   const [closedGuidePage, setClosedGuidePage] = useState(null);
   const [isHintOpen, setIsHintOpen] = useState(false);
   // 아이와 읽기에서는 그림이 화면을 가득 채우고, 화면을 한 번 누르면 상단바가 내려와요.
@@ -41,12 +47,12 @@ function StoryReader({ title, pages, page, onPage, onClose, closeLabel = '돌아
   const [portrait, setPortrait] = useState(() => window.matchMedia('(max-width: 760px)').matches);
   // 쪽이 바뀌면 책이 그 쪽으로 책장을 넘겨요.
   const showPage = useCallback((next) => {
-    const target = Math.min(pages.length, Math.max(1, next));
+    const target = Math.min(lastPage, Math.max(firstPage, next));
     if (target === page) return;
     setClosedGuidePage(null);
     setIsHintOpen(false);
     onPage(target);
-  }, [onPage, page, pages.length]);
+  }, [onPage, page, firstPage, lastPage]);
   // 손으로 끌어 넘긴 뒤 책이 알려준 쪽이에요.
   const handleBookPage = useCallback((next) => {
     setClosedGuidePage(null);
@@ -56,8 +62,8 @@ function StoryReader({ title, pages, page, onPage, onClose, closeLabel = '돌아
   const pageGuide = guide && previewMode ? guideFor(guide, page, pages.length) : null;
   // 아이와 읽기에서는 책장을 누른 채 끌어서도 넘겨요. 미리보기는 아래 화살표로만 넘어가요.
   const flipDrag = useFlipDrag(bookRef, {
-    canPrev: page > 1,
-    canNext: page < pages.length,
+    canPrev: page > firstPage,
+    canNext: page < lastPage,
   });
   const prompt = guide?.prompts?.find((item) => item.afterPage === page);
   const hasGuideContent = Boolean(
@@ -111,7 +117,7 @@ function StoryReader({ title, pages, page, onPage, onClose, closeLabel = '돌아
     return () => window.clearTimeout(timer);
   }, [previewMode, isHeaderShown, headerTimerKey]);
 
-  if (!current) return null;
+  if (!current && !coverLabel) return null;
 
   const isHeaderHidden = !previewMode && !isHeaderShown;
 
@@ -155,10 +161,10 @@ function StoryReader({ title, pages, page, onPage, onClose, closeLabel = '돌아
           <img src={readerClose} alt="" />
         </button>
         <h1 className={styles.readerTitle}>{title}</h1>
-        <div className={styles.readerProgress} aria-label={`${page} / ${pages.length}쪽`}>
-          <span>{page} / {pages.length}</span>
+        <div className={styles.readerProgress} aria-label={coverLabel ?? `${page} / ${pages.length}쪽`}>
+          <span>{coverLabel ?? `${page} / ${pages.length}`}</span>
           <div className={styles.readerProgressTrack}>
-            <div className={styles.readerProgressFill} style={{ width: `${(page / pages.length) * 100}%` }} />
+            <div className={styles.readerProgressFill} style={{ width: `${(Math.min(Math.max(page, 0), pages.length) / pages.length) * 100}%` }} />
           </div>
         </div>
       </header>
@@ -174,6 +180,8 @@ function StoryReader({ title, pages, page, onPage, onClose, closeLabel = '돌아
               onPage={handleBookPage}
               portrait={portrait}
               seamless={!previewMode}
+              frontCover={covers ? frontCover : null}
+              backCover={covers ? backCover : null}
               {...(previewMode ? {} : flipDrag)}
             />
           </div>
@@ -183,7 +191,7 @@ function StoryReader({ title, pages, page, onPage, onClose, closeLabel = '돌아
           className={`${styles.readerArrow} ${styles.readerArrowLeft}`}
           type="button"
           onClick={() => showPage(page - 1)}
-          disabled={page === 1}
+          disabled={page === firstPage}
           aria-label="이전 쪽"
         >
           <img src={readerArrowLeft} alt="" />
@@ -192,7 +200,7 @@ function StoryReader({ title, pages, page, onPage, onClose, closeLabel = '돌아
           className={`${styles.readerArrow} ${styles.readerArrowRight}`}
           type="button"
           onClick={() => showPage(page + 1)}
-          disabled={page === pages.length}
+          disabled={page === lastPage}
           aria-label="다음 쪽"
         >
           <img src={readerArrowRight} alt="" />

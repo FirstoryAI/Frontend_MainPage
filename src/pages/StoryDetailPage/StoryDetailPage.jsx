@@ -114,7 +114,9 @@ function StoryDetailPage() {
     try {
       const [book, resumed] = await Promise.all([getBook(storyId), resumeReading(storyId)]);
       const session = resumed ?? (await startReading(storyId));
-      setReading({ session, book, page: Math.max(1, session.lastPage) });
+      // 앞·뒤표지가 있으면 처음 읽을 때는 앞표지(0쪽)부터 보여줘요. 읽던 쪽이 있으면 그 쪽부터예요.
+      const hasCovers = Boolean(book.frontCoverUrl && book.backCoverUrl);
+      setReading({ session, book, page: session.lastPage >= 1 ? session.lastPage : (hasCovers ? 0 : 1) });
     } catch (error) {
       setNotice(error.message || '읽기를 시작하지 못했어요.');
     } finally {
@@ -154,7 +156,10 @@ function StoryDetailPage() {
 
   const handlePage = (page) => {
     setReading((current) => ({ ...current, page }));
-    saveReadingProgress(reading.session.sessionId, page).catch(() => {});
+    // 표지(0쪽, 마지막+1쪽)는 읽던 쪽으로 저장하지 않아요.
+    if (page >= 1 && page <= reading.book.pages.length) {
+      saveReadingProgress(reading.session.sessionId, page).catch(() => {});
+    }
   };
 
   const handleFinishReading = async (feedback) => {
@@ -274,8 +279,13 @@ function StoryDetailPage() {
           onPage={handlePage}
           onClose={() => setReading(null)}
           closeLabel="읽기 닫기"
+          // 앞·뒤표지가 있는 동화(frontCoverUrl·backCoverUrl)만 표지를 붙여요.
+          // 앞표지는 서재와 같은 정사각형 표지(coverUrl)를 그대로 쓰고, 뒤표지는 가로 그림의 가운데를 정사각형으로 보여줘요.
+          frontCover={reading.book.frontCoverUrl && reading.book.backCoverUrl ? (reading.book.coverUrl || reading.book.frontCoverUrl) : null}
+          backCover={reading.book.frontCoverUrl && reading.book.backCoverUrl ? reading.book.backCoverUrl : null}
         >
-          {reading.page === reading.book.pages.length && (
+          {/* 마지막 쪽과 뒤표지에서 '다 읽었어요'를 보여줘요. */}
+          {reading.page >= reading.book.pages.length && (
             <button className={readerStyles.primary} type="button" onClick={handleReadCompleteClick} disabled={checkingReadingFeedback}>
               {checkingReadingFeedback ? '확인하는 중…' : '다 읽었어요'}
             </button>
