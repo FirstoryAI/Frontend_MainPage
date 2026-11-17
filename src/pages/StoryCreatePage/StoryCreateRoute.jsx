@@ -12,7 +12,7 @@ function StoryCreateRoute() {
     if (location.state?.generation) return undefined;
     let active = true;
     getFreeStoryRemaining()
-      .then((count) => { if (active) setAllowed(count > 0); })
+      .then((count) => { if (active) setAllowed(count !== 0); })
       .catch(() => { if (active) setAllowed(true); });
     return () => { active = false; };
   }, [location.state]);

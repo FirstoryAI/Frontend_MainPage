@@ -6,7 +6,6 @@ import OnboardingModal from '../../features/onboarding/components/OnboardingModa
 import StoryDraftModal from '../../features/story/components/StoryDraftModal';
 import HomeScenarioModal from '../../features/home/components/HomeScenarioModal';
 import LaunchNoticeModal from '../../features/home/components/LaunchNoticeModal';
-import { FREE_STORY_LIMIT, getFreeStoryRemaining } from '../../features/home/storyQuota';
 import { listScenarios, scenarioCategoryLabel } from '../../features/home/scenarios';
 import { PRIMARY_COPY, SET_COUNT, useConveyor } from '../../features/home/hooks/useConveyor';
 import { hasSeenOnboarding, markOnboardingSeen } from '../../features/onboarding/onboardingSeen';
@@ -15,6 +14,7 @@ import { libraryTopic } from '../../features/story/storyMappers';
 import { getDraft } from '../../services/storiesApi';
 import { getStories } from '../../services/libraryApi';
 import { markOnboardingSeen as saveOnboardingSeen } from '../../services/meApi';
+import { getHome } from '../../services/homeApi';
 import avatarProfile from '../../assets/images/home/day-design/profile.svg';
 import dayBell from '../../assets/images/home/day-design/notification.svg';
 import iconPencil from '../../assets/images/home/day-design/section-pencil.svg';
@@ -68,7 +68,7 @@ function DashboardPage({ guest = false }) {
   const [storyModal, setStoryModal] = useState(null);
   const [selectedScenario, setSelectedScenario] = useState(null);
   const [drafts, setDrafts] = useState([]);
-  const [remaining, setRemaining] = useState(() => location.state?.launchNotice ? 0 : null);
+  const [credits, setCredits] = useState(null);
   const [launchNoticeOpen, setLaunchNoticeOpen] = useState(() => Boolean(location.state?.launchNotice));
   const conveyorScenarios = listScenarios;
   const { resumeGeneration } = useStoryGeneration();
@@ -85,17 +85,18 @@ function DashboardPage({ guest = false }) {
   useEffect(() => {
     if (guest) return undefined;
     let active = true;
-    getFreeStoryRemaining()
-      .then((count) => { if (active) setRemaining(count); })
+    getHome()
+      .then((home) => { if (active) setCredits(home?.credits ?? null); })
       .catch(() => {});
     return () => { active = false; };
   }, [guest]);
 
   const checkRemaining = useCallback(async () => {
     try {
-      const count = await getFreeStoryRemaining();
-      setRemaining(count);
-      if (count === 0) {
+      const home = await getHome();
+      const nextCredits = home?.credits ?? null;
+      setCredits(nextCredits);
+      if (nextCredits?.beta && !nextCredits.unlimited && nextCredits.remaining === 0) {
         setLaunchNoticeOpen(true);
         return false;
       }
@@ -107,9 +108,10 @@ function DashboardPage({ guest = false }) {
 
   useEffect(() => {
     if (guest || !location.state?.chooseStory) return;
-    getFreeStoryRemaining().then((count) => {
-      setRemaining(count);
-      if (count === 0) {
+    getHome().then((home) => {
+      const nextCredits = home?.credits ?? null;
+      setCredits(nextCredits);
+      if (nextCredits?.beta && !nextCredits.unlimited && nextCredits.remaining === 0) {
         setLaunchNoticeOpen(true);
         return;
       }
@@ -194,18 +196,14 @@ function DashboardPage({ guest = false }) {
                 <div className={styles.createAction}>
                   <button className={styles.createStory} type="button" onClick={() => {
                     if (guest) navigate('/auth');
-                    else if (remaining === 0) setLaunchNoticeOpen(true);
+                    else if (credits?.beta && !credits.unlimited && credits.remaining === 0) setLaunchNoticeOpen(true);
                     else navigate('/home', { state: { chooseStory: true } });
                   }}>
-                    <img src={createPlus} alt="" /> 동화 만들기{!guest && ` (${remaining ?? '–'}/${FREE_STORY_LIMIT})`}
+                    <img src={createPlus} alt="" /> 동화 만들기{credits?.beta && !credits.unlimited && ` (${credits.remaining}/${credits.total})`}
                   </button>
-                  {!guest && <div className={styles.remainingBubble} role="status">
+                  {credits?.beta && !credits.unlimited && <div className={styles.remainingBubble} role="status">
                     <img src={remainingBubble} alt="" />
-                    <span>{remaining === null
-                      ? '무료 동화 생성 횟수를 확인하고 있어요'
-                      : remaining === 0
-                      ? '무료 동화 생성 횟수를 모두 소진했어요'
-                      : `무료로 동화를 만들어볼 수 있는 횟수가 ${remaining}회 남았어요`}</span>
+                    <span>무료로 동화를 만들어볼 수 있는 횟수가 {credits.remaining}회 남았어요</span>
                   </div>}
                 </div>
               </div>

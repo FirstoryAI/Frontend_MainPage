@@ -766,6 +766,7 @@ export function startMockApi({ port = Number(process.env.MOCK_API_PORT) || 8787,
         inProgress: stories.filter((story) => inGroup(story, 'CREATING') || inGroup(story, 'REVIEWING') || inGroup(story, 'FAILED')).slice(0, 3).map(card),
         recent: stories.filter((story) => story.status === 'COMPLETED').slice(0, 3).map(card),
         counts: counts(user),
+        credits: { beta: true, unlimited: false, remaining: freeStoryRemaining(user), total: 2 },
         freeStoryRemaining: freeStoryRemaining(user),
       });
     }
