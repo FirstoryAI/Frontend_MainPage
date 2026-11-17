@@ -841,7 +841,9 @@ function StoryCreatePage() {
     }
   };
   // 다음 단계를 기다리는 동안(흐린 화면)에는 나가기·뒤로가기를 포함해 아무것도 누를 수 없어요.
-  const waitingNext = (busy && leaping) || saveComplete;
+  // 단, 분위기 선택 화면이 열려 있는 동안은 덮개를 내려요. 부모가 분위기를 골라야 다음으로 갈 수 있어서,
+  // 덮개가 있으면 서로 기다리느라 영원히 멈춰요. (고르면 다시 덮개가 올라와요. 뒤로가기하면 원래 화면으로 돌아가요.)
+  const waitingNext = ((busy && leaping) || saveComplete) && !toneOpen;
 
   // 위기 신호가 있어 동화를 만들 수 없을 때는 안내 화면만 보여줘요.
   if (blocked || activeJob?.status === 'blocked') {
