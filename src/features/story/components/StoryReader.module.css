@@ -165,31 +165,18 @@
 }
 
 /* ---------- 표지를 펼치고 덮는 움직임 (StoryFlipBook의 CoverMotion) ----------
-   펼치기: 표지가 책등을 축으로 왼쪽으로 넘어가며 사라지고, 뒤에서 쪽이 살짝 커지며 나타나요.
-   덮기: 쪽이 살짝 작아지며 사라지고, 뒤표지가 오른쪽에서 넘어와 가운데에 놓여요. 되돌아갈 땐 거꾸로 움직여요. */
-.flipHost {
-  --cover-motion: 1000ms cubic-bezier(.45, .05, .35, 1);
-}
-
-.flipHost[data-motion] .flipSlide {
-  animation: spread-in var(--cover-motion) both;
-}
-
-.flipHost[data-motion-reverse] .flipSlide {
-  animation-direction: reverse;
-}
-
-@keyframes spread-in {
-  0%, 35% { opacity: 0; scale: .9; }
-  100% { opacity: 1; scale: 1; }
-}
-
+   움직임(각도·위치·투명도·그늘)은 Motion 스프링이 정해요. 여기서는 자리와 모양만 잡아요. */
 .coverMotion {
   position: absolute;
   z-index: 3;
   inset: 0;
-  perspective: 2400px;
   pointer-events: none;
+}
+
+.coverLeafStage {
+  position: absolute;
+  inset: 0;
+  perspective: 2400px;
 }
 
 .coverLeaf {
@@ -204,41 +191,53 @@
 .coverMotion[data-kind='open'] .coverLeaf {
   left: 50%;
   transform-origin: left center;
-  animation: cover-open var(--cover-motion) both;
 }
 
 /* 뒤표지: 책등(오른쪽 가장자리)을 축으로 넘어와요. */
 .coverMotion[data-kind='close'] .coverLeaf {
   left: calc(50% - var(--page-w));
   transform-origin: right center;
-  animation: cover-close var(--cover-motion) both;
 }
 
-.coverMotion[data-reverse] .coverLeaf { animation-direction: reverse; }
-
-/* 넘어가는 표지에 투명도를 주면 입체가 평평해져서 뒷면 숨김이 안 돼요. 투명도는 바깥 틀에 줘요. */
-.coverMotion[data-kind='open'] { animation: cover-open-fade var(--cover-motion) both; }
-.coverMotion[data-kind='close'] { animation: cover-close-fade var(--cover-motion) both; }
-.coverMotion[data-reverse] { animation-direction: reverse; }
-
-@keyframes cover-open {
-  0% { transform: translateX(calc(var(--shift) * -1)) rotateY(0deg); }
-  100% { transform: translateX(0) rotateY(-180deg); }
+/* 표지가 받는 빛이에요. 정사각형 표지 위에만 어둡게 덮여요. (투명도는 Motion이 바꿔요) */
+.coverLeafShade {
+  position: absolute;
+  top: 50%;
+  width: var(--square);
+  height: var(--square);
+  margin-top: calc(var(--square) / -2);
+  background: linear-gradient(90deg, rgb(20 12 4 / 70%), rgb(20 12 4 / 45%));
+  opacity: 0;
+  pointer-events: none;
 }
 
-@keyframes cover-close {
-  0% { transform: translateX(0) rotateY(180deg); }
-  100% { transform: translateX(var(--shift)) rotateY(0deg); }
+.coverMotion[data-kind='open'] .coverLeafFace:not(.coverLeafInside) .coverLeafShade,
+.coverMotion[data-kind='close'] .coverLeafInside .coverLeafShade { left: 0; }
+
+.coverMotion[data-kind='open'] .coverLeafInside .coverLeafShade,
+.coverMotion[data-kind='close'] .coverLeafFace:not(.coverLeafInside) .coverLeafShade { right: 0; }
+
+/* 들린 표지가 책등 옆 바닥에 드리우는 그림자예요. 책등에서 멀어질수록 옅어져요. */
+.coverCastShadow {
+  position: absolute;
+  top: 50%;
+  width: var(--square);
+  height: var(--square);
+  margin-top: calc(var(--square) / -2);
+  opacity: 0;
+  pointer-events: none;
 }
 
-@keyframes cover-open-fade {
-  0%, 70% { opacity: 1; }
-  100% { opacity: 0; }
+.coverCastShadow[data-side='right'] {
+  left: 50%;
+  transform-origin: left center;
+  background: linear-gradient(90deg, rgb(0 0 0 / 55%), rgb(0 0 0 / 0%));
 }
 
-@keyframes cover-close-fade {
-  0% { opacity: 0; }
-  30%, 100% { opacity: 1; }
+.coverCastShadow[data-side='left'] {
+  right: 50%;
+  transform-origin: right center;
+  background: linear-gradient(270deg, rgb(0 0 0 / 55%), rgb(0 0 0 / 0%));
 }
 
 .coverLeafFace {
@@ -700,9 +699,6 @@
 .previewReader .readerArrow { display: none; }
 
 @media (prefers-reduced-motion: reduce) {
-  .flipHost[data-motion] .flipSlide,
-  .coverMotion,
-  .coverMotion .coverLeaf { animation-duration: 1ms; }
   .previewGuide, .previewGuideOpen, .previewHint, .previewHintOpen { transition: none; }
   .previewGuideToggleAttention::before, .previewGuideToggleAttention::after { animation: none; }
   /* 움직이지 않고 서서히 나타나고 사라져요. */

@@ -1,5 +1,6 @@
-import { forwardRef, useCallback, useEffect, useImperativeHandle, useMemo, useRef, useState } from 'react';
+import { forwardRef, lazy, Suspense, useCallback, useEffect, useImperativeHandle, useLayoutEffect, useMemo, useRef, useState } from 'react';
 import HTMLFlipBook from 'react-pageflip';
+import CoverFace from './CoverFace';
 import StoryFlipPage from './StoryFlipPage';
 import styles from './StoryReader.module.css';
 
@@ -37,18 +38,6 @@ const COVER_EDGE = 0.022;
 
 // 앞표지·뒤표지 한 면이에요. 탁자에 놓인 실제 그림책처럼 서재 표지와 같은 정사각형에 책 두께(종이 단면)·책등 주름·빛·그림자를 그려요.
 // 앞표지는 책의 오른쪽 면이라 왼쪽(책등)에, 뒤표지는 왼쪽 면이라 오른쪽(책등)에 붙어요. 둘레는 비워서 뒤의 서재 벽이 보여요.
-// portrait(한 쪽씩 보는 화면)에서는 책등 없이 화면 가운데에 놓아요.
-function CoverFace({ src, label, side, portrait = false }) {
-  return (
-    <div className={styles.coverFrame} data-side={side} data-portrait={portrait || undefined}>
-      <div className={styles.coverBook}>
-        <img className={styles.coverImage} src={src} alt={label} draggable="false" />
-        <span className={styles.coverSheen} aria-hidden="true" />
-      </div>
-    </div>
-  );
-}
-
 const StoryCoverPage = forwardRef(function StoryCoverPage({ src, label, side, portrait }, ref) {
   return (
     <div className={`${styles.flipPage} ${styles.coverPage}`} ref={ref} data-density="hard">
@@ -58,24 +47,27 @@ const StoryCoverPage = forwardRef(function StoryCoverPage({ src, label, side, po
   );
 });
 
-// 넓은 화면에서 표지를 펼치거나(앞표지 ↔ 1쪽) 덮을 때(마지막 쪽 ↔ 뒤표지)의 움직임이에요.
-// 정사각형 표지와 화면 가득한 쪽은 모양이 달라서, 라이브러리 책장 넘김 대신 따로 움직여요.
-//  - 펼치기: 표지가 책등을 축으로 왼쪽으로 넘어가며 사라지고, 그 사이 뒤에서 쪽이 살짝 커지며 나타나요.
-//  - 덮기: 쪽이 살짝 작아지며 사라지고, 뒤표지가 오른쪽에서 책등을 축으로 넘어와 가운데에 놓여요.
-//  - 되돌아갈 때(1쪽 → 앞표지, 뒤표지 → 마지막 쪽)는 같은 움직임을 거꾸로 해요.
-function CoverMotion({ kind, reverse, src, pageWidth, shift, onEnd }) {
+// 표지를 펼치고 덮는 움직임(Motion 라이브러리)은 아이와 읽기에서만 써서, 처음 쓸 때 따로 받아요.
+const loadCoverMotion = () => import('./CoverMotion');
+const CoverMotion = lazy(loadCoverMotion);
+
+// 움직임 코드를 아직 받는 중이면, 덮인 표지를 그대로 보여주고 뒤의 쪽은 숨겨 둬요. (받는 대로 CoverMotion이 이어서 움직여요)
+function CoverMotionPending({ kind, src, pageWidth, shift, slideRef }) {
+  useLayoutEffect(() => {
+    const slide = slideRef.current;
+    if (!slide) return undefined;
+    slide.style.opacity = '0';
+    return () => {
+      slide.style.opacity = '';
+    };
+  }, [slideRef]);
   const front = kind === 'open';
   return (
-    <div className={styles.coverMotion} data-kind={kind} data-reverse={reverse || undefined}
-      style={{ '--page-w': `${pageWidth}px`, '--shift': `${shift}px` }} aria-hidden="true">
-      <div className={styles.coverLeaf} onAnimationEnd={(event) => event.target === event.currentTarget && onEnd()}>
-        <div className={styles.coverLeafFace}>
-          <CoverFace src={src} label="" side={front ? 'front' : 'back'} />
-        </div>
-        {/* 표지 안쪽(종이)이에요. 넘어가는 동안 뒤집힌 면으로 보여요. */}
-        <div className={`${styles.coverLeafFace} ${styles.coverLeafInside}`}>
-          <div className={styles.coverFrame} data-side={front ? 'back' : 'front'}>
-            <div className={`${styles.coverBook} ${styles.coverInsidePaper}`} />
+    <div className={styles.coverMotion} data-kind={kind} style={{ '--page-w': `${pageWidth}px` }} aria-hidden="true">
+      <div className={styles.coverLeafStage}>
+        <div className={styles.coverLeaf} style={{ transform: `translateX(${front ? -shift : shift}px)` }}>
+          <div className={styles.coverLeafFace}>
+            <CoverFace src={src} label="" side={front ? 'front' : 'back'} />
           </div>
         </div>
       </div>
@@ -198,6 +190,13 @@ const StoryFlipBook = forwardRef(function StoryFlipBook({
     }
   }, [page, portrait, covers, count, area, motionKind, turnFirst]);
 
+  // 펼치고 덮는 동안 책(쪽)이 나타나고 사라지는 건 CoverMotion이 이 틀의 투명도·크기를 바꿔요.
+  const slideRef = useRef(null);
+  // 표지가 있는 책을 넓은 화면으로 보면, 표지를 펼치기 전에 움직임 코드를 미리 받아 둬요.
+  useEffect(() => {
+    if (covers && !portrait) loadCoverMotion();
+  }, [covers, portrait]);
+
   // 표지 움직임이 끝나면 책을 가려던 쪽에 두고 멈춰요.
   const finishCoverMotion = () => {
     bookRef.current?.pageFlip?.()?.turnToPage(pageIndexFor(page, portrait, covers, count));
@@ -238,13 +237,11 @@ const StoryFlipBook = forwardRef(function StoryFlipBook({
       // 표지가 있는 책은 쪽 그림을 깔지 않는 동안(표지를 보거나 펼치고 덮는 동안) 뒤에 서재 벽을 보여줘요.
       data-wall={covers && !showBackdrop ? true : undefined}
       data-motion={motionKind ?? undefined}
-      // 쪽이 나타나는 방향(앞표지 → 1쪽, 뒤표지 → 마지막 쪽)이 아니면 쪽 움직임을 거꾸로 해요.
-      data-motion-reverse={motionKind && !turnFirst ? true : undefined}
       style={showBackdrop ? { backgroundImage: `url("${current.imageUrl}")` } : undefined}
       {...hostProps}
     >
       {area?.width > 0 && area?.height > 0 && (
-        <div className={styles.flipSlide} style={{ transform: `translateX(${shift}px)` }}>
+        <div className={styles.flipSlide} ref={slideRef} style={{ transform: `translateX(${shift}px)` }}>
           <HTMLFlipBook
             key={`${portrait ? 'portrait' : 'spread'}-${covers ? 'covers' : 'plain'}`}
             ref={bookRef}
@@ -270,6 +267,15 @@ const StoryFlipBook = forwardRef(function StoryFlipBook({
         </div>
       )}
       {motionKind && (
+        <Suspense fallback={turnFirst ? (
+          <CoverMotionPending
+            kind={motionKind}
+            src={motionKind === 'open' ? frontCover : backCover}
+            pageWidth={pageWidth}
+            shift={coverSize / 2}
+            slideRef={slideRef}
+          />
+        ) : null}>
         <CoverMotion
           key={`${restingPage}-${page}`}
           kind={motionKind}
@@ -278,8 +284,11 @@ const StoryFlipBook = forwardRef(function StoryFlipBook({
           src={motionKind === 'open' ? frontCover : backCover}
           pageWidth={pageWidth}
           shift={coverSize / 2}
+          square={coverSize / (1 + COVER_EDGE)}
+          slideRef={slideRef}
           onEnd={finishCoverMotion}
         />
+        </Suspense>
       )}
     </div>
   );
