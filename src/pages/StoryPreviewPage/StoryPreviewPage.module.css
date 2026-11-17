@@ -28,9 +28,10 @@
     display: flex;
     align-items: flex-start;
     height: var(--header-height);
-    padding: 29px 46px 0;
+    padding: 16.1px 50.3px 0;
   }
-  .desktopHeader .logo { transform: none; }
+  .desktopHeader .logo { font-size: 34.04px; letter-spacing: -1.021px; transform: translateY(8px); }
+  .desktopHeader .close { top: 28px; }
   .canvasHeader { display: none; }
 }
 

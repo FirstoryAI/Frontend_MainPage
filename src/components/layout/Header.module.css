@@ -5,26 +5,27 @@
   align-items: flex-start;
   width: 100%;
   height: var(--header-height);
-  padding: 29px 46px 0;
+  padding: 16.1px 50.3px 0;
   background: var(--color-surface);
   box-shadow: 0 2px 10.4px rgb(0 0 0 / 5%);
 }
 
-/* 로고·X 자리는 이야기 화면 Figma(2170:2389) 기준이고, 모든 상단바가 같아요. */
+/* 로고·X 자리는 동화 만들기 입력 단계 상단바 기준이고, 모든 상단바가 같아요. */
 .logo {
   color: var(--color-brand);
   font-family: var(--font-brand);
-  font-size: 37.959px;
+  font-size: 34.04px;
   font-weight: 400;
   line-height: 0.90025;
-  letter-spacing: -1.1388px;
+  letter-spacing: -1.021px;
   text-decoration: none;
+  transform: translateY(8px);
   white-space: nowrap;
 }
 
 .closeButton {
   position: absolute;
-  top: 43px;
+  top: 28px;
   right: 61px;
   display: grid;
   place-items: center;
@@ -49,7 +50,7 @@
 
   .logo {
     font-size: 32px;
-    transform: translateY(8px);
+    letter-spacing: -1.1388px;
   }
 
   .closeButton {

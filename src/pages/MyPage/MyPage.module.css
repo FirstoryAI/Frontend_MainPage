@@ -282,19 +282,21 @@
   }
 }
 
-/* 큰 화면 상단바는 이야기 화면 Figma(2170:2389)와 같은 크기·자리예요. */
+/* 큰 화면 상단바는 동화 만들기 입력 단계 상단바와 같은 크기·자리예요. */
 @media (min-width: 761px) {
   .header {
     align-items: flex-start;
-    padding: 29px 46px 0;
+    padding: 16.1px 50.3px 0;
   }
 
   .logo {
-    transform: none;
+    font-size: 34.04px;
+    letter-spacing: -1.021px;
+    transform: translateY(8px);
   }
 
   .closeButton {
-    top: 43px;
+    top: 28px;
     right: 61px;
     transform: none;
   }
