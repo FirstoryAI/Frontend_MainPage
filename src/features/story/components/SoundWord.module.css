@@ -6,8 +6,9 @@
   display: flex;
   align-items: center;
   font-family: var(--font-sound);
-  /* 서버가 인물과의 간격을 계산할 때 사용한 글자 크기예요. */
-  font-size: 2.5cqw;
+  /* 서버가 인물과의 간격을 계산할 때 쓴 글자 크기(2.5cqw)의 2배예요. 그림책 효과음처럼 크게 보여요.
+     (서버 기준보다 커서, 조각 가운데 자리는 그대로지만 인물·글과 가까워질 수 있어요) */
+  font-size: 5cqw;
   line-height: 1;
   white-space: nowrap;
   transform: translate(-50%, -50%) rotate(var(--rotate, 0deg));
