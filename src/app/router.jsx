@@ -31,3 +31,18 @@ export const router = createBrowserRouter([
     ],
   },
 ]);
+
+// Keep the previous screen visible while the next route is ready, so navigation
+// crossfades without briefly exposing the page background. In-page state changes
+// (such as opening a reader or changing a library filter) stay immediate.
+const navigateWithoutTransition = router.navigate.bind(router);
+router.navigate = (to, options) => {
+  const nextPathname = typeof to === 'string' ? to.split(/[?#]/, 1)[0] : to?.pathname;
+  const changesPage = nextPathname?.startsWith('/') && nextPathname !== router.state.location.pathname;
+
+  if (!changesPage || options?.viewTransition !== undefined || typeof document.startViewTransition !== 'function') {
+    return navigateWithoutTransition(to, options);
+  }
+
+  return navigateWithoutTransition(to, { ...options, viewTransition: true });
+};

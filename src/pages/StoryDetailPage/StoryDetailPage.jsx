@@ -1,5 +1,6 @@
 import { useCallback, useEffect, useLayoutEffect, useRef, useState } from 'react';
 import { useLocation, useNavigate, useParams } from 'react-router-dom';
+import { transitionScene } from '../../app/transitionScene';
 import Sidebar from '../../components/layout/Sidebar';
 import NotificationBell from '../../components/layout/NotificationBell';
 import shelfBackground from '../../assets/images/library/shelf-background.webp';
@@ -56,6 +57,26 @@ function useFitStage() {
 // 앞·뒤표지가 둘 다 있는 책이에요. (이 기능 전에 만든 동화·표지가 실패한 동화는 없어요)
 const hasBookCovers = (book) => Boolean(book?.frontCoverUrl && book?.backCoverUrl);
 
+const preloadImage = (url, cache) => {
+  if (!url) return Promise.resolve();
+  if (cache.has(url)) return cache.get(url).ready;
+
+  const image = new Image();
+  image.decoding = 'async';
+  image.src = url;
+  const ready = image.decode
+    ? image.decode().catch(() => {})
+    : new Promise((resolve) => {
+      if (image.complete) resolve();
+      else {
+        image.onload = resolve;
+        image.onerror = resolve;
+      }
+    });
+  cache.set(url, { image, ready });
+  return ready;
+};
+
 // 서재에서 '아직 읽지 않았어요'·'함께 읽었어요' 동화를 누르면 보이는 '동화 한 눈에 보기' 화면이에요.
 // 밤 나무 벽(서재와 같은 배경) 위에 비스듬히 놓인 표지, 제목·줄거리, '아이와 읽기 시작하기'·'대화 가이드 보기'가 있어요.
 function StoryDetailPage() {
@@ -78,6 +99,32 @@ function StoryDetailPage() {
   // '대화 가이드 보기'로 미리보기와 같은 크게 보기 화면을 연 동안 { book, page }
   const [guideView, setGuideView] = useState(null);
   const [guideLoading, setGuideLoading] = useState(false);
+  const bookRequestRef = useRef(null);
+  const preloadedImagesRef = useRef(new Map());
+
+  const preloadReadingScene = useCallback((book, page) => {
+    const cover = hasBookCovers(book) && page === 0
+      ? (book.coverUrl || book.frontCoverUrl)
+      : null;
+    const scene = book.pages?.[page <= 0 ? 0 : page - 1]?.imageUrl;
+    return Promise.all([cover, scene].map((url) => preloadImage(url, preloadedImagesRef.current)));
+  }, []);
+
+  useEffect(() => {
+    let active = true;
+    const images = preloadedImagesRef.current;
+    const request = getBook(storyId);
+    bookRequestRef.current = request;
+    request.then((book) => {
+      if (active) preloadReadingScene(book, hasBookCovers(book) ? 0 : 1);
+    }).catch(() => {});
+
+    return () => {
+      active = false;
+      if (bookRequestRef.current === request) bookRequestRef.current = null;
+      images.clear();
+    };
+  }, [storyId, preloadReadingScene]);
 
   const loadDetail = useCallback(
     () =>
@@ -117,7 +164,8 @@ function StoryDetailPage() {
     setBusy(true);
     setNotice('');
     try {
-      const [book, resumed, member] = await Promise.all([getBook(storyId), resumeReading(storyId), getCurrentMember().catch(() => null)]);
+      const bookRequest = bookRequestRef.current ?? getBook(storyId);
+      const [book, resumed, member] = await Promise.all([bookRequest.catch(() => getBook(storyId)), resumeReading(storyId), getCurrentMember().catch(() => null)]);
       const session = resumed ?? (await startReading(storyId));
       savePendingReadingFeedback(member?.id, session.sessionId);
       // 앞·뒤표지가 있는 책은 처음 읽거나(읽던 쪽 0·1쪽) 마지막 쪽까지 읽은 기록이면 앞표지(0쪽)부터 보여줘요.
@@ -126,13 +174,17 @@ function StoryDetailPage() {
       const startPage = hasBookCovers(book)
         ? (lastPage <= 1 || lastPage >= book.pages.length ? 0 : lastPage)
         : Math.max(1, lastPage);
+      await Promise.race([
+        preloadReadingScene(book, startPage),
+        new Promise((resolve) => window.setTimeout(resolve, 2000)),
+      ]);
       setReading({ session, book, page: startPage });
     } catch (error) {
       setNotice(error.message || '읽기를 시작하지 못했어요.');
     } finally {
       setBusy(false);
     }
-  }, [busy, storyId]);
+  }, [busy, storyId, preloadReadingScene]);
 
   // 확정한 직후 '아이와 바로 읽기'로 들어왔으면 상세에서 멈추지 않고 바로 읽기를 시작해요. (새로고침해도 다시 시작하지 않게 표시를 지워요)
   const autoStartDone = useRef(false);
@@ -156,7 +208,7 @@ function StoryDetailPage() {
         guide ?? getGuide(storyId).catch(() => null),
       ]);
       setGuide(loadedGuide);
-      setGuideView({ book, page: 1 });
+      transitionScene(() => setGuideView({ book, page: 1 }));
     } catch (error) {
       setNotice(error.message || '대화 가이드를 불러오지 못했어요.');
     } finally {
@@ -181,8 +233,10 @@ function StoryDetailPage() {
       await completeReading(reading.session.sessionId, feedback);
       clearPendingReadingFeedback(reading.session.sessionId);
       if (feedback) markFeedbackSubmitted(feedbackMemberId, 'reading');
-      setReadingFeedbackOpen(false);
-      setReading(null);
+      transitionScene(() => {
+        setReadingFeedbackOpen(false);
+        setReading(null);
+      });
       loadDetail();
     } catch (error) {
       return error.message || '읽기를 마치지 못했어요.';
@@ -287,6 +341,7 @@ function StoryDetailPage() {
 
       {reading && (
         <StoryReader
+          className={readerStyles.readingEntrance}
           title={reading.book.title}
           suspended={readingFeedbackOpen}
           pages={reading.book.pages}
@@ -323,7 +378,7 @@ function StoryDetailPage() {
           pages={guideView.book.pages}
           page={guideView.page}
           onPage={(page) => setGuideView((current) => ({ ...current, page }))}
-          onClose={() => setGuideView(null)}
+          onClose={() => transitionScene(() => setGuideView(null))}
           closeLabel="동화 상세로 돌아가기"
           guide={guide}
           previewMode

@@ -29,6 +29,7 @@ function StoryDraftModal({
       if (event.target === event.currentTarget) onClose();
     }}>
       <section
+        key={mode}
         className={`${styles.dialog} ${isExit ? styles.exitDialog : ''} ${isList ? styles.listDialog : ''}`}
         role="dialog"
         aria-modal="true"

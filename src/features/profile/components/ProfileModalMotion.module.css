@@ -1,0 +1,27 @@
+.backdrop::before {
+  position: absolute;
+  inset: 0;
+  background: rgb(0 0 0 / 44%);
+  content: '';
+  pointer-events: none;
+  animation: profile-backdrop-enter 180ms ease-out both;
+}
+
+.dialog {
+  z-index: 1;
+  animation: profile-dialog-enter 220ms cubic-bezier(.22, 1, .36, 1) both;
+}
+
+@keyframes profile-backdrop-enter {
+  from { opacity: 0; }
+  to { opacity: 1; }
+}
+
+@keyframes profile-dialog-enter {
+  from { opacity: .88; translate: 0 8px; }
+  to { opacity: 1; translate: 0 0; }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .backdrop::before, .dialog { animation: none; }
+}

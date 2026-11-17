@@ -145,8 +145,8 @@ function DashboardPage({ guest = false }) {
   };
 
   const startNewStory = async () => {
-    setStoryModal(null);
     if (await checkRemaining()) navigate('/story/new', { state: { startFresh: true } });
+    else setStoryModal(null);
   };
 
   const startFirstStory = () => {
