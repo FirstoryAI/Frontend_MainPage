@@ -13,6 +13,7 @@ import bookCoverStyles from '../../features/story/components/BookCover.module.cs
 import StoryReader from '../../features/story/components/StoryReader';
 import FeedbackDialog from '../../features/story/components/FeedbackDialog';
 import { getFeedbackSubmission, markFeedbackSubmitted } from '../../features/story/feedbackSubmission';
+import { clearPendingReadingFeedback, savePendingReadingFeedback } from '../../features/story/pendingReadingFeedback';
 import { useSceneScale } from '../../features/story/hooks/useSceneScale';
 import readerStyles from '../../features/story/components/StoryReader.module.css';
 import { deleteStory, getBook, getGuide, getStoryDetail } from '../../services/storiesApi';
@@ -24,6 +25,7 @@ import {
 } from '../../services/readingApi';
 import styles from './StoryDetailPage.module.css';
 import ErrorText from '../../components/ui/ErrorText';
+import { getCurrentMember } from '../../services/homeApi';
 
 // 900px 넘는 화면은 디자인(1440×960)을 통째로 비율대로 줄여 한 화면에 넣어요. (서재와 같아요)
 // 화면이 디자인보다 넓거나 높으면 무대를 화면 크기만큼 넓혀서, 표지·글이 화면 가운데에 오게 해요.
@@ -115,8 +117,9 @@ function StoryDetailPage() {
     setBusy(true);
     setNotice('');
     try {
-      const [book, resumed] = await Promise.all([getBook(storyId), resumeReading(storyId)]);
+      const [book, resumed, member] = await Promise.all([getBook(storyId), resumeReading(storyId), getCurrentMember().catch(() => null)]);
       const session = resumed ?? (await startReading(storyId));
+      savePendingReadingFeedback(member?.id, session.sessionId);
       // 앞·뒤표지가 있는 책은 처음 읽거나(읽던 쪽 0·1쪽) 마지막 쪽까지 읽은 기록이면 앞표지(0쪽)부터 보여줘요.
       // 중간 쪽에서 멈췄으면 그 쪽부터 이어서 읽어요. 표지가 없는 책은 지금처럼 읽던 쪽(없으면 1쪽)부터예요.
       const lastPage = session.lastPage ?? 0;
@@ -176,6 +179,7 @@ function StoryDetailPage() {
   const handleFinishReading = async (feedback) => {
     try {
       await completeReading(reading.session.sessionId, feedback);
+      clearPendingReadingFeedback(reading.session.sessionId);
       if (feedback) markFeedbackSubmitted(feedbackMemberId, 'reading');
       setReadingFeedbackOpen(false);
       setReading(null);
