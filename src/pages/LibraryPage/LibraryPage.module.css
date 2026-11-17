@@ -267,42 +267,61 @@ button.book:hover { transform: translateY(-4px); }
   transform: translateX(-50%);
 }
 
-/* 확인을 기다려요: 테두리를 따라 빛이 돌고, 책 둘레가 은은하게 숨 쉬듯 빛나요. */
-@property --shine-angle {
-  syntax: '<angle>';
-  inherits: false;
-  initial-value: 0deg;
+/* 확인을 기다려요: 테두리를 따라 빛이 돌고, 책 둘레가 은은하게 숨 쉬듯 빛나요.
+   서재를 띄워 두는 동안 계속 도는 움직임이라, 매 프레임 다시 그리지 않도록 투명도(opacity)·회전(transform)만 바꿔요.
+   (그림자 크기·그라데이션 각도를 바꾸면 브라우저가 매 프레임 다시 칠해서 무거웠어요) */
+.book[data-state='REVIEWING'] .cover {
+  box-shadow: 0 4px 10.4px rgb(0 0 0 / 26%), 0 0 10px 2px rgb(255 214 120 / 45%);
 }
 
-.book[data-state='REVIEWING'] .cover {
+/* 숨 쉬는 빛: 가장 밝을 때의 빛을 한 번 그려 두고, 투명도만 바꿔요. */
+.book[data-state='REVIEWING']::before {
+  position: absolute;
+  z-index: 0;
+  inset: 0;
+  box-shadow: 0 0 26px 8px rgb(255 214 120 / 85%);
+  content: '';
+  opacity: 0;
+  pointer-events: none;
   animation: reviewing-glow 2.4s ease-in-out infinite;
 }
 
-.book[data-state='REVIEWING']::after {
+/* 테두리를 도는 빛: 둘레 띠(mask) 안에서 빛이 그려진 판을 돌려요. */
+.shine {
   position: absolute;
   z-index: 2;
   inset: -4px;
   padding: 3px;
+  overflow: hidden;
   border-radius: 7px 14px 14px 7px;
-  background: conic-gradient(from var(--shine-angle),
-    rgb(255 236 170 / 0%) 0deg, rgb(255 236 170 / 0%) 200deg,
-    rgb(255 248 220 / 95%) 250deg, #ffd56b 270deg, rgb(255 248 220 / 95%) 290deg,
-    rgb(255 236 170 / 0%) 340deg);
   -webkit-mask: linear-gradient(#000 0 0) content-box, linear-gradient(#000 0 0);
   -webkit-mask-composite: xor;
   mask: linear-gradient(#000 0 0) content-box exclude, linear-gradient(#000 0 0);
-  animation: reviewing-shine 3s linear infinite;
-  content: '';
   pointer-events: none;
 }
 
+.shine::before {
+  position: absolute;
+  top: 50%;
+  left: 50%;
+  width: 150%;
+  aspect-ratio: 1;
+  background: conic-gradient(
+    rgb(255 236 170 / 0%) 0deg, rgb(255 236 170 / 0%) 200deg,
+    rgb(255 248 220 / 95%) 250deg, #ffd56b 270deg, rgb(255 248 220 / 95%) 290deg,
+    rgb(255 236 170 / 0%) 340deg);
+  content: '';
+  transform: translate(-50%, -50%) rotate(0deg);
+  animation: reviewing-shine 3s linear infinite;
+}
+
 @keyframes reviewing-glow {
-  0%, 100% { box-shadow: 0 4px 10.4px rgb(0 0 0 / 26%), 0 0 10px 2px rgb(255 214 120 / 45%); }
-  50% { box-shadow: 0 4px 10.4px rgb(0 0 0 / 26%), 0 0 26px 8px rgb(255 214 120 / 85%); }
+  0%, 100% { opacity: 0; }
+  50% { opacity: 1; }
 }
 
 @keyframes reviewing-shine {
-  to { --shine-angle: 360deg; }
+  to { transform: translate(-50%, -50%) rotate(360deg); }
 }
 
 /* 책 모서리에서 반짝이는 별이에요. */
@@ -460,7 +479,8 @@ button.book:hover { transform: translateY(-4px); }
 .pager svg { width: 22px; height: 22px; fill: none; stroke: white; stroke-width: 2.4; stroke-linecap: round; stroke-linejoin: round; }
 
 @media (prefers-reduced-motion: reduce) {
-  .book, .book[data-state='REVIEWING'] .cover, .book[data-state='REVIEWING']::after, .sparkles i { animation: none; transition: none; }
+  .book, .book[data-state='REVIEWING']::before, .shine::before, .sparkles i { animation: none; transition: none; }
+  .book[data-state='REVIEWING']::before { opacity: .6; }
   .shelvesReady .book { animation: none; }
   .coverImage { transition: none; }
   .sparkles i { opacity: 1; transform: none; }

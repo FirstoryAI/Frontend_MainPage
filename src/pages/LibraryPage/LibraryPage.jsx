@@ -183,7 +183,10 @@ function ShelfBook({ story, onOpen, onRetry }) {
     <button className={styles.book} type="button" data-state={group} onClick={() => onOpen(story)} aria-label={label} title={title}>
       {cover}
       {group === 'REVIEWING' && (
-        <span className={styles.sparkles} aria-hidden="true"><i /><i /><i /></span>
+        <>
+          <span className={styles.shine} aria-hidden="true" />
+          <span className={styles.sparkles} aria-hidden="true"><i /><i /><i /></span>
+        </>
       )}
       {group === 'UNREAD' && <span className={styles.newBadge} aria-hidden="true">NEW</span>}
     </button>
