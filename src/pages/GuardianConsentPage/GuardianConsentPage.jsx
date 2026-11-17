@@ -3,7 +3,7 @@ import { Navigate, useNavigate } from 'react-router-dom';
 import Header from '../../components/layout/Header';
 import checkboxChecked from '../../assets/icons/checkbox-checked.svg';
 import checkboxUnchecked from '../../assets/icons/checkbox-unchecked.svg';
-import { useSignupDraft } from '../../features/auth/SignupDraftContext';
+import { useSignupDraft } from '../../features/auth/useSignupDraft';
 import styles from './GuardianConsentPage.module.css';
 import { loadNotificationSettings, saveNotificationSettings } from '../../features/profile/notificationSettings';
 import { kakaoSignup, signup } from '../../services/authApi';

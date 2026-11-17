@@ -10,14 +10,13 @@ import iconLock from '../../assets/icons/icon-lock.svg';
 import iconBack from '../../assets/images/scenarios/day-design/back-arrow.svg';
 import avatarProfile from '../../assets/images/scenarios/day-design/profile.svg';
 import dayBell from '../../assets/images/scenarios/day-design/notification.svg';
-import dayBackground from '../../assets/images/scenarios/day-design/overlay-949.png';
 import friendWave from '../../assets/images/home/day-design/friend-wave.svg';
 import familyWave from '../../assets/images/home/day-design/family-wave.svg';
 import kindergartenWave from '../../assets/images/home/day-design/kindergarten-wave.svg';
 import tantrumWave from '../../assets/images/home/day-design/tantrum-wave.svg';
-import friendCharacter from '../../assets/images/home/day-design/friend-character.png';
-import characterSheet from '../../assets/images/home/day-design/character-sheet.png';
-import kindergartenCharacter from '../../assets/images/home/day-design/kindergarten-character.png';
+import friendCharacter from '../../assets/images/home/day-design/friend-character.webp';
+import characterSheet from '../../assets/images/home/day-design/character-sheet.webp';
+import kindergartenCharacter from '../../assets/images/home/day-design/kindergarten-character.webp';
 import styles from './ScenarioListPage.module.css';
 
 const ALL = '전체';
@@ -25,6 +24,7 @@ const ALL = '전체';
 const filters = [ALL, ...categories];
 const cardWaves = { friend: friendWave, emotion: familyWave, kindergarten: kindergartenWave, tantrum: tantrumWave, habit: familyWave };
 const designedCards = new Set(['friend', 'emotion', 'kindergarten', 'tantrum']);
+const dayBackground = '/images/scenarios-background.webp';
 
 function ScenarioListPage() {
   const navigate = useNavigate();
@@ -45,7 +45,7 @@ function ScenarioListPage() {
   return (
     <div className={styles.page}>
       <div className={styles.shell} data-theme="day" inert={selectedScenario !== null}>
-        <img className={styles.background} src={dayBackground} alt="" />
+        <img className={styles.background} src={dayBackground} alt="" fetchPriority="high" decoding="async" />
         <Sidebar guest={guest} compact showLogo={false} />
 
         <div className={styles.main}>

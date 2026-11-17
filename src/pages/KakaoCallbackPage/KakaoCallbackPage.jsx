@@ -2,7 +2,7 @@ import { useEffect, useState } from 'react';
 import { Link, useNavigate, useSearchParams } from 'react-router-dom';
 import Header from '../../components/layout/Header';
 import { kakaoLogin } from '../../services/authApi';
-import { useSignupDraft } from '../../features/auth/SignupDraftContext';
+import { useSignupDraft } from '../../features/auth/useSignupDraft';
 import { setSignedInStatus } from '../../features/auth/useSignedIn';
 import styles from '../EmailSignUpPage/EmailSignUpPage.module.css';
 

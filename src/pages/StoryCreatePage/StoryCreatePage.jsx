@@ -145,7 +145,6 @@ function StoryCreatePage() {
 
   useLayoutEffect(() => {
     if (!fitStageToViewport) {
-      setStageScale(1);
       return undefined;
     }
 
@@ -892,7 +891,7 @@ function StoryCreatePage() {
       <div
         className={styles.stageGroup}
         ref={stageGroupRef}
-        style={{ '--stage-scale': stageScale }}
+        style={{ '--stage-scale': fitStageToViewport ? stageScale : 1 }}
         inert={visibleStep === STEP.COMPLETE || waitingNext}
       >
       {fitStageToViewport && !toneOpen && step > STEP.SITUATION && step < STEP.CHAT && (

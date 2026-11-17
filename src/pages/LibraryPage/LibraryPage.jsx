@@ -13,7 +13,7 @@ import libraryBell from '../../assets/images/library/notification.svg';
 import libraryProfile from '../../assets/images/library/profile.svg';
 import bookCover from '../../assets/images/library-cover-sample.png';
 import failedCover from '../../assets/images/library-failed-cover.svg';
-import emptyMascot from '../../assets/images/library-empty-mascot.png';
+import emptyMascot from '../../assets/images/library-empty-mascot.webp';
 import SafeImage from '../../features/story/components/SafeImage';
 import { setCoverFrameRatio } from '../../features/story/coverLayout';
 import bookCoverStyles from '../../features/story/components/BookCover.module.css';

@@ -14,6 +14,6 @@ initializeCsrf().catch(() => {
 
 createRoot(document.getElementById('root')).render(
   <StrictMode>
-    <RouterProvider router={router} />
+    <RouterProvider router={router} fallbackElement={<div role="status" aria-label="화면을 불러오는 중" />} />
   </StrictMode>,
 );

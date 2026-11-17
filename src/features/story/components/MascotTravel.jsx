@@ -1,5 +1,5 @@
 import savingMascot from '../../../assets/images/story-summary-mascot.png';
-import savedMascot from '../../../assets/images/story-save-wink.png';
+import savedMascot from '../../../assets/images/story-save-wink.webp';
 import styles from './MascotTravel.module.css';
 
 function MascotTravel({ active, complete, label }) {
