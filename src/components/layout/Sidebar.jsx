@@ -38,14 +38,14 @@ function Sidebar({ guest = false, compact = false, showLogo = true }) {
   if (compact) {
     return (
       <aside className={styles.compactSidebar} aria-label="주요 메뉴">
-        {showLogo && <Link className={styles.compactLogo} to={guest ? '/' : '/home'} aria-label="FIRSTORY 홈">FIRSTORY</Link>}
+        {showLogo && <Link className={styles.compactLogo} to={guest ? '/' : '/home'} viewTransition aria-label="FIRSTORY 홈">FIRSTORY</Link>}
         <nav className={styles.compactRail} aria-label="주요 메뉴">
           {/* 지금 화면(홈·서재)의 아이콘이 주황색인 막대 그림이에요. */}
           <img src={libraryActive ? libraryRail : dayRail} alt="" aria-hidden="true" />
           <button className={`${styles.railAction} ${styles.railCreate}`} type="button" aria-label="동화 만들기"
             onClick={() => guest ? navigate('/auth') : navigate('/home', { state: { chooseStory: true } })} />
-          <Link className={`${styles.railAction} ${styles.railHome}`} to={guest ? '/' : '/home'} aria-label="홈" aria-current={libraryActive ? undefined : 'page'}><img src={libraryActive ? iconHomeMuted : iconHome} alt="" /><span>홈</span></Link>
-          <Link className={`${styles.railAction} ${styles.railLibrary}`} to="/library" aria-label="서재" aria-current={libraryActive ? 'page' : undefined}><img src={libraryActive ? iconLibraryActive : iconLibrary} alt="" /><span>서재</span></Link>
+          <Link className={`${styles.railAction} ${styles.railHome}`} to={guest ? '/' : '/home'} viewTransition aria-label="홈" aria-current={libraryActive ? undefined : 'page'}><img src={libraryActive ? iconHomeMuted : iconHome} alt="" /><span>홈</span></Link>
+          <Link className={`${styles.railAction} ${styles.railLibrary}`} to="/library" viewTransition aria-label="서재" aria-current={libraryActive ? 'page' : undefined}><img src={libraryActive ? iconLibraryActive : iconLibrary} alt="" /><span>서재</span></Link>
           {guest ? (
             <Link className={`${styles.railAction} ${styles.railLogout}`} to="/auth" aria-label="로그인"><img src={iconLogout} alt="" /><span>로그인</span></Link>
           ) : (
@@ -60,7 +60,7 @@ function Sidebar({ guest = false, compact = false, showLogo = true }) {
 
   return (
     <aside className={styles.sidebar}>
-      <Link className={styles.logo} to={guest ? '/' : '/home'} aria-label="FIRSTORY 홈">
+      <Link className={styles.logo} to={guest ? '/' : '/home'} viewTransition aria-label="FIRSTORY 홈">
         FIRSTORY
       </Link>
 
@@ -76,6 +76,7 @@ function Sidebar({ guest = false, compact = false, showLogo = true }) {
         <Link
           className={`${styles.item} ${!libraryActive ? styles.active : ''}`}
           to={guest ? '/' : '/home'}
+          viewTransition
           aria-current={!libraryActive ? 'page' : undefined}
         >
           <img
@@ -88,6 +89,7 @@ function Sidebar({ guest = false, compact = false, showLogo = true }) {
         <Link
           className={`${styles.item} ${libraryActive ? styles.active : ''}`}
           to="/library"
+          viewTransition
           aria-current={libraryActive ? 'page' : undefined}
         >
           <img src={libraryActive ? iconLibraryActive : iconLibrary} alt="" />

@@ -167,6 +167,19 @@
   padding-left: calc(var(--book) * 26 / 244);
 }
 
+.shelvesReady .book {
+  animation: book-appear 420ms cubic-bezier(.22, 1, .36, 1) backwards;
+}
+
+.shelvesReady .book:nth-child(2) { animation-delay: 55ms; }
+.shelvesReady .book:nth-child(3) { animation-delay: 110ms; }
+.shelvesReady .book:nth-child(4) { animation-delay: 165ms; }
+
+@keyframes book-appear {
+  from { opacity: 0; transform: translateY(5px) scale(.985); }
+  to { opacity: 1; transform: translateY(0) scale(1); }
+}
+
 /* ---------- 책 한 권 ---------- */
 /* 모든 표지(제작 중 포함)가 같은 크기예요. */
 .book {
@@ -206,7 +219,11 @@ button.book:hover { transform: translateY(-4px); }
   object-fit: cover;
   pointer-events: none;
   user-select: none;
+  opacity: 0;
+  transition: opacity 240ms ease-out;
 }
+
+.coverImageLoaded { opacity: 1; }
 
 /* 제작 중: 회색 책 위에 흐린 캐릭터와 '제작중...'이에요. 다른 표지와 같은 크기로 보여요.
    회색 책 그림은 둘레에 투명한 여백(왼 2.6%·위 4.4%·오른 3.3%·아래 4%)이 있어서, 여백을 빼고 그려진 책이
@@ -442,6 +459,8 @@ button.book:hover { transform: translateY(-4px); }
 
 @media (prefers-reduced-motion: reduce) {
   .book, .book[data-state='REVIEWING'] .cover, .book[data-state='REVIEWING']::after, .sparkles i { animation: none; transition: none; }
+  .shelvesReady .book { animation: none; }
+  .coverImage { transition: none; }
   .sparkles i { opacity: 1; transform: none; }
 }
 

@@ -166,9 +166,12 @@ function ShelfBook({ story, onOpen, onRetry }) {
       style={{ '--cover': `url(${JSON.stringify(failed ? failedCover : (story.coverUrl || bookCover))})` }}>
       <span className={bookCoverStyles.bookFace}>
         <span className={bookCoverStyles.bookArt}>
-          {failed ? <img className={styles.coverImage} src={failedCover} alt="" /> : (
-            <SafeImage className={styles.coverImage} onLoad={setCoverFrameRatio} src={story.coverUrl} alt=""
-              fallback={<img className={styles.coverImage} src={bookCover} alt="" />} />
+          {failed ? <img className={`${styles.coverImage} ${styles.coverImageLoaded}`} src={failedCover} alt="" /> : (
+            <SafeImage className={styles.coverImage} onLoad={(event) => {
+              setCoverFrameRatio(event);
+              event.currentTarget.classList.add(styles.coverImageLoaded);
+            }} src={story.coverUrl} alt=""
+              fallback={<img className={`${styles.coverImage} ${styles.coverImageLoaded}`} src={bookCover} alt="" />} />
           )}
         </span>
       </span>
@@ -352,7 +355,7 @@ function LibraryPage() {
 
           {!guest && error && <p className={styles.error} role="alert"><ErrorText message={error} /></p>}
 
-          <section className={styles.shelves} ref={shelvesRef}
+          <section className={`${styles.shelves} ${!guest && !isLoading && !error ? styles.shelvesReady : ''}`} ref={shelvesRef}
             aria-live="polite" aria-busy={!guest && isLoading} aria-label="내 동화 책장">
             {showEmptyScreen ? (
               // 빈 서재는 책장 없이, 예전 서재와 같은 크기의 캐릭터·안내·로그인 버튼만 보여줘요.
