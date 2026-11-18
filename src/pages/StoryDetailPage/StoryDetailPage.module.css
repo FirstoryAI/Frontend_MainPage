@@ -164,8 +164,10 @@
 .trash img { display: block; width: 26px; height: 30.3px; }
 .trash:focus-visible { outline: 3px solid white; outline-offset: 3px; border-radius: 6px; }
 
-/* 줄거리는 가운데 맞춤이에요. 너무 길면 6줄까지 보여줘요. */
-/* 줄거리는 제목 왼쪽 끝부터 휴지통 오른쪽 끝까지 가로를 채워요. (Figma 2149:1718, 제목 줄의 좌우 여백 13px·22px과 같아요) */
+/* 줄거리는 제목 왼쪽 끝부터 휴지통 오른쪽 끝까지 가로를 채우고, 제목처럼 왼쪽에 맞춰요. 너무 길면 6줄까지 보여줘요.
+   (Figma 2149:1718, 제목 줄의 좌우 여백 13px·22px과 같아요)
+   줄바꿈: 낱말 중간에서 끊지 않고(keep-all), 줄 길이를 고르게 맞춰 마지막 줄에 한 낱말만 남지 않게 해요(pretty).
+   띄어쓰기 없이 긴 글자(주소 등)만 어디서든 끊어 넘치지 않게 해요. */
 .synopsis {
   display: -webkit-box;
   width: calc(100% - 13px - 22px);
@@ -173,8 +175,10 @@
   overflow: hidden;
   color: white;
   font: 400 20px/1.55 var(--font-body);
-  text-align: center;
+  text-align: left;
   word-break: keep-all;
+  overflow-wrap: anywhere;
+  text-wrap: pretty;
   -webkit-box-orient: vertical;
   -webkit-line-clamp: 6;
 }
