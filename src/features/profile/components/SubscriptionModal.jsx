@@ -2,12 +2,28 @@ import { useEffect, useRef, useState } from 'react';
 import { createPortal } from 'react-dom';
 import closeIcon from '../../../assets/notification/close.svg';
 import divider from '../../../assets/subscription/divider.svg';
+import { setEmailNotify } from '../../../services/meApi';
 import styles from './SubscriptionModal.module.css';
 import motionStyles from './ProfileModalMotion.module.css';
 
-function SubscriptionModal({ onClose }) {
+function SubscriptionModal({ onClose, variant = 'manage' }) {
   const closeButton = useRef(null);
   const [dialogScale, setDialogScale] = useState(1);
+  const [saving, setSaving] = useState(false);
+  const [error, setError] = useState('');
+
+  const requestLaunchNotice = async () => {
+    if (saving) return;
+    setSaving(true);
+    setError('');
+    try {
+      await setEmailNotify(true);
+      onClose();
+    } catch (requestError) {
+      setError(requestError.message || '알림 신청을 완료하지 못했어요. 다시 시도해 주세요.');
+      setSaving(false);
+    }
+  };
 
   useEffect(() => {
     const previousFocus = document.activeElement;
@@ -37,7 +53,7 @@ function SubscriptionModal({ onClose }) {
 
   return (
     createPortal(<div
-      className={`${styles.backdrop} ${motionStyles.backdrop}`}
+      className={`${styles.backdrop} ${variant === 'launch' ? styles.launchBackdrop : ''} ${motionStyles.backdrop}`}
       onMouseDown={(event) => {
         if (event.target === event.currentTarget) onClose();
       }}
@@ -55,7 +71,7 @@ function SubscriptionModal({ onClose }) {
           className={styles.closeButton}
           type="button"
           onClick={onClose}
-          aria-label="구독 관리 닫기"
+          aria-label={variant === 'launch' ? '출시 알림 팝업 닫기' : '구독 관리 닫기'}
         >
           <img src={closeIcon} alt="" />
         </button>
@@ -74,12 +90,19 @@ function SubscriptionModal({ onClose }) {
           <li>대화 가이드</li>
         </ul>
 
-        <button className={styles.cancelButton} type="button" onClick={onClose}>
-          해지하기
-        </button>
-        <button className={styles.keepButton} type="button" onClick={onClose}>
-          유지하기
-        </button>
+        {variant === 'launch' ? <>
+          <button className={styles.launchButton} type="button" onClick={requestLaunchNotice} disabled={saving}>
+            정식 출시 알림 받기
+          </button>
+          {error && <p className={styles.launchError} role="alert">{error}</p>}
+        </> : <>
+          <button className={styles.cancelButton} type="button" onClick={onClose}>
+            해지하기
+          </button>
+          <button className={styles.keepButton} type="button" onClick={onClose}>
+            유지하기
+          </button>
+        </>}
       </section>
     </div>, document.body)
   );

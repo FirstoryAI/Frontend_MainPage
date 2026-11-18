@@ -6,6 +6,7 @@ import OnboardingModal from '../../features/onboarding/components/OnboardingModa
 import StoryDraftModal from '../../features/story/components/StoryDraftModal';
 import HomeScenarioModal from '../../features/home/components/HomeScenarioModal';
 import LaunchNoticeModal from '../../features/home/components/LaunchNoticeModal';
+import SubscriptionModal from '../../features/profile/components/SubscriptionModal';
 import { listScenarios, scenarioCategoryLabel } from '../../features/home/scenarios';
 import { PRIMARY_COPY, SET_COUNT, useConveyor } from '../../features/home/hooks/useConveyor';
 import { hasSeenOnboarding, markOnboardingSeen } from '../../features/onboarding/onboardingSeen';
@@ -70,6 +71,7 @@ function DashboardPage({ guest = false }) {
   const [drafts, setDrafts] = useState([]);
   const [credits, setCredits] = useState(null);
   const [launchNoticeOpen, setLaunchNoticeOpen] = useState(() => Boolean(location.state?.launchNotice));
+  const [launchPlanOpen, setLaunchPlanOpen] = useState(false);
   const conveyorScenarios = listScenarios;
   const { resumeGeneration } = useStoryGeneration();
 
@@ -165,7 +167,7 @@ function DashboardPage({ guest = false }) {
 
   return (
     <div className={styles.page}>
-      <div className={styles.shell} data-theme="day" inert={onboardingOpen || storyModal !== null || selectedScenario !== null || launchNoticeOpen}>
+      <div className={styles.shell} data-theme="day" inert={onboardingOpen || storyModal !== null || selectedScenario !== null || launchNoticeOpen || launchPlanOpen}>
         <img className={styles.dayBackground} src={dayBackground} alt="" fetchPriority="high" decoding="async" />
         <img className={styles.treeCanopy} src={treeCanopy} alt="" />
         <Sidebar guest={guest} compact onCreate={async () => {
@@ -285,7 +287,14 @@ function DashboardPage({ guest = false }) {
           onOpenDraft={(draft) => navigate('/story/new', { state: { draftStoryId: draft.id } })}
         />
       )}
-      {launchNoticeOpen && <LaunchNoticeModal onClose={() => setLaunchNoticeOpen(false)} />}
+      {launchNoticeOpen && <LaunchNoticeModal
+        onClose={() => setLaunchNoticeOpen(false)}
+        onConfirm={() => {
+          setLaunchNoticeOpen(false);
+          setLaunchPlanOpen(true);
+        }}
+      />}
+      {launchPlanOpen && <SubscriptionModal variant="launch" onClose={() => setLaunchPlanOpen(false)} />}
     </div>
   );
 }
