@@ -1,5 +1,4 @@
-import savingMascot from '../../../assets/images/story-summary-mascot.png';
-import savedMascot from '../../../assets/images/story-save-wink.webp';
+import { savedMascot, savingMascot } from '../mascotTravelImages';
 import styles from './MascotTravel.module.css';
 
 function MascotTravel({ active, complete, label }) {
@@ -14,6 +13,8 @@ function MascotTravel({ active, complete, label }) {
               className={complete ? styles.wink : styles.saving}
               src={complete ? savedMascot : savingMascot}
               alt=""
+              // 미리 풀어 둔 그림이라, 그림 없는 빈 프레임 없이 오버레이와 함께 바로 그려요.
+              decoding="sync"
             />
           </div>
         </div>

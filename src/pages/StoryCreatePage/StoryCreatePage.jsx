@@ -18,6 +18,7 @@ import ToneStep from '../../features/story/components/ToneStep';
 import BlockedStep from '../../features/story/components/BlockedStep';
 import GenerationFailedStep from '../../features/story/components/GenerationFailedStep';
 import MascotTravel from '../../features/story/components/MascotTravel';
+import { preloadMascotTravel } from '../../features/story/mascotTravelImages';
 import {
   EVENT_MAX_LENGTH,
   INTERVIEW_QUESTION_LIMIT,
@@ -83,6 +84,10 @@ function inputsKey({ situation, detail, child, undecided, message }) {
 
 const INPUT_STEPS = [STEP.SITUATION, STEP.DETAIL, STEP.CHILD, STEP.TOPIC];
 function StoryCreatePage() {
+  // 저장하는 중·저장 완료 유령 그림을 화면에 들어오자마자 미리 받아 둬서, 첫 저장 때도 바로 보여요.
+  useEffect(() => {
+    preloadMascotTravel();
+  }, []);
   const location = useLocation();
   const navigate = useNavigate();
   // 서재·미리보기에서 넘어올 때: 만들던 동화를 이어 만들거나(draftStoryId), 만드는 중 화면으로 바로 들어가요(generation).
