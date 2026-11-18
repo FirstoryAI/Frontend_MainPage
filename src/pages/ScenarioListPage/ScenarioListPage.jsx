@@ -21,6 +21,8 @@ import styles from './ScenarioListPage.module.css';
 
 const ALL = '전체';
 // 잠긴 카테고리(이별 · 죽음)는 카드는 숨기고 필터만 자물쇠로 남겨 둬요.
+// '기타'(그 밖의 일)는 아직 이 화면에 보여 줄 이야기가 없어서 여기서만 잠가요. (동화 만들기에서는 고를 수 있어요)
+const listLockedCategories = [...lockedCategories, '그 밖의 일'];
 const filters = [ALL, ...categories];
 const cardWaves = { friend: friendWave, emotion: familyWave, kindergarten: kindergartenWave, tantrum: tantrumWave, habit: familyWave };
 const designedCards = new Set(['friend', 'emotion', 'kindergarten', 'tantrum']);
@@ -78,7 +80,7 @@ function ScenarioListPage() {
 
             <div className={styles.filters} role="group" aria-label="상황 카테고리">
               {filters.map((filter) => {
-                const locked = lockedCategories.includes(filter);
+                const locked = listLockedCategories.includes(filter);
                 return (
                   <button
                     className={`${styles.filter} ${
