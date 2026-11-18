@@ -241,7 +241,7 @@
 
   .logo {
     font-size: 32px;
-    transform: translateY(7px);
+    transform: none;
   }
 
   .closeButton {
@@ -282,20 +282,13 @@
   }
 }
 
-/* 큰 화면 상단바는 이야기 화면 Figma(2170:2389)와 같은 크기·자리예요. */
+/* 큰 화면 상단바: 로고·X는 다른 상단바처럼 위아래 가운데예요. */
 @media (min-width: 761px) {
-  .header {
-    align-items: flex-start;
-    padding: 29px 46px 0;
-  }
-
   .logo {
     transform: none;
   }
 
   .closeButton {
-    top: 43px;
     right: 61px;
-    transform: none;
   }
 }

@@ -1,7 +1,9 @@
 .page { min-width: 320px; height: 100dvh; overflow: hidden; background: var(--color-page); }
 .shell { --home-bg: #fff9f4; --home-text: #575757; --home-accent: #ff8a5b; position: relative; height: 100%; overflow: hidden; background: var(--home-bg); color: var(--home-text); }
 .dayBackground, .treeCanopy { position: absolute; z-index: 0; display: block; pointer-events: none; }
-.dayBackground { top: 0; left: -134px; width: 1574px; height: 1052px; max-width: none; opacity: .95; }
+/* 나무 줄기가 그림 오른쪽 끝에 이어져서, 화면 오른쪽 끝에 붙여 둬요. 화면이 넓으면 왼쪽은 바탕색으로 이어지고,
+   화면이 그림보다 높으면 비율을 지킨 채 높이를 채워요. (1440×900에서는 예전과 같은 자리예요) */
+.dayBackground { top: 0; right: 0; left: auto; width: auto; height: max(1052px, 100dvh); aspect-ratio: 1574 / 1052; max-width: none; opacity: .95; }
 .treeCanopy { top: 0; right: 0; width: 547px; height: 414px; }
 .main { position: relative; z-index: 1; height: 100%; }
 .topbar { position: absolute; z-index: 10; top: 58.6px; right: 75px; display: flex; align-items: center; gap: 39.6px; height: 58.8px; }
@@ -86,7 +88,10 @@
   .shell, .main { height: auto; min-height: 100vh; }
   .dayBackground { top: 30px; left: auto; right: -410px; width: 980px; height: auto; opacity: .65; }
   .treeCanopy { display: none; }
-  .topbar { top: 22px; right: 92px; height: 40px; gap: 16px; }
+  /* 로고·+ 버튼은 위쪽 84px 줄(Sidebar)에 있고 이 영역은 그 아래에서 시작해서, 84px 올려 같은 줄(화면 위 22px)에 놓아요. (서재와 같은 자리)
+     밝은 배경이라 로그인 글씨는 흰색 대신 본문 색이에요. */
+  .topbar { top: calc(22px - 84px); right: 92px; height: 40px; gap: 16px; }
+  .loginLink { color: var(--home-text); font-size: 17px; }
   .avatarButton { width: 40px; height: 40px; }
   .avatar { width: 45px; height: 45px; margin: 0 0 0 -2.5px; }
   .content { padding: 75px 0 60px 22px; }

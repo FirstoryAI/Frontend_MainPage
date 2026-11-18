@@ -2,15 +2,16 @@
   position: relative;
   z-index: var(--z-header);
   display: flex;
-  align-items: flex-start;
+  /* 로고는 상단바 높이의 가운데에 놓여요. */
+  align-items: center;
   width: 100%;
   height: var(--header-height);
-  padding: 29px 46px 0;
+  padding: 0 46px;
   background: var(--color-surface);
   box-shadow: 0 2px 10.4px rgb(0 0 0 / 5%);
 }
 
-/* 로고·X 자리는 이야기 화면 Figma(2170:2389) 기준이고, 모든 상단바가 같아요. */
+/* 로고·X는 상단바 위아래 가운데에 놓여요. 모든 상단바(로그인·동화 만들기·마이페이지·미리보기)가 같아요. */
 .logo {
   color: var(--color-brand);
   font-family: var(--font-brand);
@@ -24,12 +25,13 @@
 
 .closeButton {
   position: absolute;
-  top: 43px;
+  top: 50%;
   right: 61px;
   display: grid;
   place-items: center;
   width: 27px;
   height: 27px;
+  transform: translateY(-50%);
 }
 
 .closeButton img {
@@ -44,12 +46,11 @@
 @media (max-width: 600px) {
   .header {
     height: var(--header-height-mobile);
-    padding: 22px 24px 0;
+    padding: 0 24px;
   }
 
   .logo {
     font-size: 32px;
-    transform: translateY(8px);
   }
 
   .closeButton {
