@@ -165,10 +165,11 @@
 .trash:focus-visible { outline: 3px solid white; outline-offset: 3px; border-radius: 6px; }
 
 /* 줄거리는 가운데 맞춤이에요. 너무 길면 6줄까지 보여줘요. */
+/* 줄거리는 제목 왼쪽 끝부터 휴지통 오른쪽 끝까지 가로를 채워요. (Figma 2149:1718, 제목 줄의 좌우 여백 13px·22px과 같아요) */
 .synopsis {
   display: -webkit-box;
-  width: 404px;
-  margin: 44px 0 0 14px;
+  width: calc(100% - 13px - 22px);
+  margin: 44px 0 0 13px;
   overflow: hidden;
   color: white;
   font: 400 20px/1.55 var(--font-body);
