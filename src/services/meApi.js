@@ -1,6 +1,7 @@
 import { apiClient } from './apiClient';
 
 export const markOnboardingSeen = () => apiClient.post('/api/me/onboarding-seen');
+export const requestSubscriptionAlert = () => apiClient.post('/api/me/subscription-alert');
 export const setEmailNotify = (agreed) => apiClient.put('/api/me/consents/email-notify', { agreed });
 export const changePassword = async ({ currentPassword, newPassword }) => {
   try {

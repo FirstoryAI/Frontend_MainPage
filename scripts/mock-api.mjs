@@ -694,6 +694,7 @@ export function startMockApi({ port = Number(process.env.MOCK_API_PORT) || 8787,
       if (!requireUser()) return undefined;
       if (method === 'GET' && path === '/api/me') return json(res, 200, meView(user));
       if (method === 'POST' && path === '/api/me/onboarding-seen') { user.onboardingSeen = true; return empty(res); }
+      if (method === 'POST' && path === '/api/me/subscription-alert') { user.subscriptionAlert = true; return empty(res); }
       if (method === 'PUT' && path === '/api/me/consents/email-notify') {
         if (typeof body.agreed !== 'boolean') return invalid(res, [['agreed', '동의 여부를 보내 주세요.']]);
         user.emailNotify = body.agreed;
