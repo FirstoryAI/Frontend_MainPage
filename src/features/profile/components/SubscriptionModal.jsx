@@ -2,12 +2,29 @@ import { useEffect, useRef, useState } from 'react';
 import { createPortal } from 'react-dom';
 import closeIcon from '../../../assets/notification/close.svg';
 import divider from '../../../assets/subscription/divider.svg';
+import { requestSubscriptionAlert } from '../../../services/meApi';
 import styles from './SubscriptionModal.module.css';
 import motionStyles from './ProfileModalMotion.module.css';
 
 function SubscriptionModal({ onClose, variant = 'manage' }) {
   const closeButton = useRef(null);
   const [dialogScale, setDialogScale] = useState(1);
+  const [submitting, setSubmitting] = useState(false);
+  const [error, setError] = useState('');
+
+  const handleLaunchAlert = async () => {
+    if (submitting) return;
+    setSubmitting(true);
+    setError('');
+    try {
+      await requestSubscriptionAlert();
+      onClose();
+    } catch (requestError) {
+      setError(requestError.message || '알림 신청에 실패했어요. 다시 시도해 주세요.');
+    } finally {
+      setSubmitting(false);
+    }
+  };
 
   useEffect(() => {
     const previousFocus = document.activeElement;
@@ -75,9 +92,10 @@ function SubscriptionModal({ onClose, variant = 'manage' }) {
         </ul>
 
         {variant === 'launch' ? <>
-          <button className={styles.launchButton} type="button" onClick={onClose}>
-            정식 출시 알림 받기
+          <button className={styles.launchButton} type="button" onClick={handleLaunchAlert} disabled={submitting}>
+            {submitting ? '신청 중…' : '정식 출시 알림 받기'}
           </button>
+          {error && <p className={styles.launchError} role="alert">{error}</p>}
         </> : <>
           <button className={styles.cancelButton} type="button" onClick={onClose}>
             해지하기
