@@ -137,9 +137,6 @@
   cursor: pointer;
 }
 
-.launchButton:disabled { opacity: .65; cursor: wait; }
-.launchError { position: absolute; top: 339px; width: 100%; margin: 0; color: #a34439; font: 14px var(--font-body); text-align: center; }
-
 .cancelButton {
   left: 269px;
   color: var(--color-text);
