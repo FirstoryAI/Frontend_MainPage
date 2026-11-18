@@ -32,6 +32,8 @@ export const sampleStories = Object.fromEntries(stories.map((story) => [
   {
     title: story.title,
     coverUrl: imageUrl(story.cardId, story.cover),
+    // 뒤표지가 있으면 예시 동화도 앞표지부터 펼치고 마지막에 뒤표지로 덮어요. (#235)
+    backCoverUrl: story.backCover ? imageUrl(story.cardId, story.backCover) : null,
     pages: story.pages.map((page) => ({
       ...page,
       imageUrl: imageUrl(story.cardId, page.image),
