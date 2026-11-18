@@ -88,7 +88,10 @@
   .shell, .main { height: auto; min-height: 100vh; }
   .dayBackground { top: 30px; left: auto; right: -410px; width: 980px; height: auto; opacity: .65; }
   .treeCanopy { display: none; }
-  .topbar { top: 22px; right: 92px; height: 40px; gap: 16px; }
+  /* 로고·+ 버튼은 위쪽 84px 줄(Sidebar)에 있고 이 영역은 그 아래에서 시작해서, 84px 올려 같은 줄(화면 위 22px)에 놓아요. (서재와 같은 자리)
+     밝은 배경이라 로그인 글씨는 흰색 대신 본문 색이에요. */
+  .topbar { top: calc(22px - 84px); right: 92px; height: 40px; gap: 16px; }
+  .loginLink { color: var(--home-text); font-size: 17px; }
   .avatarButton { width: 40px; height: 40px; }
   .avatar { width: 45px; height: 45px; margin: 0 0 0 -2.5px; }
   .content { padding: 75px 0 60px 22px; }
