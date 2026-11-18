@@ -32,6 +32,8 @@ function HomeScenarioModal({ scenario, onClose, onStart }) {
   const accentStyle = { '--scenario-accent': scenario.accentColor };
   const sampleStory = sampleStories[scenario.id] ?? PLACEHOLDER_SAMPLE_STORY;
   const hasSample = Boolean(sampleStory.pages?.length);
+  // 앞·뒤표지가 다 있으면 아이와 읽기처럼 덮인 앞표지(0쪽)로 열고, 마지막 쪽 다음에 뒤표지로 덮어요. (#235)
+  const hasCovers = Boolean(sampleStory.coverUrl && sampleStory.backCoverUrl);
   const dialogueIcons = {
     friend: dialogueFriend,
     emotion: dialogueEmotion,
@@ -72,7 +74,7 @@ function HomeScenarioModal({ scenario, onClose, onStart }) {
   }, [readerOpen, requestClose]);
 
   const openReader = () => {
-    setSamplePage(1);
+    setSamplePage(hasCovers ? 0 : 1);
     navigate(`${location.pathname}${location.search}`, { state: { sampleReader: scenario.id } });
   };
 
@@ -181,6 +183,10 @@ function HomeScenarioModal({ scenario, onClose, onStart }) {
           onPage={setSamplePage}
           onClose={closeReader}
           closeLabel="예시 동화 닫기"
+          frontCover={hasCovers ? sampleStory.coverUrl : null}
+          backCover={hasCovers ? sampleStory.backCoverUrl : null}
+          // 뒤표지로 덮인 뒤에는 닫기 버튼이 보이게 상단바를 내려 둬요.
+          keepHeaderShown={hasCovers && samplePage === sampleStory.pages.length + 1}
         />
       )}
     </div>
