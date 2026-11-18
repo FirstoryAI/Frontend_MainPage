@@ -3,8 +3,11 @@
   position: sticky;
   top: 0;
   z-index: var(--z-header);
+  display: flex;
+  /* 로고·나가기는 상단바 위아래 가운데에 놓여요. (진행 막대는 아래 가장자리에 따로 놓여요) */
+  align-items: center;
   height: var(--story-header-height);
-  padding: 29px 46px 0;
+  padding: 0 46px;
   background: var(--color-surface);
   box-shadow: 0 2px 10.4px rgb(0 0 0 / 5%);
 }
@@ -42,7 +45,7 @@
 
 .exit {
   position: absolute;
-  top: 43px;
+  top: 50%;
   right: 61px;
   display: block;
   width: 27px;
@@ -51,17 +54,17 @@
   background: transparent;
   border: 0;
   cursor: pointer;
+  transform: translateY(-50%);
 }
 
 @media (max-width: 900px) {
   .header {
-    padding: 16px 24px 0;
+    padding: 0 24px;
   }
 
   .logo {
     font-size: 26px;
     letter-spacing: -1.021px;
-    transform: translateY(8px);
   }
 
   .progress {
@@ -71,7 +74,6 @@
   }
 
   .exit {
-    top: 19px;
     right: 24px;
   }
 }
