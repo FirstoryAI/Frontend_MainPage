@@ -1,14 +1,13 @@
 import { useEffect, useRef } from 'react';
 import { createPortal } from 'react-dom';
-import closeIcon from '../../../assets/notification/close.svg';
 import styles from './LaunchNoticeModal.module.css';
 
-function LaunchNoticeModal({ onClose }) {
-  const closeButton = useRef(null);
+function LaunchNoticeModal({ onClose, onConfirm }) {
+  const confirmButton = useRef(null);
 
   useEffect(() => {
     const previousFocus = document.activeElement;
-    closeButton.current?.focus();
+    confirmButton.current?.focus();
     const onKeyDown = (event) => { if (event.key === 'Escape') onClose(); };
     window.addEventListener('keydown', onKeyDown);
     return () => {
@@ -22,11 +21,8 @@ function LaunchNoticeModal({ onClose }) {
       if (event.target === event.currentTarget) onClose();
     }}>
       <section className={styles.dialog} role="dialog" aria-modal="true" aria-labelledby="launch-notice-title">
-        <button ref={closeButton} className={styles.close} type="button" onClick={onClose} aria-label="닫기">
-          <img src={closeIcon} alt="" />
-        </button>
-        <h2 id="launch-notice-title">무료로 만들 수 있는 동화를 모두 만들었어요.</h2>
-        <button className={styles.action} type="button" onClick={onClose}>
+        <h2 id="launch-notice-title">무료로 만들 수 있는 동화를<br />모두 만들었어요.</h2>
+        <button ref={confirmButton} className={styles.action} type="button" onClick={onConfirm}>
           확인
         </button>
       </section>
