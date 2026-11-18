@@ -1,6 +1,8 @@
-import { useEffect, useState } from 'react';
+import { useCallback, useEffect, useState } from 'react';
 import { Outlet } from 'react-router-dom';
 import FeedbackDialog from '../features/story/components/FeedbackDialog';
+import DesktopNotice from './DesktopNotice';
+import { shouldShowDesktopNotice } from './desktopNoticeVisibility';
 import { getFeedbackSubmission, markFeedbackSubmitted } from '../features/story/feedbackSubmission';
 import { clearPendingReadingFeedback, getPendingReadingFeedback } from '../features/story/pendingReadingFeedback';
 import { useSceneScale } from '../features/story/hooks/useSceneScale';
@@ -14,6 +16,8 @@ function App() {
   const isSignedIn = useSignedIn();
   const sceneScale = useSceneScale();
   const [pendingFeedback, setPendingFeedback] = useState(null);
+  // 데스크톱으로 들어오면 첫 화면에 태블릿·휴대폰을 권하는 안내를 한 번 보여줘요.
+  const [desktopNoticeOpen, setDesktopNoticeOpen] = useState(shouldShowDesktopNotice);
 
   useEffect(() => {
     if (!isSignedIn) return undefined;
@@ -36,6 +40,8 @@ function App() {
     return () => { active = false; };
   }, [isSignedIn]);
 
+  const closeDesktopNotice = useCallback(() => setDesktopNoticeOpen(false), []);
+
   const submitPendingFeedback = async (feedback) => {
     try {
       await completeReading(pendingFeedback.sessionId, feedback);
@@ -53,6 +59,7 @@ function App() {
         <StoryGenerationProvider>
           <Outlet />
           {pendingFeedback && <FeedbackDialog variant="reading" sceneScale={sceneScale} onSubmit={submitPendingFeedback} />}
+          {desktopNoticeOpen && <DesktopNotice onClose={closeDesktopNotice} />}
         </StoryGenerationProvider>
       </NotificationsProvider>
     </SignupDraftProvider>
