@@ -47,7 +47,8 @@
 .kindergarten { --card-bg: #fff1cf; --card-border: #fff1cc; --badge: #ffd058; }
 .tantrum { --card-bg: #e7f2fb; --card-border: #dfe8f1; --badge: #4cb2ff; }
 .category { position: absolute; z-index: 4; top: 17px; left: 50%; transform: translateX(-50%); padding: 3px 9px; border-radius: 20px; background: var(--badge); color: white; font: 600 12px/17px var(--font-body); white-space: nowrap; }
-.cardTitle { position: absolute; z-index: 4; top: 51px; left: 0; width: 100%; color: var(--home-text); font: 400 27px/1.2 var(--font-title); text-align: center; }
+/* 제목은 두 줄까지만 쓰고 아래 그림(책 모자 쓴 캐릭터) 위에서 끝나야 해요. 글꼴이 늦게 오거나 기기마다 달라도 세 줄로 넘어가 그림을 덮지 않게 줄이 넓어지지 않게 잡아요. */
+.cardTitle { position: absolute; z-index: 4; top: 47px; left: 0; box-sizing: border-box; width: 100%; padding: 0 10px; color: var(--home-text); font: 400 24px/1.18 var(--font-title); text-align: center; word-break: keep-all; text-wrap: balance; }
 .cardWave { position: absolute; z-index: 1; top: 145px; left: -30px; width: 286.6px; height: 134.85px; max-width: none; }
 .friendCharacter { position: absolute; z-index: 2; top: 132px; left: -7px; width: 240px; height: 145px; max-width: none; }
 .spriteCrop, .kindergartenCharacter { position: absolute; z-index: 2; display: block; overflow: hidden; pointer-events: none; }
@@ -84,8 +85,10 @@
   .treeCanopy { width: 394px; height: 298px; }
 }
 @media (max-width: 900px) {
-  .page { height: auto; min-height: 100vh; overflow: visible; }
-  .shell, .main { height: auto; min-height: 100vh; }
+  .page { height: auto; min-height: 100vh; min-height: 100dvh; overflow: visible; }
+  /* 위쪽 84px 줄(Sidebar)이 shell 안에 있어서, 본문을 100vh로 잡으면 화면보다 84px 길어져 아이패드에서 스크롤이 생겨요. 줄 높이만큼 빼요. */
+  .shell { height: auto; min-height: 100vh; min-height: 100dvh; }
+  .main { height: auto; min-height: calc(100vh - 84px); min-height: calc(100dvh - 84px); }
   .dayBackground { top: 30px; left: auto; right: -410px; width: 980px; height: auto; opacity: .65; }
   .treeCanopy { display: none; }
   /* 로고·+ 버튼은 위쪽 84px 줄(Sidebar)에 있고 이 영역은 그 아래에서 시작해서, 84px 올려 같은 줄(화면 위 22px)에 놓아요. (서재와 같은 자리)
