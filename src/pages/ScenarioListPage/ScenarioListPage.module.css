@@ -39,7 +39,7 @@
 .tantrum { --card-bg: #e7f2fb; --card-border: #dfe8f1; --badge: #4cb2ff; }
 .habit { --card-bg: #efe4f8; --card-border: #e0dff1; --badge: #9f96ff; }
 .category { position: absolute; z-index: 4; top: calc(18 * var(--u)); left: 50%; transform: translateX(-50%); padding: calc(3 * var(--u)) calc(9 * var(--u)); border-radius: 21px; background: var(--badge); color: white; font: 600 calc(12.44 * var(--u))/1.4 var(--font-body); white-space: nowrap; }
-.cardTitle { position: absolute; z-index: 4; top: calc(55.4 * var(--u)); left: calc(8 * var(--u)); width: calc(100% - 16 * var(--u)); color: var(--list-text); font: 400 calc(27.68 * var(--u))/1.2 var(--font-title); text-align: center; overflow-wrap: anywhere; }
+.cardTitle { position: absolute; z-index: 4; top: calc(50 * var(--u)); left: calc(10 * var(--u)); width: calc(100% - 20 * var(--u)); color: var(--list-text); font: 400 calc(24.5 * var(--u))/1.18 var(--font-title); text-align: center; word-break: keep-all; text-wrap: balance; overflow-wrap: anywhere; }
 .cardWave { position: absolute; z-index: 1; top: calc(148.66 * var(--u)); left: calc(-30.76 * var(--u)); width: calc(293.84 * var(--u)); height: calc(138.25 * var(--u)); max-width: none; }
 .friendCharacter { position: absolute; z-index: 2; top: calc(135 * var(--u)); left: calc(-7 * var(--u)); width: calc(246 * var(--u)); height: calc(149 * var(--u)); max-width: none; }
 .spriteCrop, .kindergartenCharacter { position: absolute; z-index: 2; display: block; overflow: hidden; pointer-events: none; }
