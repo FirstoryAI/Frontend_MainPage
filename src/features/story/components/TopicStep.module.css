@@ -163,8 +163,8 @@
   top: 40.13px;
   left: 95.12px;
   width: 429.643px;
-  height: 62.327px;
-  padding: 8.31px 0 0 14.96px;
+  min-height: 62.327px;
+  padding: 8.31px 14.96px;
   background: var(--color-surface);
   border: 0.831px solid var(--field-border);
   border-radius: 11.634px;
@@ -172,11 +172,11 @@
 }
 
 .userBubble {
-  top: 129.57px;
+  top: 121px;
   left: 416.63px;
   width: 366.127px;
-  height: 61.431px;
-  padding: 9.01px 0 0 13.93px;
+  min-height: 61.431px;
+  padding: 9.01px 13.93px;
   background: #fff0cc;
   border: 0.819px solid var(--field-border);
   border-radius: 11.467px;
@@ -185,7 +185,7 @@
 
 .line {
   display: block;
-  white-space: nowrap;
+  overflow-wrap: anywhere;
 }
 
 /* 테두리를 두껍게 보이게 하되 레이아웃은 밀리지 않도록 안쪽 그림자로 한 줄을 더해요. */
