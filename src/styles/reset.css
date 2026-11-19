@@ -8,10 +8,17 @@ html,
 body,
 #root {
   min-height: 100%;
+  max-width: 100%;
+  overscroll-behavior: none;
 }
 
 html {
   -webkit-text-size-adjust: 100%;
+}
+
+html,
+body {
+  overflow-x: clip;
 }
 
 body {
