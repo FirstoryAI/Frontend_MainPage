@@ -173,11 +173,14 @@ function StoryReader({ title, pages, page, onPage, onClose, closeLabel = '돌아
         }
       }
     }
-    // 펼쳐진 책은 누른 쪽에 따라 이전·다음 페이지로 넘겨요.
+    // 펼쳐진 책은 양옆을 누르면 넘기고, 가운데를 누르면 상단바를 열거나 닫아요.
     if (!coverLabel && bookRef.current?.host()?.contains(event.target)) {
       const bounds = bookRef.current.host().getBoundingClientRect();
-      showPage(page + (event.clientX < bounds.left + bounds.width / 2 ? -1 : 1));
-      return;
+      const relativeX = (event.clientX - bounds.left) / bounds.width;
+      if (relativeX < 1 / 3 || relativeX > 2 / 3) {
+        showPage(page + (relativeX < 1 / 3 ? -1 : 1));
+        return;
+      }
     }
     // 책장 모서리를 눌러 넘기기 시작했으면 상단바는 그대로 둬요.
     setTimeout(() => {
