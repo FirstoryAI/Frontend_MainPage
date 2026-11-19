@@ -209,7 +209,7 @@ function StoryPreviewPage({ initialRemakeOpen = false }) {
   const renderHeader = () => (
     <header className={styles.header}>
       <Link className={styles.logo} to="/home" aria-label="FIRSTORY 홈">FIRSTORY</Link>
-      <button className={styles.close} type="button" onClick={() => navigate('/library')} aria-label="서재로 돌아가기">
+      <button className={styles.close} type="button" onClick={() => navigate('/library')} aria-label="서재로 돌아가기" data-close-hit-area>
         <img src={headerClose} alt="" />
       </button>
     </header>

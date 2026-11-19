@@ -70,6 +70,7 @@ function SubscriptionModal({ onClose, variant = 'manage' }) {
         <button
           ref={closeButton}
           className={styles.closeButton}
+          data-close-hit-area
           type="button"
           onClick={onClose}
           aria-label={variant === 'launch' ? '출시 알림 팝업 닫기' : '구독 관리 닫기'}

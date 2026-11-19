@@ -9,7 +9,7 @@ function Header({ showCloseButton = false }) {
         FIRSTORY
       </Link>
       {showCloseButton && (
-        <Link className={styles.closeButton} to="/" aria-label="홈으로 이동">
+        <Link className={styles.closeButton} to="/" aria-label="홈으로 이동" data-close-hit-area>
           <img src={closeIcon} alt="" />
         </Link>
       )}

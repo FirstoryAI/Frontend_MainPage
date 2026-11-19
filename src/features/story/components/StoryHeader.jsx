@@ -23,7 +23,7 @@ function StoryHeader({ progress = null, onExit, inert = false }) {
             <div className={styles.fill} style={{ width: `${progress * 100}%` }} />
           </div>
 
-          <button className={styles.exit} type="button" onClick={onExit} aria-label="동화 만들기 나가기">
+          <button className={styles.exit} type="button" onClick={onExit} aria-label="동화 만들기 나가기" data-close-hit-area>
             <img src={iconExit} alt="" />
           </button>
         </>
