@@ -78,6 +78,7 @@ function NotificationModal({ onClose }) {
         <button
           ref={closeButton}
           className={styles.closeButton}
+          data-close-hit-area
           type="button"
           onClick={onClose}
           aria-label="알림 설정 닫기"

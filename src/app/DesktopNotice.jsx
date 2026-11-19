@@ -37,7 +37,7 @@ function DesktopNotice({ onClose }) {
           데스크톱 환경에서는 화면이 최적화되지 않을 수 있으므로,<br />
           태블릿 또는 모바일 기기로 접속하시는 것을 권장드려요.
         </p>
-        <button className={styles.close} type="button" onClick={close} aria-label="안내 닫기">
+        <button className={styles.close} type="button" onClick={close} aria-label="안내 닫기" data-close-hit-area>
           <img src={closeIcon} alt="" />
         </button>
       </section>

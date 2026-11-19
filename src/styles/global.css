@@ -36,6 +36,13 @@ body {
   outline-offset: 3px;
 }
 
+/* X 아이콘의 위치를 바꾸지 않고 주변 여백까지 닫기 영역으로 써요. */
+[data-close-hit-area]::before {
+  position: absolute;
+  inset: -18px;
+  content: '';
+}
+
 ::selection {
   color: var(--color-kakao-text);
   background: #ffd8c8;

@@ -110,6 +110,7 @@ function ChildInfoModal({ child, onSave, onClose }) {
         <button
           ref={closeButton}
           className={styles.closeButton}
+          data-close-hit-area
           type="button"
           onClick={onClose}
           aria-label="아이 정보 닫기"

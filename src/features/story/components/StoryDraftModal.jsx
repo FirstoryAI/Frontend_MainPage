@@ -35,7 +35,7 @@ function StoryDraftModal({
         aria-modal="true"
         aria-labelledby="story-draft-title"
       >
-        <button className={styles.close} type="button" onClick={onClose} aria-label="닫기"><img src={iconClose} alt="" /></button>
+        <button className={styles.close} type="button" onClick={onClose} aria-label="닫기" data-close-hit-area><img src={iconClose} alt="" /></button>
 
         {isExit ? (
           <>

@@ -103,6 +103,7 @@ function MyPage() {
         </Link>
         <button
           className={styles.closeButton}
+          data-close-hit-area
           type="button"
           onClick={() => navigate('/home')}
           aria-label="마이페이지 닫기"

@@ -208,7 +208,7 @@ function StoryReader({ title, pages, page, onPage, onClose, closeLabel = '돌아
         ref={headerRef}
         onBlur={previewMode ? undefined : () => setHeaderTimerKey((key) => key + 1)}
       >
-        <button className={styles.readerClose} type="button" onClick={onClose} aria-label={closeLabel}>
+        <button className={styles.readerClose} type="button" onClick={onClose} aria-label={closeLabel} data-close-hit-area>
           <img src={readerClose} alt="" />
         </button>
         <h1 className={styles.readerTitle}>{title}</h1>

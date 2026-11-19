@@ -100,6 +100,7 @@ function EditModal({
       >
         <button
           className={styles.closeButton}
+          data-close-hit-area
           type="button"
           aria-label="닫기"
           onClick={onClose}

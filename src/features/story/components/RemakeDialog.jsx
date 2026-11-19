@@ -92,7 +92,7 @@ function RemakeDialog({ onClose, onRemake, pages = [], sceneScale = 1 }) {
         aria-labelledby="remake-dialog-title"
         aria-describedby="remake-dialog-description"
       >
-        <button className={styles.dialogClose} type="button" onClick={onClose} aria-label="닫기">
+        <button className={styles.dialogClose} type="button" onClick={onClose} aria-label="닫기" data-close-hit-area>
           <img src={modalClose} alt="" />
         </button>
 

@@ -39,7 +39,7 @@ function StorySavedModal({ onClose, onRead }) {
         aria-labelledby="story-saved-title"
         aria-describedby="story-saved-description"
       >
-        <button className={styles.closeButton} type="button" onClick={onClose} aria-label="팝업 닫기">
+        <button className={styles.closeButton} type="button" onClick={onClose} aria-label="팝업 닫기" data-close-hit-area>
           <img src={closeIcon} alt="" />
         </button>
 

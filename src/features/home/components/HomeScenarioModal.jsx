@@ -104,6 +104,7 @@ function HomeScenarioModal({ scenario, onClose, onStart }) {
       >
         <button
           className={styles.closeButton}
+          data-close-hit-area
           type="button"
           onClick={requestClose}
           aria-label="팝업 닫기"

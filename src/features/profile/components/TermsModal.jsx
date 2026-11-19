@@ -53,6 +53,7 @@ function TermsModal({ onClose }) {
         <button
           ref={closeButton}
           className={styles.closeButton}
+          data-close-hit-area
           type="button"
           onClick={onClose}
           aria-label="이용약관 닫기"
