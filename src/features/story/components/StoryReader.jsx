@@ -157,6 +157,28 @@ function StoryReader({ title, pages, page, onPage, onClose, closeLabel = '돌아
       showPage(1);
       return;
     }
+    // 표지 양옆의 서재 배경을 누르면 해당 방향으로 이동해요.
+    if (coverLabel) {
+      const side = page === 0 ? 'front' : 'back';
+      const cover = bookRef.current?.host()?.querySelector(`[data-side="${side}"] .${styles.coverBook}`);
+      const bounds = cover?.getBoundingClientRect();
+      if (bounds && event.clientY >= bounds.top && event.clientY <= bounds.bottom) {
+        if (event.clientX < bounds.left) {
+          showPage(page - 1);
+          return;
+        }
+        if (event.clientX > bounds.right) {
+          showPage(page + 1);
+          return;
+        }
+      }
+    }
+    // 펼쳐진 책은 누른 쪽에 따라 이전·다음 페이지로 넘겨요.
+    if (!coverLabel && bookRef.current?.host()?.contains(event.target)) {
+      const bounds = bookRef.current.host().getBoundingClientRect();
+      showPage(page + (event.clientX < bounds.left + bounds.width / 2 ? -1 : 1));
+      return;
+    }
     // 책장 모서리를 눌러 넘기기 시작했으면 상단바는 그대로 둬요.
     setTimeout(() => {
       const state = bookRef.current?.pageFlip()?.getState();
