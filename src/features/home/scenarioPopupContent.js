@@ -200,7 +200,7 @@ export const scenarioPopupContent = {
     ...sharedPopupContent,
     age: '6세',
     childTrait: '‘싫어’가 많아진 아이',
-    title: '옷 입기도, 양치고 다 싫대요',
+    title: '옷 입기도, 양치도 다 싫대요',
     description: [
       '아침저녁으로 옷을 입히고 양치를 시키려 하면 “싫어!” 하며 도망 다녀요.',
       '혼을 내면 드러누워 더 크게 울어서, 어떻게 해야 덜 부딪힐지 고민이에요.',
