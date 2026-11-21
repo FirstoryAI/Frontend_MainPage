@@ -330,7 +330,9 @@ const StoryFlipBook = forwardRef(function StoryFlipBook({
         <div className={styles.flipSlide} ref={slideRef} style={{ transform: `translateX(${shift}px)` }}>
           <ActivePageContext.Provider value={page}>
           <HTMLFlipBook
-            key={`${portrait ? 'portrait' : 'spread'}-${covers ? 'covers' : 'plain'}`}
+            // page-flip caches its fixed page dimensions at mount. Rebuild it when
+            // the reader rotates or the webview resizes so pages stay centered.
+            key={`${portrait ? 'portrait' : 'spread'}-${covers ? 'covers' : 'plain'}-${area.width}x${area.height}`}
             ref={bookRef}
             className={styles.flipBook}
             // 화면 폭이 홀수여도 두 쪽 사이에 틈(밝은 세로줄)이 생기지 않게 올림해요. 넘친 1px은 가려져요.
