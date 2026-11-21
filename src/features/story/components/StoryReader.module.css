@@ -17,6 +17,7 @@
 
 /* Use one sharp shelf image behind the cover, even when the canvas is inset. */
 .reader.readingEntrance .readerCanvas,
+.readingEntrance .readerPage,
 .readingEntrance .flipHost[data-wall] {
   background: transparent;
 }
