@@ -876,6 +876,15 @@
   }
 }
 
+/* Keep mobile landscape spreads at the artwork ratio so text fits vertically. */
+@media (orientation: landscape) and (pointer: coarse) {
+  .reader:not(.previewReader) .readerCanvas {
+    width: min(100cqw, 177.78cqh);
+    height: min(100cqh, 56.25cqw);
+    aspect-ratio: 16 / 9;
+  }
+}
+
 /* seamless: 쪽 바탕색이 그림 가장자리(소수점 픽셀)에 비쳐 가운데에 밝은 세로줄이 생기지 않게 바탕을 비워요.
    뒤에는 지금 쪽 그림이 깔려 있어요. (StoryFlipBook) */
 .flipHost[data-seamless] .flipPage {
@@ -934,7 +943,7 @@
 .rotateDialog {
   position: relative;
   width: min(360px, 100%);
-  padding: 34px 24px 28px;
+  padding: 44px 24px;
   color: var(--color-text);
   background: var(--color-surface);
   border-radius: 24px;
@@ -984,65 +993,8 @@
 }
 
 .rotateDialog p {
-  margin: 12px 0 24px;
+  margin: 14px 0 0;
   color: var(--color-secondary);
   font-size: 15px;
   line-height: 1.6;
-}
-
-.rotateConfirm {
-  min-height: 54px;
-  padding: 0 28px;
-  color: #fff;
-  background: var(--color-brand);
-  border: 0;
-  border-radius: 16px;
-  box-shadow: inset 0 0 5px rgb(255 255 255 / 25%);
-  font: 600 16px var(--font-body);
-  cursor: pointer;
-}
-
-@media (max-width: 760px) and (orientation: portrait) {
-  .reader[data-rotate-reading] {
-    inset: auto;
-    top: 0;
-    left: 0;
-    width: 100dvh;
-    height: 100vw;
-    transform: translateX(100vw) rotate(90deg);
-    transform-origin: top left;
-  }
-
-  .reader[data-rotate-reading] .readerHeader { position: absolute; }
-  .reader[data-rotate-reading] .flipScene {
-    display: block;
-    width: 200%;
-    overflow: hidden;
-  }
-  .reader[data-rotate-reading] .flipSceneImage {
-    width: 100%;
-    height: 100%;
-    aspect-ratio: auto;
-  }
-  .reader[data-rotate-reading] .readerCopy {
-    position: absolute;
-    right: 6%;
-    left: 6%;
-    padding: 0.8cqw 1.6cqw;
-    font-size: clamp(12px, 2cqw, 28px);
-    text-align: center;
-    background: rgb(255 255 255 / 72%);
-    border-radius: 1.2cqw;
-  }
-  .reader[data-rotate-reading] .readerCopy[data-position='top'] { top: 3.28%; bottom: auto; }
-  .reader[data-rotate-reading] .readerCopy[data-position='bottom'] { top: auto; bottom: 3.28%; }
-  .reader[data-rotate-reading] .readerArrow {
-    top: calc(50% - 2.137cqw);
-    width: 4.167cqw;
-    height: 4.274cqw;
-    transform: none;
-  }
-  .reader[data-rotate-reading] .readerArrow img { width: 4.167cqw; height: 4.274cqw; }
-  .reader[data-rotate-reading] .readerArrowLeft { left: 1.25%; }
-  .reader[data-rotate-reading] .readerArrowRight { right: 1.18%; }
 }

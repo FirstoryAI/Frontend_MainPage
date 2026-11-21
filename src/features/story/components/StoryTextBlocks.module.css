@@ -33,29 +33,10 @@
 
   .block {
     position: relative;
+    top: auto !important;
+    left: auto !important;
     font-size: clamp(23px, 5.9vw, 27px);
     line-height: 1.6;
     white-space: normal;
-  }
-
-  :global([role='dialog']:not([data-rotate-reading])) .block {
-    top: auto !important;
-    left: auto !important;
-  }
-}
-
-@media (max-width: 760px) and (orientation: portrait) {
-  :global([data-rotate-reading]) .blocks {
-    position: absolute;
-    inset: 0;
-    display: block;
-    padding: 0;
-  }
-
-  :global([data-rotate-reading]) .block {
-    position: absolute;
-    font-size: 2.35cqw;
-    line-height: 1.55;
-    white-space: nowrap;
   }
 }
