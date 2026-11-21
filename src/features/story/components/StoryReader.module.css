@@ -793,7 +793,7 @@
   .readerHeader, .reader[data-header-hidden='true'] .readerHeader { translate: none; }
 }
 
-@media (max-width: 760px) {
+@media (max-width: 760px) and (orientation: portrait) {
   .readerCanvas { width: 100cqw; height: 100cqh; aspect-ratio: auto; }
   .readerHeader { height: 76px; }
   .readerClose { top: 24px; left: 16px; width: 24px; height: 24px; }
@@ -896,7 +896,7 @@
   .reader:not(.previewReader) .readerProgressTrack { height: 0.63cqw; }
 }
 
-@media (max-width: 760px) {
+@media (max-width: 760px) and (orientation: portrait) {
   .reader:not(.previewReader) .readerHeader { height: 53.2px; }
   .reader:not(.previewReader) .readerClose { top: 16.8px; left: 16px; }
   .reader:not(.previewReader) .readerClose,
@@ -905,4 +905,73 @@
   .reader:not(.previewReader) .readerTitle { top: 16.8px; left: 37.7px; font-size: 11.2px; }
   .reader:not(.previewReader) .readerProgress { top: 21.7px; gap: 4.2px; width: 22.4%; font-size: 7.7px; }
   .reader:not(.previewReader) .readerProgressTrack { height: 5.6px; }
+}
+
+.rotateBackdrop {
+  position: absolute;
+  z-index: 10;
+  inset: 0;
+  display: grid;
+  place-items: center;
+  padding: 20px;
+  background: rgb(0 0 0 / 44%);
+}
+
+.reader[data-rotate-guide] .readerCanvas,
+.reader[data-rotate-guide] .readerHeader {
+  visibility: hidden;
+}
+
+.rotateDialog {
+  width: min(360px, 100%);
+  padding: 34px 24px 28px;
+  color: var(--color-text);
+  background: var(--color-surface);
+  border-radius: 24px;
+  box-shadow: 0 0 8px rgb(0 0 0 / 10%);
+  text-align: center;
+}
+
+.rotateIcon {
+  display: grid;
+  width: 76px;
+  height: 76px;
+  margin: 0 auto 20px;
+  place-items: center;
+  color: var(--color-brand);
+  background: #fff0e9;
+  border-radius: 20px;
+}
+
+.rotateIcon span {
+  display: block;
+  width: 45px;
+  height: 28px;
+  border: 3px solid currentColor;
+  border-radius: 6px;
+  transform: rotate(-18deg);
+}
+
+.rotateDialog h2 {
+  margin: 0;
+  font: 400 23px/1.4 var(--font-title);
+}
+
+.rotateDialog p {
+  margin: 12px 0 24px;
+  color: var(--color-secondary);
+  font-size: 15px;
+  line-height: 1.6;
+}
+
+.rotateDialog button {
+  min-height: 54px;
+  padding: 0 28px;
+  color: #fff;
+  background: var(--color-brand);
+  border: 0;
+  border-radius: 16px;
+  box-shadow: inset 0 0 5px rgb(255 255 255 / 25%);
+  font: 600 16px var(--font-body);
+  cursor: pointer;
 }

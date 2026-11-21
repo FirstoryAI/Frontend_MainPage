@@ -47,6 +47,9 @@ function StoryReader({ title, pages, page, onPage, onClose, closeLabel = '돌아
   const tapOnCover = useRef(false);
   const bookRef = useRef(null);
   const [portrait, setPortrait] = useState(() => window.matchMedia('(max-width: 760px)').matches);
+  const singlePage = previewMode && portrait;
+  const [devicePortrait, setDevicePortrait] = useState(() => window.matchMedia('(orientation: portrait)').matches);
+  const showRotateGuide = !previewMode && portrait && devicePortrait;
   // 책장이 넘어가는 중인지예요. 다 넘어가기 전에는 다음·이전 쪽으로 가지 않아요. (연속으로 눌러도 한 장씩 넘어가요)
   const [turning, setTurning] = useState(false);
   const turningRef = useRef(false);
@@ -79,8 +82,8 @@ function StoryReader({ title, pages, page, onPage, onClose, closeLabel = '돌아
     canPrev: !turning && page > firstPage,
     canNext: !turning && page < lastPage,
     // 넓은 화면에서 표지를 펼치고 덮는 건(앞표지 ↔ 1쪽, 마지막 쪽 ↔ 뒤표지) 책장을 끌지 않고 쓸어 넘기면 표지 움직임으로 넘어가요.
-    swipePrev: covers && !portrait && (page === 1 || page === lastPage),
-    swipeNext: covers && !portrait && (page === 0 || page === pages.length),
+    swipePrev: covers && !singlePage && (page === 1 || page === lastPage),
+    swipeNext: covers && !singlePage && (page === 0 || page === pages.length),
     onSwipe: (forward) => showPage(page + (forward ? 1 : -1)),
   });
   const prompt = guide?.prompts?.find((item) => item.afterPage === page);
@@ -94,6 +97,13 @@ function StoryReader({ title, pages, page, onPage, onClose, closeLabel = '돌아
   useEffect(() => {
     const query = window.matchMedia('(max-width: 760px)');
     const update = () => setPortrait(query.matches);
+    query.addEventListener('change', update);
+    return () => query.removeEventListener('change', update);
+  }, []);
+
+  useEffect(() => {
+    const query = window.matchMedia('(orientation: portrait)');
+    const update = () => setDevicePortrait(query.matches);
     query.addEventListener('change', update);
     return () => query.removeEventListener('change', update);
   }, []);
@@ -197,6 +207,7 @@ function StoryReader({ title, pages, page, onPage, onClose, closeLabel = '돌아
       className={`${styles.reader} ${previewMode ? styles.previewReader : ''} ${className}`}
       inert={suspended}
       data-header-hidden={isHeaderHidden}
+      data-rotate-guide={showRotateGuide || undefined}
       onPointerDown={handlePointerDown}
       onPointerUp={handlePointerUp}
       aria-label="동화 읽기"
@@ -230,7 +241,7 @@ function StoryReader({ title, pages, page, onPage, onClose, closeLabel = '돌아
               page={page}
               onPage={handleBookPage}
               onTurningChange={handleTurningChange}
-              portrait={portrait}
+              portrait={singlePage}
               seamless={!previewMode}
               frontCover={covers ? frontCover : null}
               backCover={covers ? backCover : null}
@@ -318,6 +329,16 @@ function StoryReader({ title, pages, page, onPage, onClose, closeLabel = '돌아
 
         {children && <div className={styles.extra}>{children}</div>}
       </div>
+      {showRotateGuide && (
+        <div className={styles.rotateBackdrop}>
+          <div className={styles.rotateDialog} role="status" aria-live="polite">
+            <div className={styles.rotateIcon} aria-hidden="true"><span /></div>
+            <h2>휴대폰을 가로로 돌려주세요</h2>
+            <p>가로 화면에서 동화 그림과 글을<br />한눈에 볼 수 있어요.</p>
+            <button type="button" onClick={onClose}>읽기 닫기</button>
+          </div>
+        </div>
+      )}
     </section>
   );
 }

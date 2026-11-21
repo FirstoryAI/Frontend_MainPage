@@ -21,7 +21,7 @@
 .paragraph:last-child { margin-bottom: 0; }
 .line { display: block; }
 
-@media (max-width: 760px) {
+@media (max-width: 760px) and (orientation: portrait) {
   .blocks {
     position: relative;
     inset: auto;
