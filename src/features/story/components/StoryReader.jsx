@@ -50,9 +50,7 @@ function StoryReader({ title, pages, page, onPage, onClose, closeLabel = '돌아
   const [portrait, setPortrait] = useState(() => window.matchMedia('(max-width: 760px)').matches);
   const singlePage = previewMode && portrait;
   const [devicePortrait, setDevicePortrait] = useState(() => window.matchMedia('(orientation: portrait)').matches);
-  const [rotateGuideConfirmed, setRotateGuideConfirmed] = useState(false);
-  const showRotateGuide = !previewMode && portrait && devicePortrait && !rotateGuideConfirmed;
-  const rotateReading = !previewMode && portrait && devicePortrait && rotateGuideConfirmed;
+  const showRotateGuide = !previewMode && portrait && devicePortrait;
   // 책장이 넘어가는 중인지예요. 다 넘어가기 전에는 다음·이전 쪽으로 가지 않아요. (연속으로 눌러도 한 장씩 넘어가요)
   const [turning, setTurning] = useState(false);
   const turningRef = useRef(false);
@@ -211,7 +209,6 @@ function StoryReader({ title, pages, page, onPage, onClose, closeLabel = '돌아
       inert={suspended}
       data-header-hidden={isHeaderHidden}
       data-rotate-guide={showRotateGuide || undefined}
-      data-rotate-reading={rotateReading || undefined}
       onPointerDown={handlePointerDown}
       onPointerUp={handlePointerUp}
       aria-label="동화 읽기"
@@ -240,7 +237,7 @@ function StoryReader({ title, pages, page, onPage, onClose, closeLabel = '돌아
           <img className={styles.readerFrame} src={previewMode ? previewFrame : readerFrame} alt="" />
           <div className={styles.readerPage}>
             <StoryFlipBook
-              key={rotateReading ? 'rotated-reading' : 'regular-reading'}
+              key={devicePortrait ? 'portrait-device' : 'landscape-device'}
               ref={bookRef}
               pages={pages}
               page={page}
@@ -343,7 +340,6 @@ function StoryReader({ title, pages, page, onPage, onClose, closeLabel = '돌아
             <div className={styles.rotateIcon} aria-hidden="true"><span /></div>
             <h2>휴대폰을 가로로 돌려주세요</h2>
             <p>가로 화면에서 동화 그림과 글을<br />한눈에 볼 수 있어요.</p>
-            <button className={styles.rotateConfirm} type="button" onClick={() => setRotateGuideConfirmed(true)}>확인</button>
           </div>
         </div>
       )}
