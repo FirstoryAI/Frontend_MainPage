@@ -4,6 +4,7 @@ import previewFrame from '../../../assets/story-reader/preview-frame.svg';
 import readerArrowLeft from '../../../assets/story-reader/arrow-left.svg';
 import readerArrowRight from '../../../assets/story-reader/arrow-right.svg';
 import readerClose from '../../../assets/story-reader/close.svg';
+import modalClose from '../../../assets/icons/icon-close.svg';
 import pageArrowInactive from '../../../assets/story-preview-guide/page-left.svg';
 import pageArrowActive from '../../../assets/story-preview-guide/page-right.svg';
 import guidePanelBackground from '../../../assets/story-preview-guide/guide-panel.svg';
@@ -49,7 +50,9 @@ function StoryReader({ title, pages, page, onPage, onClose, closeLabel = '돌아
   const [portrait, setPortrait] = useState(() => window.matchMedia('(max-width: 760px)').matches);
   const singlePage = previewMode && portrait;
   const [devicePortrait, setDevicePortrait] = useState(() => window.matchMedia('(orientation: portrait)').matches);
-  const showRotateGuide = !previewMode && portrait && devicePortrait;
+  const [rotateGuideConfirmed, setRotateGuideConfirmed] = useState(false);
+  const showRotateGuide = !previewMode && portrait && devicePortrait && !rotateGuideConfirmed;
+  const rotateReading = !previewMode && portrait && devicePortrait && rotateGuideConfirmed;
   // 책장이 넘어가는 중인지예요. 다 넘어가기 전에는 다음·이전 쪽으로 가지 않아요. (연속으로 눌러도 한 장씩 넘어가요)
   const [turning, setTurning] = useState(false);
   const turningRef = useRef(false);
@@ -208,6 +211,7 @@ function StoryReader({ title, pages, page, onPage, onClose, closeLabel = '돌아
       inert={suspended}
       data-header-hidden={isHeaderHidden}
       data-rotate-guide={showRotateGuide || undefined}
+      data-rotate-reading={rotateReading || undefined}
       onPointerDown={handlePointerDown}
       onPointerUp={handlePointerUp}
       aria-label="동화 읽기"
@@ -332,10 +336,13 @@ function StoryReader({ title, pages, page, onPage, onClose, closeLabel = '돌아
       {showRotateGuide && (
         <div className={styles.rotateBackdrop}>
           <div className={styles.rotateDialog} role="status" aria-live="polite">
+            <button className={styles.rotateClose} type="button" onClick={onClose} aria-label="동화 읽기 닫기" data-close-hit-area>
+              <img src={modalClose} alt="" />
+            </button>
             <div className={styles.rotateIcon} aria-hidden="true"><span /></div>
             <h2>휴대폰을 가로로 돌려주세요</h2>
             <p>가로 화면에서 동화 그림과 글을<br />한눈에 볼 수 있어요.</p>
-            <button type="button" onClick={onClose}>읽기 닫기</button>
+            <button className={styles.rotateConfirm} type="button" onClick={() => setRotateGuideConfirmed(true)}>확인</button>
           </div>
         </div>
       )}
