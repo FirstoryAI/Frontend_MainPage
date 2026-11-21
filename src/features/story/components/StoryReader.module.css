@@ -15,6 +15,14 @@
   background: #2b1e17 url('../../../assets/images/library/shelf-background.webp') center top / cover no-repeat;
 }
 
+/* Use one sharp shelf image behind the cover, even when the canvas is inset. */
+.reader.readingEntrance .readerCanvas,
+.readingEntrance .flipHost[data-wall] {
+  background: transparent;
+}
+
+.readingEntrance .flipHost[data-wall]::before { content: none; }
+
 .reader.readingEntrance {
   animation: reading-overlay-enter 460ms ease-out backwards;
 }
