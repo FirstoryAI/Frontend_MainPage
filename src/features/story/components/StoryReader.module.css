@@ -867,6 +867,15 @@
 
 .reader:not(.previewReader) .flipHost { border-radius: 0; }
 
+/* Keep mobile landscape spreads at the artwork ratio so text fits vertically. */
+@media (orientation: landscape) and (pointer: coarse) {
+  .reader:not(.previewReader) .readerCanvas {
+    width: min(100cqw, 177.78cqh);
+    height: min(100cqh, 56.25cqw);
+    aspect-ratio: 16 / 9;
+  }
+}
+
 /* seamless: 쪽 바탕색이 그림 가장자리(소수점 픽셀)에 비쳐 가운데에 밝은 세로줄이 생기지 않게 바탕을 비워요.
    뒤에는 지금 쪽 그림이 깔려 있어요. (StoryFlipBook) */
 .flipHost[data-seamless] .flipPage {
