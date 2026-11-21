@@ -240,6 +240,7 @@ function StoryReader({ title, pages, page, onPage, onClose, closeLabel = '돌아
           <img className={styles.readerFrame} src={previewMode ? previewFrame : readerFrame} alt="" />
           <div className={styles.readerPage}>
             <StoryFlipBook
+              key={rotateReading ? 'rotated-reading' : 'regular-reading'}
               ref={bookRef}
               pages={pages}
               page={page}
