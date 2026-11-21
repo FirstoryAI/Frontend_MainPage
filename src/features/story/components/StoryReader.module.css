@@ -938,8 +938,8 @@
   top: 16px;
   right: 16px;
   display: grid;
-  width: 36px;
-  height: 36px;
+  width: 45px;
+  height: 45px;
   place-items: center;
   padding: 0;
   background: transparent;
@@ -947,7 +947,7 @@
   cursor: pointer;
 }
 
-.rotateClose img { display: block; width: 24px; height: 24px; }
+.rotateClose img { display: block; width: 45px; height: 45px; }
 
 .rotateIcon {
   display: grid;
