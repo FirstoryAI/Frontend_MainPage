@@ -923,6 +923,7 @@
 }
 
 .rotateDialog {
+  position: relative;
   width: min(360px, 100%);
   padding: 34px 24px 28px;
   color: var(--color-text);
@@ -931,6 +932,22 @@
   box-shadow: 0 0 8px rgb(0 0 0 / 10%);
   text-align: center;
 }
+
+.rotateClose {
+  position: absolute;
+  top: 16px;
+  right: 16px;
+  display: grid;
+  width: 36px;
+  height: 36px;
+  place-items: center;
+  padding: 0;
+  background: transparent;
+  border: 0;
+  cursor: pointer;
+}
+
+.rotateClose img { display: block; width: 24px; height: 24px; }
 
 .rotateIcon {
   display: grid;
@@ -964,7 +981,7 @@
   line-height: 1.6;
 }
 
-.rotateDialog button {
+.rotateConfirm {
   min-height: 54px;
   padding: 0 28px;
   color: #fff;
@@ -974,4 +991,49 @@
   box-shadow: inset 0 0 5px rgb(255 255 255 / 25%);
   font: 600 16px var(--font-body);
   cursor: pointer;
+}
+
+@media (max-width: 760px) and (orientation: portrait) {
+  .reader[data-rotate-reading] {
+    inset: auto;
+    top: 0;
+    left: 0;
+    width: 100dvh;
+    height: 100vw;
+    transform: translateX(100vw) rotate(90deg);
+    transform-origin: top left;
+  }
+
+  .reader[data-rotate-reading] .readerHeader { position: absolute; }
+  .reader[data-rotate-reading] .flipScene {
+    display: block;
+    width: 200%;
+    overflow: hidden;
+  }
+  .reader[data-rotate-reading] .flipSceneImage {
+    width: 100%;
+    height: 100%;
+    aspect-ratio: auto;
+  }
+  .reader[data-rotate-reading] .readerCopy {
+    position: absolute;
+    right: 6%;
+    left: 6%;
+    padding: 0.8cqw 1.6cqw;
+    font-size: clamp(12px, 2cqw, 28px);
+    text-align: center;
+    background: rgb(255 255 255 / 72%);
+    border-radius: 1.2cqw;
+  }
+  .reader[data-rotate-reading] .readerCopy[data-position='top'] { top: 3.28%; bottom: auto; }
+  .reader[data-rotate-reading] .readerCopy[data-position='bottom'] { top: auto; bottom: 3.28%; }
+  .reader[data-rotate-reading] .readerArrow {
+    top: calc(50% - 2.137cqw);
+    width: 4.167cqw;
+    height: 4.274cqw;
+    transform: none;
+  }
+  .reader[data-rotate-reading] .readerArrow img { width: 4.167cqw; height: 4.274cqw; }
+  .reader[data-rotate-reading] .readerArrowLeft { left: 1.25%; }
+  .reader[data-rotate-reading] .readerArrowRight { right: 1.18%; }
 }
