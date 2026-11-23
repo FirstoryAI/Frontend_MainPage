@@ -7,9 +7,33 @@ const FINISH_RATIO = 0.25;
 // 이보다 빠르게 쓸어 넘기면 조금만 끌어도 넘어가요. (px/ms)
 const FLICK_SPEED = 0.45;
 // 놓은 뒤 책장이 가운데 접는 선을 넘어가기까지 걸리는 시간이에요. 그 뒤는 라이브러리가 마저 넘겨요.
-const FINISH_MS = 140;
+const FINISH_MS = 90;
+// 놓은 뒤 책장이 마저 넘어가거나 제자리로 돌아오는 시간의 상한이에요(ms).
+// 라이브러리는 남은 거리에 비례해 천천히 마무리해서(버튼으로 넘길 때와 같은 속도), 손으로 넘긴 뒤 다음 장을 잡기까지 0.5~0.9초 걸렸어요.
+// 손이 이미 책장을 움직여 놨으니 놓은 뒤에는 빨리 끝내요.
+const RELEASE_MS = 200;
 
 const add = (a, b) => ({ x: a.x + b.x, y: a.y + b.y });
+
+// 놓은 직후 라이브러리가 시작하는 마무리 움직임만 RELEASE_MS 안에 끝내요. (버튼으로 넘기는 움직임은 그대로예요)
+const RELEASE_CAP = Symbol('releaseCap');
+function stopQuickly(book, pos) {
+  const render = book.getRender?.();
+  if (render && !render[RELEASE_CAP]) {
+    const startAnimation = render.startAnimation.bind(render);
+    render.startAnimation = (frames, duration, onAnimateEnd) => {
+      const cap = render[RELEASE_CAP];
+      startAnimation(frames, cap ? Math.min(duration, cap) : duration, onAnimateEnd);
+    };
+    render[RELEASE_CAP] = 0;
+  }
+  if (render) render[RELEASE_CAP] = RELEASE_MS;
+  try {
+    book.userStop(pos);
+  } finally {
+    if (render) render[RELEASE_CAP] = 0;
+  }
+}
 
 // react-pageflip의 기본 마우스·터치 처리를 대신해요. (useMouseEvents={false}와 함께 써요)
 //  - 마우스를 올리기만 해서는 아무 일도 없고, 누른 채 끌 때만 책장이 접혀요.
@@ -57,7 +81,7 @@ export function useFlipDrag(bookRef, { onTap, canPrev = true, canNext = true, sw
     const from = d.current;
     const passed = d.forward ? from.x <= targetX : from.x >= targetX;
     if (passed) {
-      book.userStop(from);
+      stopQuickly(book, from);
       return;
     }
     const startedAt = performance.now();
@@ -67,7 +91,7 @@ export function useFlipDrag(bookRef, { onTap, canPrev = true, canNext = true, sw
       const pos = { x: from.x + (targetX - from.x) * eased, y: from.y };
       book.userMove(pos, true);
       if (t < 1) requestAnimationFrame(step);
-      else book.userStop(pos);
+      else stopQuickly(book, pos);
     };
     requestAnimationFrame(step);
   };
@@ -147,7 +171,7 @@ export function useFlipDrag(bookRef, { onTap, canPrev = true, canNext = true, sw
       && (travelled > d.rect.pageWidth * FINISH_RATIO || speed > FLICK_SPEED);
 
     if (done) finish(book, d);
-    else book.userStop(d.current);
+    else stopQuickly(book, d.current);
   };
 
   return {
