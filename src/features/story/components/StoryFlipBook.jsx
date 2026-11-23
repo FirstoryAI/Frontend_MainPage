@@ -3,17 +3,16 @@ import HTMLFlipBook from 'react-pageflip';
 import CoverFace from './CoverFace';
 import StoryFlipPage from './StoryFlipPage';
 import { ActivePageContext } from '../activePageContext';
+import { FLIP_MS, flipDistance } from '../flipTiming';
 import styles from './StoryReader.module.css';
 
-// 책장 한 장이 넘어가는 시간(ms)이에요. 어느 화면, 어떤 크기의 책이든 같아요.
-const FLIP_MS = 720;
 // 넘김(최대: 작은 화면의 책장 넘김, 표지 펼치기·덮기 1.7초)이 이 시간 안에 끝나지 않으면 멈춘 것으로 봐요.
 const TURN_TIMEOUT_MS = 3000;
 // 라이브러리(page-flip)는 책장이 움직이는 거리가 1000px보다 짧으면 그만큼 빨리 넘겨요. (거리/1000 × flippingTime)
 // 그래서 휴대폰처럼 책이 작으면 더 빨리 넘어갔어요. 거리가 짧은 만큼 flippingTime을 늘려서 시간을 맞춰요.
-// 거리는 라이브러리 계산과 같아요: 책장 폭 × 2 − 책 높이 / 10
+// 거리는 라이브러리 계산과 같아요: 책장 폭 × 2 − 책 높이 / 10 (flipTiming.js)
 const flippingTimeFor = (pageWidth, height) => {
-  const distance = pageWidth * 2 - height / 10;
+  const distance = flipDistance(pageWidth, height);
   return distance > 0 ? Math.round(FLIP_MS * Math.max(1, 1000 / distance)) : FLIP_MS;
 };
 

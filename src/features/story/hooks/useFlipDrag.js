@@ -1,4 +1,5 @@
 import { useRef } from 'react';
+import { flipMsPerPx } from '../flipTiming';
 
 // 이만큼 옆으로 움직여야 책장을 잡은 것으로 봐요. 그보다 적게 움직이고 떼면 그냥 누른 거예요.
 const DRAG_START_PX = 8;
@@ -6,32 +7,27 @@ const DRAG_START_PX = 8;
 const FINISH_RATIO = 0.25;
 // 이보다 빠르게 쓸어 넘기면 조금만 끌어도 넘어가요. (px/ms)
 const FLICK_SPEED = 0.45;
-// 놓은 뒤 책장이 가운데 접는 선을 넘어가기까지 걸리는 시간이에요. 그 뒤는 라이브러리가 마저 넘겨요.
-const FINISH_MS = 90;
-// 놓은 뒤 책장이 마저 넘어가거나 제자리로 돌아오는 시간의 상한이에요(ms).
-// 라이브러리는 남은 거리에 비례해 천천히 마무리해서(버튼으로 넘길 때와 같은 속도), 손으로 넘긴 뒤 다음 장을 잡기까지 0.5~0.9초 걸렸어요.
-// 손이 이미 책장을 움직여 놨으니 놓은 뒤에는 빨리 끝내요.
-const RELEASE_MS = 200;
 
 const add = (a, b) => ({ x: a.x + b.x, y: a.y + b.y });
 
-// 놓은 직후 라이브러리가 시작하는 마무리 움직임만 RELEASE_MS 안에 끝내요. (버튼으로 넘기는 움직임은 그대로예요)
-const RELEASE_CAP = Symbol('releaseCap');
-function stopQuickly(book, pos) {
+// 놓은 뒤 책장이 마저 넘어가거나 제자리로 돌아오는 움직임은, 버튼으로 한 장 넘길 때와 같은 속도(px당 걸리는 시간)로 해요.
+// 라이브러리는 책이 크면(움직이는 거리가 1000px 넘으면) 남은 거리가 짧아도 더 천천히 마무리해서, 끌어 넘길 때가 버튼보다 느렸어요.
+const SPEED = Symbol('flipSpeed');
+function stopAtButtonSpeed(book, pos, msPerPx) {
   const render = book.getRender?.();
-  if (render && !render[RELEASE_CAP]) {
+  if (render && !(SPEED in render)) {
     const startAnimation = render.startAnimation.bind(render);
     render.startAnimation = (frames, duration, onAnimateEnd) => {
-      const cap = render[RELEASE_CAP];
-      startAnimation(frames, cap ? Math.min(duration, cap) : duration, onAnimateEnd);
+      const perPx = render[SPEED];
+      startAnimation(frames, perPx ? Math.round(frames.length * perPx) : duration, onAnimateEnd);
     };
-    render[RELEASE_CAP] = 0;
+    render[SPEED] = 0;
   }
-  if (render) render[RELEASE_CAP] = RELEASE_MS;
+  if (render) render[SPEED] = msPerPx;
   try {
     book.userStop(pos);
   } finally {
-    if (render) render[RELEASE_CAP] = 0;
+    if (render) render[SPEED] = 0;
   }
 }
 
@@ -79,19 +75,22 @@ export function useFlipDrag(bookRef, { onTap, canPrev = true, canNext = true, sw
     const spine = d.rect.left + d.rect.width / 2;
     const targetX = spine + (d.forward ? -1 : 1) * d.rect.pageWidth * 0.05;
     const from = d.current;
+    const msPerPx = flipMsPerPx(d.rect.pageWidth, d.rect.height);
     const passed = d.forward ? from.x <= targetX : from.x >= targetX;
     if (passed) {
-      stopQuickly(book, from);
+      stopAtButtonSpeed(book, from, msPerPx);
       return;
     }
+    // 접는 선까지도 버튼과 같은 속도로 가요.
+    const duration = Math.max(1, Math.abs(targetX - from.x) * msPerPx);
     const startedAt = performance.now();
     const step = (now) => {
-      const t = Math.min(1, (now - startedAt) / FINISH_MS);
+      const t = Math.min(1, (now - startedAt) / duration);
       const eased = 1 - (1 - t) ** 2;
       const pos = { x: from.x + (targetX - from.x) * eased, y: from.y };
       book.userMove(pos, true);
       if (t < 1) requestAnimationFrame(step);
-      else stopQuickly(book, pos);
+      else stopAtButtonSpeed(book, pos, msPerPx);
     };
     requestAnimationFrame(step);
   };
@@ -171,7 +170,7 @@ export function useFlipDrag(bookRef, { onTap, canPrev = true, canNext = true, sw
       && (travelled > d.rect.pageWidth * FINISH_RATIO || speed > FLICK_SPEED);
 
     if (done) finish(book, d);
-    else stopQuickly(book, d.current);
+    else stopAtButtonSpeed(book, d.current, flipMsPerPx(d.rect.pageWidth, d.rect.height));
   };
 
   return {
