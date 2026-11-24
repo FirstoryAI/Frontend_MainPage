@@ -295,7 +295,11 @@ const StoryFlipBook = forwardRef(function StoryFlipBook({
       if (next === pendingRef.current) pendingRef.current = null;
       return;
     }
-    if (next !== pageRef.current) onPageRef.current?.(next);
+    if (next === pageRef.current) return;
+    // 끌어서 넘기면 라이브러리가 이 알림 바로 뒤에 '멈춤'을 알려요. 새 쪽이 화면에 반영되기 전이라,
+    // 미리 새 쪽으로 맞춰 두지 않으면 이전 쪽에 멈춘 것으로 기록돼 3초(TURN_TIMEOUT_MS) 동안 넘어가는 중으로 남아요.
+    pageRef.current = next;
+    onPageRef.current?.(next);
   }, []);
 
   const handleChangeState = useCallback((event) => {
