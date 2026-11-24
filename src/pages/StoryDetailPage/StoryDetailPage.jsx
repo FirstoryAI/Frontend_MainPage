@@ -8,6 +8,8 @@ import libraryBell from '../../assets/images/library/notification.svg';
 import libraryProfile from '../../assets/images/library/profile.svg';
 import iconBack from '../../assets/images/library/icon-back-white.svg';
 import iconTrash from '../../assets/images/library/icon-trash-white.svg';
+import iconSoundOn from '../../assets/images/library/icon-sound-on-white.svg';
+import iconSoundOff from '../../assets/images/library/icon-sound-off-white.svg';
 import bookCover from '../../assets/images/library-cover-sample.png';
 import SafeImage from '../../features/story/components/SafeImage';
 import bookCoverStyles from '../../features/story/components/BookCover.module.css';
@@ -16,6 +18,7 @@ import FeedbackDialog from '../../features/story/components/FeedbackDialog';
 import { getFeedbackSubmission, markFeedbackSubmitted } from '../../features/story/feedbackSubmission';
 import { clearPendingReadingFeedback, savePendingReadingFeedback } from '../../features/story/pendingReadingFeedback';
 import { useSceneScale } from '../../features/story/hooks/useSceneScale';
+import { isNarrationEnabled, saveNarrationEnabled, unlockNarration } from '../../features/story/narration';
 import readerStyles from '../../features/story/components/StoryReader.module.css';
 import { deleteStory, getBook, getGuide, getStoryDetail } from '../../services/storiesApi';
 import {
@@ -99,6 +102,8 @@ function StoryDetailPage() {
   // '대화 가이드 보기'로 미리보기와 같은 크게 보기 화면을 연 동안 { book, page }
   const [guideView, setGuideView] = useState(null);
   const [guideLoading, setGuideLoading] = useState(false);
+  // 아이와 읽을 때 쪽마다 동화를 읽어 줄지예요. (제목 옆 스피커 버튼으로 켜고 끄고, 이 기기에 기억해요)
+  const [narrationOn, setNarrationOn] = useState(isNarrationEnabled);
   const bookRequestRef = useRef(null);
   const preloadedImagesRef = useRef(new Map());
 
@@ -161,6 +166,8 @@ function StoryDetailPage() {
   const handleStartReading = useCallback(async () => {
     if (busy) return;
 
+    // 책장이 넘어간 뒤 저절로 읽어 줄 수 있게, 누른 순간에 소리를 열어 둬요. (아이패드·아이폰)
+    if (narrationOn) unlockNarration();
     setBusy(true);
     setNotice('');
     try {
@@ -184,7 +191,7 @@ function StoryDetailPage() {
     } finally {
       setBusy(false);
     }
-  }, [busy, storyId, preloadReadingScene]);
+  }, [busy, narrationOn, storyId, preloadReadingScene]);
 
   // 확정한 직후 '아이와 바로 읽기'로 들어왔으면 상세에서 멈추지 않고 바로 읽기를 시작해요. (새로고침해도 다시 시작하지 않게 표시를 지워요)
   const autoStartDone = useRef(false);
@@ -196,6 +203,12 @@ function StoryDetailPage() {
     navigate(location.pathname, { replace: true, state: { story } });
     handleStartReading();
   }, [shouldStartReading, handleStartReading, navigate, location.pathname, story]);
+
+  const toggleNarration = () => {
+    const next = !narrationOn;
+    setNarrationOn(next);
+    saveNarrationEnabled(next);
+  };
 
   const handleOpenGuide = async () => {
     if (guideLoading) return;
@@ -305,9 +318,21 @@ function StoryDetailPage() {
         <section className={styles.info} aria-labelledby="story-detail-title">
           <div className={styles.titleRow}>
             <h2 className={styles.title} id="story-detail-title">{title}</h2>
-            <button className={styles.trash} type="button" onClick={handleDelete} aria-label="동화 삭제">
-              <img src={iconTrash} alt="" />
-            </button>
+            <div className={styles.titleActions}>
+              <button
+                className={styles.sound}
+                type="button"
+                onClick={toggleNarration}
+                aria-pressed={narrationOn}
+                aria-label="동화 읽어 주기"
+                title={narrationOn ? '동화 읽어 주기 끄기' : '동화 읽어 주기 켜기'}
+              >
+                <img src={narrationOn ? iconSoundOn : iconSoundOff} alt="" />
+              </button>
+              <button className={styles.trash} type="button" onClick={handleDelete} aria-label="동화 삭제">
+                <img src={iconTrash} alt="" />
+              </button>
+            </div>
           </div>
 
           {synopsis && <p className={styles.synopsis}>{synopsis}</p>}
@@ -354,6 +379,7 @@ function StoryDetailPage() {
           // 앞표지는 서재와 같은 정사각형 표지(coverUrl)를 그대로 쓰고, 뒤표지는 가로 그림의 가운데를 정사각형으로 보여줘요.
           frontCover={hasBookCovers(reading.book) ? (reading.book.coverUrl || reading.book.frontCoverUrl) : null}
           backCover={hasBookCovers(reading.book) ? reading.book.backCoverUrl : null}
+          narration={narrationOn}
         >
           {/* 표지가 있는 책은 뒤표지의 X로 읽기를 마쳐요. 뒤표지가 없는 옛 동화만 마지막 쪽에 '다 읽었어요'가 있어요. */}
           {!hasBookCovers(reading.book) && reading.page >= reading.book.pages.length && (

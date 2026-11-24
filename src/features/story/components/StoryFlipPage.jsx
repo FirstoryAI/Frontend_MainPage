@@ -14,7 +14,7 @@ const StoryFlipPage = forwardRef(function StoryFlipPage({ storyPage, pageNumber,
   const nearCurrentPage = Math.abs(pageNumber - activePage) <= 1;
 
   return (
-    <div className={styles.flipPage} ref={ref} aria-hidden={!portrait && side === 'right'}>
+    <div className={styles.flipPage} ref={ref} aria-hidden={!portrait && side === 'right'} data-page-number={pageNumber}>
       <div className={`${styles.flipScene} ${!portrait && side === 'right' ? styles.flipSceneRight : ''}`}>
         <div className={styles.flipSceneImage}>
           <SafeImage
@@ -28,7 +28,7 @@ const StoryFlipPage = forwardRef(function StoryFlipPage({ storyPage, pageNumber,
           {storyPage.imageUrl && <SoundWord word={storyPage.soundWord} />}
         </div>
         {storyPage.textBlocks == null ? (
-          <div className={copyClassName} data-position={textPositionOf(storyPage)}>
+          <div className={copyClassName} data-position={textPositionOf(storyPage)} data-story-text>
             {lines.map((line, index) => <p key={`${pageNumber}-${index}`}><StoryText text={line} /></p>)}
           </div>
         ) : <StoryTextBlocks blocks={storyPage.textBlocks} />}
