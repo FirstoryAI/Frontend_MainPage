@@ -60,6 +60,12 @@ export function playNarration(url) {
   audio.play().catch(() => {});
 }
 
+// 낭독이 나오는 중인지예요. (불러오는 중도 포함해요. 소리를 열어 두려고 튼 무음은 빼요)
+export function isNarrationPlaying() {
+  const audio = player;
+  return Boolean(audio && !audio.paused && !audio.ended && audio.getAttribute('src') !== SILENCE);
+}
+
 export function stopNarration() {
   const audio = player;
   if (!audio) return;
