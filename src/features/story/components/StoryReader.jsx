@@ -16,7 +16,7 @@ import mascotBase from '../../../assets/story-preview-guide/mascot-base.svg';
 import mascotFace from '../../../assets/story-preview-guide/mascot-face.png';
 import { guideFor, NO_GUIDE_MESSAGE } from '../guideContent';
 import { useFlipDrag } from '../hooks/useFlipDrag';
-import { narrationUrlOf, playNarration, stopNarration } from '../narration';
+import { isNarrationPlaying, narrationUrlOf, playNarration, stopNarration } from '../narration';
 import GuideText from './GuideText';
 import StoryFlipBook from './StoryFlipBook';
 import styles from './StoryReader.module.css';
@@ -27,6 +27,8 @@ const TAP_MOVE_PX = 10;
 const HEADER_VISIBLE_MS = 2000;
 // 글 둘레로 이만큼 벗어나 눌러도 글을 누른 것으로 봐요. (아이 손가락이 글 끝을 살짝 비켜 누를 때)
 const TEXT_TAP_SLOP_PX = 8;
+// 책장이 다 넘어가 멈춘 뒤 이만큼 기다렸다가 낭독을 시작해요. (그림을 먼저 볼 틈을 줘요)
+const NARRATION_DELAY_MS = 1000;
 
 // 동화를 화면 가득 크게 읽는 화면이에요. 미리보기(확정 전)와 아이와 읽기(확정 후)가 함께 써요.
 // pages: [{ pageNo, text, imageUrl, imageStatus }], page: 지금 쪽(1부터), children: 쪽 아래에 띄울 보조 영역
@@ -51,6 +53,8 @@ function StoryReader({ title, pages, page, onPage, onClose, closeLabel = '돌아
   // 누른 곳이 앞표지(누르면 열리는 곳)인지예요.
   const tapOnCover = useRef(false);
   const bookRef = useRef(null);
+  // 쪽에 멈춘 뒤 낭독을 시작하려고 기다리는 타이머예요. 그 사이 글을 누르면 기다리지 않고 바로 읽어요.
+  const narrationTimerRef = useRef(null);
   const [portrait, setPortrait] = useState(() => window.matchMedia('(max-width: 760px)').matches);
   const singlePage = previewMode && portrait;
   const [devicePortrait, setDevicePortrait] = useState(() => window.matchMedia('(orientation: portrait)').matches);
@@ -137,11 +141,19 @@ function StoryReader({ title, pages, page, onPage, onClose, closeLabel = '돌아
     };
   }, [onClose, page, pages.length, previewMode, showPage, suspended]);
 
-  // 쪽에 멈추면 그 쪽 낭독을 한 번 들려줘요. 넘기기 시작하거나 읽기를 닫으면 멈춰요.
+  // 쪽에 멈추고 1초 뒤에 그 쪽 낭독을 한 번 들려줘요. 넘기기 시작하거나 읽기를 닫으면 멈춰요.
   useEffect(() => {
     if (!narrationUrl) return undefined;
-    playNarration(narrationUrl);
-    return () => stopNarration();
+    const timer = window.setTimeout(() => {
+      narrationTimerRef.current = null;
+      playNarration(narrationUrl);
+    }, NARRATION_DELAY_MS);
+    narrationTimerRef.current = timer;
+    return () => {
+      window.clearTimeout(timer);
+      narrationTimerRef.current = null;
+      stopNarration();
+    };
   }, [narrationUrl, page]);
 
   useEffect(() => {
@@ -176,9 +188,13 @@ function StoryReader({ title, pages, page, onPage, onClose, closeLabel = '돌아
     tapOnCover.current = false;
     if (previewMode || !start) return;
     if (Math.hypot(event.clientX - start.x, event.clientY - start.y) > TAP_MOVE_PX) return;
-    // 글을 누르면 그 쪽 낭독을 처음부터 다시 들어요. (쪽을 넘기거나 상단바를 열지 않아요)
+    // 글을 누르면 그 쪽 낭독을 처음부터 다시 들어요. 읽는 중에는 눌러도 처음으로 돌아가지 않아요. (쪽을 넘기거나 상단바를 열지 않아요)
     if (narrationUrl && tapsStoryText(event)) {
-      playNarration(narrationUrl);
+      if (!isNarrationPlaying()) {
+        window.clearTimeout(narrationTimerRef.current);
+        narrationTimerRef.current = null;
+        playNarration(narrationUrl);
+      }
       return;
     }
     // 마우스를 올릴 수 없는 태블릿·휴대폰에서도 앞표지를 한 번 누르면 책이 열려요. (상단바는 그대로예요)
