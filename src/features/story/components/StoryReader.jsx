@@ -16,6 +16,7 @@ import mascotBase from '../../../assets/story-preview-guide/mascot-base.svg';
 import mascotFace from '../../../assets/story-preview-guide/mascot-face.png';
 import { guideFor, NO_GUIDE_MESSAGE } from '../guideContent';
 import { useFlipDrag } from '../hooks/useFlipDrag';
+import { narrationUrlOf, playNarration, stopNarration } from '../narration';
 import GuideText from './GuideText';
 import StoryFlipBook from './StoryFlipBook';
 import styles from './StoryReader.module.css';
@@ -24,11 +25,14 @@ import styles from './StoryReader.module.css';
 const TAP_MOVE_PX = 10;
 // 아이와 읽기에서 상단바가 내려와 있는 시간이에요. 그 전에 다시 누르면 바로 올라가요.
 const HEADER_VISIBLE_MS = 2000;
+// 글 둘레로 이만큼 벗어나 눌러도 글을 누른 것으로 봐요. (아이 손가락이 글 끝을 살짝 비켜 누를 때)
+const TEXT_TAP_SLOP_PX = 8;
 
 // 동화를 화면 가득 크게 읽는 화면이에요. 미리보기(확정 전)와 아이와 읽기(확정 후)가 함께 써요.
 // pages: [{ pageNo, text, imageUrl, imageStatus }], page: 지금 쪽(1부터), children: 쪽 아래에 띄울 보조 영역
 // frontCover·backCover: 아이와 읽기에서 맨 앞·맨 뒤에 붙일 앞표지·뒤표지 그림이에요. 둘 다 있으면 page 0이 앞표지, 마지막 쪽+1이 뒤표지예요.
-function StoryReader({ title, pages, page, onPage, onClose, closeLabel = '돌아가기', children, guide, previewMode = false, className = '', suspended = false, keepHeaderShown = false, frontCover = null, backCover = null }) {
+// narration: 아이와 읽기에서 쪽마다 낭독(TTS)을 들려줄지예요. 미리보기에서는 켜도 읽지 않아요.
+function StoryReader({ title, pages, page, onPage, onClose, closeLabel = '돌아가기', children, guide, previewMode = false, className = '', suspended = false, keepHeaderShown = false, frontCover = null, backCover = null, narration = false }) {
   const current = pages[page - 1];
   // 실제 책처럼 앞표지에서 시작해 뒤표지로 끝나요. (미리보기는 지금처럼 1쪽부터예요)
   const covers = !previewMode && Boolean(frontCover && backCover);
@@ -94,6 +98,8 @@ function StoryReader({ title, pages, page, onPage, onClose, closeLabel = '돌아
     || (page === pages.length && (guide?.afterReading?.bridgeQuestion?.trim() || guide?.afterReading?.ifUndecided?.trim())),
   );
   const isGuideOpen = hasGuideContent && closedGuidePage !== page;
+  // 책장이 다 넘어가 멈춘 쪽의 낭독이에요. 넘기는 중·표지·회전 안내·의견 창이 떠 있는 동안에는 읽지 않아요.
+  const narrationUrl = narration && !previewMode && !turning && !suspended && !showRotateGuide ? narrationUrlOf(current) : null;
 
   useEffect(() => {
     const query = window.matchMedia('(max-width: 760px)');
@@ -131,6 +137,13 @@ function StoryReader({ title, pages, page, onPage, onClose, closeLabel = '돌아
     };
   }, [onClose, page, pages.length, previewMode, showPage, suspended]);
 
+  // 쪽에 멈추면 그 쪽 낭독을 한 번 들려줘요. 넘기기 시작하거나 읽기를 닫으면 멈춰요.
+  useEffect(() => {
+    if (!narrationUrl) return undefined;
+    playNarration(narrationUrl);
+    return () => stopNarration();
+  }, [narrationUrl, page]);
+
   useEffect(() => {
     if (!isHintOpen) return undefined;
     const timer = window.setTimeout(() => setIsHintOpen(false), 3500);
@@ -163,6 +176,11 @@ function StoryReader({ title, pages, page, onPage, onClose, closeLabel = '돌아
     tapOnCover.current = false;
     if (previewMode || !start) return;
     if (Math.hypot(event.clientX - start.x, event.clientY - start.y) > TAP_MOVE_PX) return;
+    // 글을 누르면 그 쪽 낭독을 처음부터 다시 들어요. (쪽을 넘기거나 상단바를 열지 않아요)
+    if (narrationUrl && tapsStoryText(event)) {
+      playNarration(narrationUrl);
+      return;
+    }
     // 마우스를 올릴 수 없는 태블릿·휴대폰에서도 앞표지를 한 번 누르면 책이 열려요. (상단바는 그대로예요)
     if (onCover && page === 0) {
       showPage(1);
@@ -201,6 +219,17 @@ function StoryReader({ title, pages, page, onPage, onClose, closeLabel = '돌아
         setHeaderTimerKey((key) => key + 1);
       }
     }, 0);
+  };
+
+  // 지금 쪽의 글 위를 눌렀는지예요. 글 상자는 누름을 그림에 넘기도록(pointer-events: none) 되어 있어서 위치로 찾아요.
+  const tapsStoryText = (event) => {
+    const texts = bookRef.current?.host()?.querySelectorAll(`[data-page-number="${page}"] [data-story-text]`) ?? [];
+    return Array.from(texts).some((text) => {
+      const box = text.getBoundingClientRect();
+      return box.width > 0 && box.height > 0
+        && event.clientX >= box.left - TEXT_TAP_SLOP_PX && event.clientX <= box.right + TEXT_TAP_SLOP_PX
+        && event.clientY >= box.top - TEXT_TAP_SLOP_PX && event.clientY <= box.bottom + TEXT_TAP_SLOP_PX;
+    });
   };
 
   return (

@@ -22,6 +22,7 @@ import { retryStory } from '../../services/storiesApi';
 import { GENERATING_STATUSES, LIBRARY_TOPICS, libraryGroup, libraryTopic } from '../../features/story/storyMappers';
 import { useStoryGeneration } from '../../features/story/generation/useStoryGeneration';
 import { useSignedIn } from '../../features/auth/useSignedIn';
+import { isNarrationEnabled, unlockNarration } from '../../features/story/narration';
 import styles from './LibraryPage.module.css';
 
 // 서재 칩은 주제별로 나눠요. (첫 경험 / 친구 / 가족 / 교육·훈육 / 이별 / 기타)
@@ -250,6 +251,8 @@ function LibraryPage() {
   };
 
   const readSavedStory = () => {
+    // 바로 읽기는 다음 화면에서 시작돼서, 누른 지금 소리를 열어 둬야 첫 쪽부터 읽어 줄 수 있어요. (아이패드·아이폰)
+    if (isNarrationEnabled()) unlockNarration();
     navigate(`/library/${savedStory.id}`, { state: { story: savedStory, startReading: true } });
   };
 

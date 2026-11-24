@@ -8,6 +8,8 @@ function StoryTextBlocks({ blocks = [] }) {
       {blocks.map((block, blockIndex) => (
         <div
           className={styles.block}
+          // 아이와 읽기에서 글을 누르면 낭독을 다시 들어요. (StoryReader가 누른 위치로 찾아요)
+          data-story-text
           data-color={String(block.color ?? 'DARK').toUpperCase()}
           key={`${block.x}-${block.y}-${blockIndex}`}
           style={{ left: `${block.x ?? 0}%`, top: `${block.y ?? 0}%` }}
