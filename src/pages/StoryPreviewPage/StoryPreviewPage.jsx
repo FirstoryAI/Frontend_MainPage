@@ -31,6 +31,14 @@ import { useNotifications } from '../../features/notifications/useNotifications'
 // 화면의 '다시 만들 부분'을 API의 scope로 바꿔요.
 const REMAKE_SCOPES = { all: 'CHARACTER_STORY', text: 'TEXT', image: 'IMAGES' };
 
+function readSoundWordPositions(key) {
+  try {
+    return JSON.parse(window.localStorage.getItem(key) || '{}');
+  } catch {
+    return {};
+  }
+}
+
 // 만든 동화를 확정하기 전에 쪽마다 넘겨 보는 화면이에요. (GET /api/stories/{id}/preview)
 // initialRemakeOpen: '다시 만들기' 팝업을 연 채로 시작해요. 이때 팝업을 닫으면 서재로 돌아가요.
 // 그림이 안 보일 때 보여줄 안내예요. (받는 중 / 만들지 못함 / 준비 중 / 받지 못함)
@@ -66,6 +74,12 @@ function StoryPreviewPage({ initialRemakeOpen = false }) {
   // 다시 만들면 이전 버전도 남아 있어요. 버전이 둘 이상이면 서로 오갈 수 있어요. (버전 번호 순서예요)
   const [versions, setVersions] = useState([]);
   const [switchingVersion, setSwitchingVersion] = useState(false);
+  const [editingSoundWords, setEditingSoundWords] = useState(false);
+  const [savedPositionEntry, setSavedPositionEntry] = useState(null);
+  const [draftSoundWords, setDraftSoundWords] = useState({});
+  const storageKey = `firstory:sound-words:${storyId}:${preview?.version?.id ?? 'current'}`;
+  const storedSoundWords = useMemo(() => readSoundWordPositions(storageKey), [storageKey]);
+  const savedSoundWords = savedPositionEntry?.key === storageKey ? savedPositionEntry.positions : storedSoundWords;
 
   useEffect(() => {
     let active = true;
@@ -106,9 +120,42 @@ function StoryPreviewPage({ initialRemakeOpen = false }) {
   // 책장 넘김 효과가 있는 책에 넣을 쪽이에요. 받아 둔 그림과, 그림이 없을 때의 안내를 함께 담아요.
   // 그림을 새로 받았을 때만 다시 만들어요. (매번 새로 만들면 책이 쪽을 처음부터 다시 그려요)
   const bookPages = useMemo(
-    () => pages.map((item) => ({ ...item, imageUrl: imageSources.get(item.imageUrl) ?? '', imageNote: imageNoteFor(item, imageSources) })),
-    [pages, imageSources],
+    () => pages.map((item) => {
+      const positions = (editingSoundWords ? draftSoundWords : savedSoundWords)[item.pageNo];
+      return {
+        ...item,
+        imageUrl: imageSources.get(item.imageUrl) ?? '',
+        imageNote: imageNoteFor(item, imageSources),
+        soundWord: positions && item.soundWord?.pieces
+          ? { ...item.soundWord, pieces: item.soundWord.pieces.map((piece, index) => ({ ...piece, ...(positions[index] ?? {}) })) }
+          : item.soundWord,
+      };
+    }),
+    [pages, imageSources, editingSoundWords, draftSoundWords, savedSoundWords],
   );
+
+  const moveSoundWord = (pageNumber, pieceIndex, position) => {
+    setDraftSoundWords((old) => ({
+      ...old,
+      [pageNumber]: { ...old[pageNumber], [pieceIndex]: position },
+    }));
+  };
+
+  const toggleSoundWordEditing = () => {
+    if (!editingSoundWords) {
+      setDraftSoundWords(savedSoundWords);
+      setEditingSoundWords(true);
+      return;
+    }
+    try {
+      window.localStorage.setItem(storageKey, JSON.stringify(draftSoundWords));
+      setSavedPositionEntry({ key: storageKey, positions: draftSoundWords });
+      setEditingSoundWords(false);
+      setNotice('');
+    } catch {
+      setNotice('위치를 저장하지 못했어요. 브라우저 저장 공간을 확인해 주세요.');
+    }
+  };
 
   const closeRemake = () => {
     if (initialRemakeOpen) {
@@ -178,6 +225,8 @@ function StoryPreviewPage({ initialRemakeOpen = false }) {
     try {
       const nextPreview = await setCurrentVersion(storyId, switchTarget.id);
       setPreview(nextPreview);
+      setEditingSoundWords(false);
+      setDraftSoundWords({});
       setCurrentPage((page) => Math.min(page, nextPreview.pages.length));
       setClosedGuidePage(null);
       setIsHintOpen(false);
@@ -270,12 +319,12 @@ function StoryPreviewPage({ initialRemakeOpen = false }) {
         <main className={styles.book} inert={isRemakeOpen}>
           <div
             className={styles.illustration}
-            role="button"
-            tabIndex={0}
-            aria-label={`${currentPage}쪽 동화 크게 보기`}
-            onClick={() => transitionScene(() => setIsReaderOpen(true))}
+            role={editingSoundWords ? undefined : 'button'}
+            tabIndex={editingSoundWords ? undefined : 0}
+            aria-label={editingSoundWords ? undefined : `${currentPage}쪽 동화 크게 보기`}
+            onClick={() => { if (!editingSoundWords) transitionScene(() => setIsReaderOpen(true)); }}
             onKeyDown={(event) => {
-              if (event.key === 'Enter' || event.key === ' ') {
+              if (!editingSoundWords && (event.key === 'Enter' || event.key === ' ')) {
                 event.preventDefault();
                 transitionScene(() => setIsReaderOpen(true));
               }
@@ -288,8 +337,21 @@ function StoryPreviewPage({ initialRemakeOpen = false }) {
               seamless
               copyClassName={styles.pageCopy}
               fallbackClassName={styles.noImageText}
+              soundWordEditing={editingSoundWords}
+              onSoundWordMove={moveSoundWord}
             />
           </div>
+          {pages[currentPage - 1]?.soundWord?.pieces?.length > 0 && (
+            <button
+              className={styles.soundWordEditButton}
+              type="button"
+              onClick={toggleSoundWordEditing}
+              aria-label={editingSoundWords ? '의성어·의태어 위치 확정' : '의성어·의태어 위치 수정'}
+              title={editingSoundWords ? '위치 확정' : '위치 수정'}
+            >
+              {editingSoundWords ? '✓' : '✎'}
+            </button>
+          )}
           <div className={styles.pagination}>
             <button type="button" aria-label="이전 쪽" onClick={() => showPage(currentPage - 1)} disabled={currentPage === 1}>
               <img src={currentPage === 1 ? pageArrowInactive : pageArrowActive} alt="" />

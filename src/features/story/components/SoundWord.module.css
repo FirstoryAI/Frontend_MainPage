@@ -16,3 +16,21 @@
   pointer-events: none;
   user-select: none;
 }
+
+.editing {
+  z-index: 5;
+  padding: .18em .3em .24em;
+  border: 1.5px dashed rgb(255 138 91 / 72%);
+  border-radius: 42% 55% 47% 53% / 49% 43% 57% 51%;
+  background: rgb(255 249 244 / 74%);
+  box-shadow: 0 .08em .25em rgb(105 71 44 / 15%), inset 0 0 .2em rgb(255 255 255 / 70%);
+  cursor: grab;
+  pointer-events: auto;
+  touch-action: none;
+}
+
+.editing:active {
+  background: rgb(255 249 244 / 88%);
+  box-shadow: 0 .12em .3em rgb(105 71 44 / 22%);
+  cursor: grabbing;
+}

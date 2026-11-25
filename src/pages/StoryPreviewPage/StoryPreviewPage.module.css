@@ -206,6 +206,27 @@
   outline-offset: 3px;
 }
 
+.soundWordEditButton {
+  position: absolute;
+  z-index: 6;
+  top: 12px;
+  left: 12px;
+  display: grid;
+  width: 36px;
+  height: 36px;
+  place-items: center;
+  padding: 0;
+  border: 1px solid #e8bc67;
+  border-radius: 50%;
+  background: #fff9e9;
+  color: #8d5b16;
+  box-shadow: 0 2px 8px rgb(0 0 0 / 18%);
+  font-size: 23px;
+  cursor: pointer;
+}
+
+.soundWordEditButton:focus-visible { outline: 3px solid var(--color-brand); outline-offset: 2px; }
+
 .illustration > img {
   display: block;
   width: 100%;
