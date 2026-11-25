@@ -56,6 +56,8 @@ function StoryReader({ title, pages, page, onPage, onClose, closeLabel = '돌아
   const bookRef = useRef(null);
   // 쪽에 멈춘 뒤 낭독을 시작하려고 기다리는 타이머예요. 그 사이 글을 누르면 기다리지 않고 바로 읽어요.
   const narrationTimerRef = useRef(null);
+  // 상단바 스피커로 다시 켠 쪽이에요. 그 쪽은 저절로 읽지 않고, 글을 누를 때만 읽어요. (다른 쪽으로 넘기면 다시 저절로 읽어요)
+  const quietPageRef = useRef(null);
   const [portrait, setPortrait] = useState(() => window.matchMedia('(max-width: 760px)').matches);
   const singlePage = previewMode && portrait;
   const [devicePortrait, setDevicePortrait] = useState(() => window.matchMedia('(orientation: portrait)').matches);
@@ -143,8 +145,11 @@ function StoryReader({ title, pages, page, onPage, onClose, closeLabel = '돌아
   }, [onClose, page, pages.length, previewMode, showPage, suspended]);
 
   // 쪽에 멈추고 1초 뒤에 그 쪽 낭독을 한 번 들려줘요. 넘기기 시작하거나 읽기를 닫으면 멈춰요.
+  // 상단바 스피커로 다시 켠 쪽은 저절로 읽지 않아요.
   useEffect(() => {
     if (!narrationUrl) return undefined;
+    if (quietPageRef.current === page) return () => stopNarration();
+    quietPageRef.current = null;
     const timer = window.setTimeout(() => {
       narrationTimerRef.current = null;
       playNarration(narrationUrl);
@@ -270,7 +275,11 @@ function StoryReader({ title, pages, page, onPage, onClose, closeLabel = '돌아
             onClick={(event) => {
               const next = !narration;
               // 켜는 순간(사람이 누른 순간)에 소리를 열어 둬야 아이패드·아이폰에서도 저절로 읽어 줘요.
-              if (next) unlockNarration();
+              // 다시 켠 쪽은 저절로 읽지 않아요. (글을 누르면 읽어요)
+              if (next) {
+                unlockNarration();
+                quietPageRef.current = page;
+              }
               onNarrationChange(next);
               // 마우스·손가락으로 눌렀으면 포커스를 빼서 상단바가 2초 뒤 저절로 올라가게 해요. (키보드로 누르면 그대로 둬요)
               if (event.detail > 0) event.currentTarget.blur();
