@@ -2,6 +2,7 @@ import { forwardRef, useCallback, useContext, useEffect, useImperativeHandle, us
 import HTMLFlipBook from 'react-pageflip';
 import CoverFace from './CoverFace';
 import StoryFlipPage from './StoryFlipPage';
+import SoundWord from './SoundWord';
 import { ActivePageContext } from '../activePageContext';
 import { FLIP_MS, flipDistance } from '../flipTiming';
 import styles from './StoryReader.module.css';
@@ -135,6 +136,8 @@ const StoryFlipBook = forwardRef(function StoryFlipBook({
   backCover = null,
   copyClassName,
   fallbackClassName,
+  soundWordEditing = false,
+  onSoundWordMove,
   className = '',
   ...hostProps
 }, ref) {
@@ -175,7 +178,7 @@ const StoryFlipBook = forwardRef(function StoryFlipBook({
 
   const bookPages = useMemo(() => {
     const storyPages = pages.flatMap((item, index) => {
-      const common = { storyPage: item, pageNumber: index + 1, copyClassName, fallbackClassName };
+      const common = { storyPage: item, pageNumber: index + 1, copyClassName, fallbackClassName, soundWordEditing, onSoundWordMove };
       return portrait
         ? [<StoryFlipPage key={`${index}-single`} {...common} portrait />]
         : [
@@ -189,7 +192,7 @@ const StoryFlipBook = forwardRef(function StoryFlipBook({
       ...storyPages,
       <StoryCoverPage key="back-cover" src={backCover} label="뒤표지" side="back" portrait={portrait} lastPage={count + 1} />,
     ];
-  }, [pages, portrait, covers, frontCover, backCover, count, copyClassName, fallbackClassName]);
+  }, [pages, portrait, covers, frontCover, backCover, count, copyClassName, fallbackClassName, soundWordEditing, onSoundWordMove]);
 
   // 두 쪽을 펼친 그림의 가로 대비 세로예요. 표지 안쪽·열리는 표지 뒤에 첫 쪽 그림을 같은 크기로 깔 때 써요.
   const spreadRatio = area && pageWidth ? area.height / (pageWidth * 2) : 0.6;
@@ -357,6 +360,11 @@ const StoryFlipBook = forwardRef(function StoryFlipBook({
             {bookPages}
           </HTMLFlipBook>
           </ActivePageContext.Provider>
+        </div>
+      )}
+      {soundWordEditing && current?.imageUrl && (
+        <div className={styles.soundWordEditLayer}>
+          <SoundWord word={current.soundWord} editing onMove={(index, position) => onSoundWordMove?.(page, index, position)} />
         </div>
       )}
       {/* 움직임 코드가 아직 없으면(받는 중) 덮인 표지를 그대로 보여주고, 받는 대로 이어서 움직여요. */}

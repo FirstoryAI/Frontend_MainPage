@@ -212,6 +212,14 @@
   margin: 0 auto;
 }
 
+.soundWordEditLayer {
+  position: absolute;
+  z-index: 5;
+  inset: 0;
+  container-type: inline-size;
+  pointer-events: none;
+}
+
 /* 표지를 화면 가운데에 두려고 책을 옆으로 옮기는 틀이에요. (StoryFlipBook) */
 .flipSlide {
   width: 100%;
