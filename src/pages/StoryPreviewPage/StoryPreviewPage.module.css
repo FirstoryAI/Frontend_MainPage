@@ -212,20 +212,29 @@
   top: 12px;
   left: 12px;
   display: grid;
-  width: 36px;
-  height: 36px;
+  width: 44px;
+  height: 44px;
   place-items: center;
   padding: 0;
-  border: 1px solid #e8bc67;
+  border: 2.5px solid rgb(255 138 91 / 48%);
   border-radius: 50%;
-  background: #fff9e9;
-  color: #8d5b16;
-  box-shadow: 0 2px 8px rgb(0 0 0 / 18%);
-  font-size: 23px;
+  background: #fff9f4;
+  color: var(--color-brand);
+  box-shadow: 0 2px 8px rgb(86 53 37 / 16%);
   cursor: pointer;
 }
 
+.soundWordEditButton svg { display: block; width: 26px; height: 26px; }
+.soundWordEditButton:hover { background: #fff0e9; }
+.soundWordEditButton[data-editing] {
+  border-color: #77c98a;
+  background: #effbe9;
+  color: #3a9d62;
+  box-shadow: 0 2px 8px rgb(49 117 68 / 18%);
+}
+.soundWordEditButton[data-editing]:hover { background: #e2f6dc; }
 .soundWordEditButton:focus-visible { outline: 3px solid var(--color-brand); outline-offset: 2px; }
+.soundWordEditButton[data-editing]:focus-visible { outline-color: #3a9d62; }
 
 .illustration > img {
   display: block;
