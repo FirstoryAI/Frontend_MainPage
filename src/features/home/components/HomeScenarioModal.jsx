@@ -10,6 +10,7 @@ import iconInfo from '../../../assets/icons/icon-sample-info.svg';
 import sampleStoryCover from '../../../assets/images/sample-story-cover.png';
 import bookCoverStyles from '../../story/components/BookCover.module.css';
 import StoryReader from '../../story/components/StoryReader';
+import { isNarrationEnabled, unlockNarration } from '../../story/narration';
 import { sampleStories } from '../sampleStories';
 import { scenarioPopupContent } from '../scenarioPopupContent';
 import styles from './HomeScenarioModal.module.css';
@@ -24,6 +25,7 @@ function HomeScenarioModal({ scenario, onClose, onStart }) {
   const location = useLocation();
   const navigate = useNavigate();
   const [samplePage, setSamplePage] = useState(null);
+  const [sampleNarration, setSampleNarration] = useState(false);
   const [closing, setClosing] = useState(false);
   // 예시 동화는 브라우저 기록에 한 칸을 더해서 열어요. 그래서 브라우저 뒤로가기를 누르면 페이지를 떠나지 않고
   // 예시 동화만 닫혀요. (이 팝업과 읽던 쪽은 그대로 남고, 앞으로가기를 누르면 읽던 쪽이 다시 열려요)
@@ -74,6 +76,11 @@ function HomeScenarioModal({ scenario, onClose, onStart }) {
   }, [readerOpen, requestClose]);
 
   const openReader = () => {
+    // 아이와 읽기처럼 쪽마다 낭독을 들려줘요. 책장이 넘어간 뒤 저절로 읽을 수 있게 누른 순간에 소리를 열어 둬요. (아이패드·아이폰)
+    // 낭독을 켜고 끄는 설정은 '동화 한 눈에 보기'의 스피커 버튼과 같은 값을 따라요.
+    const narrationOn = isNarrationEnabled();
+    setSampleNarration(narrationOn);
+    if (narrationOn) unlockNarration();
     setSamplePage(hasCovers ? 0 : 1);
     navigate(`${location.pathname}${location.search}`, { state: { sampleReader: scenario.id } });
   };
@@ -188,6 +195,7 @@ function HomeScenarioModal({ scenario, onClose, onStart }) {
           backCover={hasCovers ? sampleStory.backCoverUrl : null}
           // 뒤표지로 덮인 뒤에는 닫기 버튼이 보이게 상단바를 내려 둬요.
           keepHeaderShown={hasCovers && samplePage === sampleStory.pages.length + 1}
+          narration={sampleNarration}
         />
       )}
     </div>
