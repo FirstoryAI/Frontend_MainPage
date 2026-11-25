@@ -204,8 +204,7 @@ function StoryDetailPage() {
     handleStartReading();
   }, [shouldStartReading, handleStartReading, navigate, location.pathname, story]);
 
-  const toggleNarration = () => {
-    const next = !narrationOn;
+  const changeNarration = (next) => {
     setNarrationOn(next);
     saveNarrationEnabled(next);
   };
@@ -322,7 +321,7 @@ function StoryDetailPage() {
               <button
                 className={styles.sound}
                 type="button"
-                onClick={toggleNarration}
+                onClick={() => changeNarration(!narrationOn)}
                 aria-pressed={narrationOn}
                 aria-label="동화 읽어 주기"
                 title={narrationOn ? '동화 읽어 주기 끄기' : '동화 읽어 주기 켜기'}
@@ -380,6 +379,7 @@ function StoryDetailPage() {
           frontCover={hasBookCovers(reading.book) ? (reading.book.coverUrl || reading.book.frontCoverUrl) : null}
           backCover={hasBookCovers(reading.book) ? reading.book.backCoverUrl : null}
           narration={narrationOn}
+          onNarrationChange={changeNarration}
         >
           {/* 표지가 있는 책은 뒤표지의 X로 읽기를 마쳐요. 뒤표지가 없는 옛 동화만 마지막 쪽에 '다 읽었어요'가 있어요. */}
           {!hasBookCovers(reading.book) && reading.page >= reading.book.pages.length && (

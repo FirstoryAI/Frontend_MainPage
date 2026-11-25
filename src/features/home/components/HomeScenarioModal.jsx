@@ -10,7 +10,7 @@ import iconInfo from '../../../assets/icons/icon-sample-info.svg';
 import sampleStoryCover from '../../../assets/images/sample-story-cover.png';
 import bookCoverStyles from '../../story/components/BookCover.module.css';
 import StoryReader from '../../story/components/StoryReader';
-import { isNarrationEnabled, unlockNarration } from '../../story/narration';
+import { isNarrationEnabled, saveNarrationEnabled, unlockNarration } from '../../story/narration';
 import { sampleStories } from '../sampleStories';
 import { scenarioPopupContent } from '../scenarioPopupContent';
 import styles from './HomeScenarioModal.module.css';
@@ -196,6 +196,10 @@ function HomeScenarioModal({ scenario, onClose, onStart }) {
           // 뒤표지로 덮인 뒤에는 닫기 버튼이 보이게 상단바를 내려 둬요.
           keepHeaderShown={hasCovers && samplePage === sampleStory.pages.length + 1}
           narration={sampleNarration}
+          onNarrationChange={(next) => {
+            setSampleNarration(next);
+            saveNarrationEnabled(next);
+          }}
         />
       )}
     </div>
