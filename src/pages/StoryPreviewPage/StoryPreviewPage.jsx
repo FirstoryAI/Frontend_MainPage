@@ -240,9 +240,14 @@ function StoryPreviewPage({ initialRemakeOpen = false }) {
   };
 
   const showPage = (nextPage) => {
+    const page = Math.min(pages.length, Math.max(1, nextPage));
+    if (page !== currentPage) {
+      setEditingSoundWords(false);
+      setDraftSoundWords({});
+    }
     setClosedGuidePage(null);
     setIsHintOpen(false);
-    setCurrentPage(Math.min(pages.length, Math.max(1, nextPage)));
+    setCurrentPage(page);
   };
 
   // 실제 가이드 문구가 있는 쪽에서만 안내 표시를 보여줘요.
@@ -344,12 +349,22 @@ function StoryPreviewPage({ initialRemakeOpen = false }) {
           {pages[currentPage - 1]?.soundWord?.pieces?.length > 0 && (
             <button
               className={styles.soundWordEditButton}
+              data-editing={editingSoundWords || undefined}
               type="button"
               onClick={toggleSoundWordEditing}
               aria-label={editingSoundWords ? '의성어·의태어 위치 확정' : '의성어·의태어 위치 수정'}
               title={editingSoundWords ? '위치 확정' : '위치 수정'}
             >
-              {editingSoundWords ? '✓' : '✎'}
+              {editingSoundWords ? (
+                <svg viewBox="0 0 24 24" fill="none" aria-hidden="true">
+                  <path d="m5 12.5 4.4 4.3L19 7.4" stroke="currentColor" strokeWidth="2.4" strokeLinecap="round" strokeLinejoin="round" />
+                </svg>
+              ) : (
+                <svg viewBox="0 0 24 24" fill="none" aria-hidden="true">
+                  <path d="m5.2 18.8 3.7-.7L19 8a2 2 0 0 0-2.8-2.8L6.1 15.3l-.9 3.5Z" stroke="currentColor" strokeWidth="1.9" strokeLinecap="round" strokeLinejoin="round" />
+                  <path d="m14.6 6.8 2.6 2.6" stroke="currentColor" strokeWidth="1.9" strokeLinecap="round" />
+                </svg>
+              )}
             </button>
           )}
           <div className={styles.pagination}>
