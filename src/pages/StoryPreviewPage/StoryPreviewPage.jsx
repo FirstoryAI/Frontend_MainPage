@@ -348,6 +348,7 @@ function StoryPreviewPage({ initialRemakeOpen = false }) {
           </div>
           {pages[currentPage - 1]?.soundWord?.pieces?.length > 0 && (
             <button
+              key={currentPage}
               className={styles.soundWordEditButton}
               data-editing={editingSoundWords || undefined}
               type="button"
