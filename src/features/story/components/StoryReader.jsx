@@ -16,7 +16,7 @@ import mascotBase from '../../../assets/story-preview-guide/mascot-base.svg';
 import mascotFace from '../../../assets/story-preview-guide/mascot-face.png';
 import { guideFor, NO_GUIDE_MESSAGE } from '../guideContent';
 import { useFlipDrag } from '../hooks/useFlipDrag';
-import { isNarrationPlaying, narrationUrlOf, playNarration, stopNarration } from '../narration';
+import { isNarrationPlaying, narrationUrlOf, playNarration, stopNarration, unlockNarration } from '../narration';
 import GuideText from './GuideText';
 import StoryFlipBook from './StoryFlipBook';
 import styles from './StoryReader.module.css';
@@ -34,7 +34,8 @@ const NARRATION_DELAY_MS = 1000;
 // pages: [{ pageNo, text, imageUrl, imageStatus }], page: 지금 쪽(1부터), children: 쪽 아래에 띄울 보조 영역
 // frontCover·backCover: 아이와 읽기에서 맨 앞·맨 뒤에 붙일 앞표지·뒤표지 그림이에요. 둘 다 있으면 page 0이 앞표지, 마지막 쪽+1이 뒤표지예요.
 // narration: 아이와 읽기에서 쪽마다 낭독(TTS)을 들려줄지예요. 미리보기에서는 켜도 읽지 않아요.
-function StoryReader({ title, pages, page, onPage, onClose, closeLabel = '돌아가기', children, guide, previewMode = false, className = '', suspended = false, keepHeaderShown = false, frontCover = null, backCover = null, narration = false }) {
+// onNarrationChange(on): 있으면 상단바에 낭독 켜고 끄기(스피커) 버튼을 보여줘요. (아이와 읽기·예시 동화)
+function StoryReader({ title, pages, page, onPage, onClose, closeLabel = '돌아가기', children, guide, previewMode = false, className = '', suspended = false, keepHeaderShown = false, frontCover = null, backCover = null, narration = false, onNarrationChange = null }) {
   const current = pages[page - 1];
   // 실제 책처럼 앞표지에서 시작해 뒤표지로 끝나요. (미리보기는 지금처럼 1쪽부터예요)
   const covers = !previewMode && Boolean(frontCover && backCover);
@@ -202,21 +203,14 @@ function StoryReader({ title, pages, page, onPage, onClose, closeLabel = '돌아
       showPage(1);
       return;
     }
-    // 표지 양옆의 서재 배경을 누르면 해당 방향으로 이동해요.
+    // 앞·뒤표지 화면에서는 책을 누르면 상단바를 그대로 두고, 책 바깥(서재 배경)을 누르면 상단바를 열고 닫아요.
+    // (쪽을 넘기는 건 < > 버튼과 앞표지 누르기로만 해요)
     if (coverLabel) {
       const side = page === 0 ? 'front' : 'back';
       const cover = bookRef.current?.host()?.querySelector(`[data-side="${side}"] .${styles.coverBook}`);
       const bounds = cover?.getBoundingClientRect();
-      if (bounds && event.clientY >= bounds.top && event.clientY <= bounds.bottom) {
-        if (event.clientX < bounds.left) {
-          showPage(page - 1);
-          return;
-        }
-        if (event.clientX > bounds.right) {
-          showPage(page + 1);
-          return;
-        }
-      }
+      if (bounds && event.clientX >= bounds.left && event.clientX <= bounds.right
+        && event.clientY >= bounds.top && event.clientY <= bounds.bottom) return;
     }
     // 펼쳐진 책은 양옆을 누르면 넘기고, 가운데를 누르면 상단바를 열거나 닫아요.
     if (!coverLabel && bookRef.current?.host()?.contains(event.target)) {
@@ -269,6 +263,35 @@ function StoryReader({ title, pages, page, onPage, onClose, closeLabel = '돌아
           <img src={readerClose} alt="" />
         </button>
         <h1 className={styles.readerTitle}>{title}</h1>
+        {!previewMode && onNarrationChange && (
+          <button
+            className={styles.readerSound}
+            type="button"
+            onClick={(event) => {
+              const next = !narration;
+              // 켜는 순간(사람이 누른 순간)에 소리를 열어 둬야 아이패드·아이폰에서도 저절로 읽어 줘요.
+              if (next) unlockNarration();
+              onNarrationChange(next);
+              // 마우스·손가락으로 눌렀으면 포커스를 빼서 상단바가 2초 뒤 저절로 올라가게 해요. (키보드로 누르면 그대로 둬요)
+              if (event.detail > 0) event.currentTarget.blur();
+            }}
+            aria-pressed={narration}
+            aria-label="동화 읽어 주기"
+            title={narration ? '동화 읽어 주기 끄기' : '동화 읽어 주기 켜기'}
+          >
+            <svg viewBox="0 0 32 30" fill="none" aria-hidden="true">
+              <path d="M2 10.5H7.5L14.5 4.5V25.5L7.5 19.5H2V10.5Z" stroke="currentColor" strokeWidth="2.6" strokeLinejoin="round" />
+              {narration ? (
+                <>
+                  <path d="M19.5 10.2C21 11.4 21.9 13.1 21.9 15C21.9 16.9 21 18.6 19.5 19.8" stroke="currentColor" strokeWidth="2.6" strokeLinecap="round" />
+                  <path d="M23.4 6.3C26.1 8.4 27.8 11.5 27.8 15C27.8 18.5 26.1 21.6 23.4 23.7" stroke="currentColor" strokeWidth="2.6" strokeLinecap="round" />
+                </>
+              ) : (
+                <path d="M20 11L28 19M28 11L20 19" stroke="currentColor" strokeWidth="2.6" strokeLinecap="round" />
+              )}
+            </svg>
+          </button>
+        )}
         <div className={styles.readerProgress} aria-label={coverLabel ?? `${page} / ${pages.length}쪽`}>
           <span>{coverLabel ?? `${page} / ${pages.length}`}</span>
           <div className={styles.readerProgressTrack}>
