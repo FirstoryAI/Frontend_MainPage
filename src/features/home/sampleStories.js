@@ -13,6 +13,13 @@ const sampleImages = import.meta.glob('../../assets/sample-stories/*/*.webp', {
   import: 'default',
 });
 
+// 쪽마다 낭독 음성이에요. (audio/page-01.mp3 …, 번호는 pageNo와 같아요) 아이와 읽기의 서버 audioUrl과 같게 쪽마다 한 파일을 틀어요.
+const sampleAudios = import.meta.glob('../../assets/sample-stories/*/audio/*.mp3', {
+  eager: true,
+  query: '?url',
+  import: 'default',
+});
+
 const stories = [
   friendStory,
   friendLeftOutStory,
@@ -27,6 +34,9 @@ const stories = [
 const imageUrl = (cardId, filename) =>
   sampleImages[`../../assets/sample-stories/${cardId}/${filename}`];
 
+const audioUrl = (cardId, pageNo) =>
+  sampleAudios[`../../assets/sample-stories/${cardId}/audio/page-${String(pageNo).padStart(2, '0')}.mp3`] ?? null;
+
 export const sampleStories = Object.fromEntries(stories.map((story) => [
   story.cardId,
   {
@@ -37,6 +47,7 @@ export const sampleStories = Object.fromEntries(stories.map((story) => [
     pages: story.pages.map((page) => ({
       ...page,
       imageUrl: imageUrl(story.cardId, page.image),
+      audioUrl: audioUrl(story.cardId, page.pageNo),
     })),
   },
 ]));
