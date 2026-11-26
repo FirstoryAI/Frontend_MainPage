@@ -29,6 +29,7 @@ import {
 } from '../../features/story/constants';
 import {
   GENERATING_STATUSES,
+  educationValueOf,
   fromDraftSituation,
   fromChild,
   interestPairs,
@@ -361,7 +362,7 @@ function StoryCreatePage() {
   const canProceed = {
     [STEP.SITUATION]: Boolean(situation),
     [STEP.DETAIL]: situation === 'proactive'
-      ? Boolean(detail.category && detail.coreValue)
+      ? Boolean(detail.category && educationValueOf(detail).value)
       : Boolean(detail.category && detail.event.trim()),
     [STEP.CHILD]: Boolean(child.birthYear && child.birthMonth && child.gender),
     [STEP.TOPIC]: topic.undecided || Boolean(topic.message.trim()),
@@ -458,7 +459,8 @@ function StoryCreatePage() {
 
   const isHiddenBlocked = () => blockedKey.current !== null && blockedKey.current === currentKey();
 
-  const educationGoal = `${detail.coreValue}${detail.event.trim() ? `: ${detail.event.trim()}` : ''}`;
+  const education = educationValueOf(detail);
+  const educationGoal = `${education.value}${education.message ? `: ${education.message}` : ''}`;
   const messageText = situation === 'proactive'
     ? educationGoal
     : (topic.undecided ? '' : topic.message.trim());
@@ -805,8 +807,8 @@ function StoryCreatePage() {
     navigate('/home');
   };
 
-  const educationSituationFallback = `아이와 ${detail.category}, 특히 '${detail.coreValue}'에 대해 이야기하고 싶어요.`;
-  const educationGoalFallback = `아이에게 '${detail.coreValue}'의 의미를 전하고 싶어요.${detail.event.trim() ? ` 더 전하고 싶은 말은 '${detail.event.trim()}'예요.` : ''}`;
+  const educationSituationFallback = `아이와 ${detail.category}, 특히 '${education.value}'에 대해 이야기하고 싶어요.`;
+  const educationGoalFallback = `아이에게 '${education.value}'의 의미를 전하고 싶어요.${education.message ? ` 더 전하고 싶은 말은 '${education.message}'예요.` : ''}`;
   const summaryGoal = (situation === 'proactive' && (!chatGoal || chatGoal === educationGoal)
     ? educationGoalFallback
     : chatGoal || (topic.undecided ? '' : topic.message.trim())) || SUMMARY_FALLBACK_GOAL;

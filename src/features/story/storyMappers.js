@@ -1,5 +1,14 @@
 // 화면에서 쓰는 값(한글 문구·연/월 선택)과 API 코드(FRIEND_CONFLICT, 2022-05 …)를 서로 바꿔 줘요.
-import { categories, categoryDisplayNames, educationTopics } from './constants.js';
+import { OTHER_CORE_VALUE, categories, categoryDisplayNames, educationTopics } from './constants.js';
+
+// '먼저 알려주고 싶은 일'에서 서버로 보낼 핵심 가치와 더 전할 말이에요.
+// '기타'를 고르면 아래 칸에 적은 말이 핵심 가치가 되고, 더 전할 말은 없어요.
+export function educationValueOf(detail) {
+  if (detail.coreValue === OTHER_CORE_VALUE) {
+    return { value: detail.event.replace(/\s+/g, ' ').trim(), message: '' };
+  }
+  return { value: detail.coreValue, message: detail.event.trim() };
+}
 // 화면의 '어떤 일인가요?' → API category
 const CATEGORY_CODES = {
   '친구 관계': 'FRIEND_CONFLICT',
@@ -48,8 +57,9 @@ const CUSTOM_CATEGORY_MAX = 30;
 export function toSituationRequest(situation, detail) {
   const reaction = detail.reaction.trim();
   const isEducation = situation === 'proactive';
+  const education = isEducation ? educationValueOf(detail) : null;
   const description = isEducation
-    ? `교육 주제: ${detail.category}\n핵심 가치: ${detail.coreValue}${detail.event.trim() ? `\n${detail.event.trim()}` : ''}`
+    ? `교육 주제: ${detail.category}\n핵심 가치: ${education.value}${education.message ? `\n${education.message}` : ''}`
     : detail.event.trim();
   const category = isEducation ? 'OTHER' : (CATEGORY_CODES[detail.category] ?? 'OTHER');
   const timing = SITUATION_TIMING[situation] ?? 'PAST';
@@ -76,6 +86,13 @@ export function fromDraftSituation(serverSituation, fallbackEvent = '', parentMe
       detail: { category: match[1], coreValue: match[2], event: match[3] ?? '', reaction: '' },
     };
   }
+  // 칩에 없는 핵심 가치는 '기타'로 직접 적은 말이에요.
+  if (match && educationTopics[match[1]]) {
+    return {
+      situation: 'proactive',
+      detail: { category: match[1], coreValue: OTHER_CORE_VALUE, event: match[2], reaction: '' },
+    };
+  }
   const categoryLabel = serverSituation?.categoryLabel ?? '';
   const educationCategory = /^교육 · (.+)$/.exec(categoryLabel)?.[1]
     ?? (educationTopics[categoryLabel]?.some(
@@ -85,6 +102,13 @@ export function fromDraftSituation(serverSituation, fallbackEvent = '', parentMe
     const coreValue = educationTopics[educationCategory].find(
       (value) => parentMessage === value || parentMessage.startsWith(`${value}: `),
     ) ?? '';
+    // 칩에 없는 말이면 '기타'로 직접 적은 핵심 가치예요.
+    if (!coreValue && parentMessage.trim()) {
+      return {
+        situation: 'proactive',
+        detail: { category: educationCategory, coreValue: OTHER_CORE_VALUE, event: parentMessage.trim(), reaction: '' },
+      };
+    }
     return {
       situation: 'proactive',
       detail: {

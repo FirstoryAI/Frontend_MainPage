@@ -1,6 +1,16 @@
 import MascotBubble from './MascotBubble';
 import Chip from './Chip';
-import { EVENT_MAX_LENGTH, REACTION_MAX_LENGTH, categories, categoryDisplayNames, educationTopics, lockedCategories } from '../constants';
+import {
+  CORE_VALUE_MAX_LENGTH,
+  EVENT_MAX_LENGTH,
+  OTHER_CORE_VALUE,
+  REACTION_MAX_LENGTH,
+  categories,
+  categoryDisplayNames,
+  coreValueExamples,
+  educationTopics,
+  lockedCategories,
+} from '../constants';
 import { getCategoryContent, getEventExample } from '../categoryContent';
 import iconLock from '../../../assets/icons/icon-lock.svg';
 import detailMascot from '../../../assets/images/story-detail-mascot.png';
@@ -29,7 +39,15 @@ function DetailStep({ situation, detail, onChange }) {
   const isPast = timing === TIMING_TEXT.past;
   const isEducation = situation === 'proactive';
   // 교육 주제와 핵심 가치를 상황 설명에 함께 저장할 공간을 남겨요.
-  const eventMaxLength = isEducation ? EVENT_MAX_LENGTH - 40 : EVENT_MAX_LENGTH;
+  // '기타'를 고르면 아래 칸에 핵심 가치를 직접 짧게 적어요.
+  const writesCoreValue = isEducation && detail.coreValue === OTHER_CORE_VALUE;
+  const eventMaxLength = writesCoreValue
+    ? CORE_VALUE_MAX_LENGTH
+    : isEducation ? EVENT_MAX_LENGTH - 40 : EVENT_MAX_LENGTH;
+  const eventLabel = writesCoreValue ? '아이에게 알려주고 싶은 핵심 가치를 적어주세요' : timing.eventLabel;
+  const eventPlaceholder = writesCoreValue
+    ? coreValueExamples[detail.category] ?? '물건을 던지지 않기'
+    : isEducation ? '아이에게 더 전하고 싶은 이야기를 자유롭게 적어 주세요.' : getEventExample(detail.category, situation);
   // 고른 상황과 카테고리에 따라 예시 문장이 바뀌어요. 고르기 전에는 기본 카테고리의 예시를 보여줘요.
   const content = getCategoryContent(detail.category);
 
@@ -59,7 +77,7 @@ function DetailStep({ situation, detail, onChange }) {
                 value={category}
                 checked={detail.category === category}
                 disabled={locked}
-                onChange={() => onChange({ category, coreValue: '' })}
+                onChange={() => onChange(writesCoreValue ? { category, coreValue: '', event: '' } : { category, coreValue: '' })}
               >
                 {isEducation ? category : categoryDisplayNames[category]}
                 {locked && <img className={styles.lockIcon} src={iconLock} alt="준비 중" />}
@@ -73,13 +91,18 @@ function DetailStep({ situation, detail, onChange }) {
         <div className={styles.field}>
           <p className={form.label} id="core-value-label">핵심 가치</p>
           <div className={styles.chips} role="radiogroup" aria-labelledby="core-value-label">
-            {educationTopics[detail.category].map((value) => (
+            {[...educationTopics[detail.category], OTHER_CORE_VALUE].map((value) => (
               <Chip
                 key={value}
                 name="coreValue"
                 value={value}
                 checked={detail.coreValue === value}
-                onChange={() => onChange({ coreValue: value })}
+                onChange={() => onChange(
+                  // 칩과 '기타' 사이를 오가면 아래 칸의 뜻이 바뀌어서 적던 말을 비워요.
+                  (value === OTHER_CORE_VALUE) === (detail.coreValue === OTHER_CORE_VALUE)
+                    ? { coreValue: value }
+                    : { coreValue: value, event: '' },
+                )}
               >
                 {value}
               </Chip>
@@ -90,13 +113,13 @@ function DetailStep({ situation, detail, onChange }) {
 
       <div className={styles.field}>
         <label className={form.label} htmlFor="story-event">
-          {timing.eventLabel}
+          {eventLabel}
         </label>
         <textarea
           className={`${form.control} ${form.textarea} ${styles.textarea}`}
           id="story-event"
           name="event"
-          placeholder={isEducation ? '아이에게 더 전하고 싶은 이야기를 자유롭게 적어 주세요.' : getEventExample(detail.category, situation)}
+          placeholder={eventPlaceholder}
           maxLength={eventMaxLength}
           value={detail.event}
           onChange={(event) => onChange({ event: event.target.value })}
