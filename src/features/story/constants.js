@@ -44,6 +44,20 @@ export const educationTopics = {
   '감정과 표현': ['고마움 표현하기', '미안하다고 말하기'],
 };
 
+// 핵심 가치 칩 맨 끝의 '기타'예요. 고르면 아래 칸에 핵심 가치를 직접 적어요.
+export const OTHER_CORE_VALUE = '기타';
+export const CORE_VALUE_MAX_LENGTH = 30;
+
+// '기타'를 골랐을 때 칸 안에 흐리게 보여 줄 예시예요. 짧게 적도록 짧은 말로 둬요.
+export const coreValueExamples = {
+  식습관: '앉아서 밥 먹기',
+  '예절과 배려': '어른께 존댓말 쓰기',
+  '생활 습관': '일찍 잠자리에 들기',
+  '친구 관계': '친구 물건은 물어보고 쓰기',
+  '안전 습관': '엘리베이터에서 뛰지 않기',
+  '감정과 표현': '물건을 던지지 않기',
+};
+
 // 이야기 품질을 맞출 때까지 고를 수 없게 잠근 주제예요. 서버도 SEPARATION 저장을 막아요. 풀 때는 이 목록에서 빼면 돼요.
 export const lockedCategories = ['이별 · 죽음'];
 
