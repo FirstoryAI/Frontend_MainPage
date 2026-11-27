@@ -45,6 +45,52 @@
         window.addEventListener('orientationchange', fitTablet);
       })();
     </script>
+    <script>
+      // 화면 파일(assets/…js)을 받다가 HTML 같은 엉뚱한 응답이 브라우저에 저장되면, assets는 1년 동안 다시 받지 않아서
+      // 새로고침해도 빈 화면만 나와요. 화면 파일을 못 읽으면 파일을 서버에서 새로 받아 저장된 것을 바꾼 뒤 한 번만 다시 불러와요.
+      (function () {
+        var KEY = 'firstory:asset-heal-at';
+        var started = false;
+        function heal(extra) {
+          if (started) return;
+          started = true;
+          try {
+            if (Date.now() - Number(sessionStorage.getItem(KEY) || 0) < 15000) return;
+            sessionStorage.setItem(KEY, String(Date.now()));
+          } catch (error) {
+            return;
+          }
+          var files = document.querySelectorAll('script[type="module"][src], link[rel="modulepreload"][href], link[rel="stylesheet"][href]');
+          var urls = extra ? [extra] : [];
+          for (var i = 0; i < files.length; i += 1) {
+            var url = files[i].src || files[i].href;
+            if (url.indexOf('/assets/') !== -1) urls.push(url);
+          }
+          Promise.all(urls.map(function (url) {
+            return fetch(url, { cache: 'reload' }).catch(function () {});
+          })).then(function () {
+            location.reload();
+          });
+        }
+        window.addEventListener('error', function (event) {
+          var target = event.target;
+          if (target && target.tagName === 'SCRIPT' && target.type === 'module') heal();
+        }, true);
+        // 스타일 파일은 HTML이 저장돼도 오류 없이 빈 스타일로 읽혀요. 규칙이 하나도 없으면 같은 방법으로 고쳐요.
+        // (파일의 load 이벤트는 window까지 오지 않아서 document에서 받아요)
+        document.addEventListener('load', function (event) {
+          var target = event.target;
+          if (!target || target.tagName !== 'LINK' || target.rel !== 'stylesheet' || target.href.indexOf('/assets/') === -1) return;
+          var rules = 0;
+          try {
+            rules = target.sheet ? target.sheet.cssRules.length : 0;
+          } catch (error) {
+            return;
+          }
+          if (rules === 0) heal(target.href);
+        }, true);
+      })();
+    </script>
     <link rel="icon" type="image/png" href="/favicon.png?v=3" />
     <meta
       name="description"
