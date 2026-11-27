@@ -11,8 +11,8 @@ function RouteErrorPage() {
   const staleVersion = isChunkLoadError(error);
 
   useEffect(() => {
-    if (staleVersion) reloadOnceForNewVersion();
-  }, [staleVersion]);
+    if (staleVersion) reloadOnceForNewVersion(error);
+  }, [staleVersion, error]);
 
   return (
     <div className={styles.page}>
